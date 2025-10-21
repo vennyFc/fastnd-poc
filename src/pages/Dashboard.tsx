@@ -156,7 +156,7 @@ export default function Dashboard() {
                       {results.projects.slice(0, 3).map((project: any) => (
                         <Link
                           key={project.id}
-                          to="/projects"
+                          to={`/projects?search=${encodeURIComponent(project.project_name)}`}
                           className="block p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                         >
                           <div className="font-medium">{project.project_name}</div>
@@ -182,7 +182,7 @@ export default function Dashboard() {
                       {results.products.slice(0, 3).map((product: any) => (
                         <Link
                           key={product.id}
-                          to="/products"
+                          to={`/products?search=${encodeURIComponent(product.product)}`}
                           className="block p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                         >
                           <div className="flex items-center justify-between">
