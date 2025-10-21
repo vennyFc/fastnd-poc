@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -22,8 +22,12 @@ const menuItems = [
   { title: 'Kunden', url: '/customers', icon: Users },
 ];
 
+const adminMenuItems = [
+  { title: 'Admin', url: '/admin', icon: Shield },
+];
+
 export function AppSidebar() {
-  const { signOut } = useAuth();
+  const { signOut, isAdmin } = useAuth();
 
   return (
     <Sidebar collapsible="icon">
@@ -59,6 +63,31 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={({ isActive }) =>
+                          isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
+                        }
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">

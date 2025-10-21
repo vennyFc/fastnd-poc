@@ -11,6 +11,7 @@ import DataHub from "./pages/DataHub";
 import Projects from "./pages/Projects";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
+import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -71,6 +72,16 @@ const App = () => (
                 <ProtectedRoute>
                   <MainLayout>
                     <Customers />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Admin />
                   </MainLayout>
                 </ProtectedRoute>
               }
