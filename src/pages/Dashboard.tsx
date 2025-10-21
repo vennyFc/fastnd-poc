@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Search, ExternalLink } from 'lucide-react';
+import { Search, ExternalLink, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -145,15 +146,24 @@ export default function Dashboard() {
                 {/* Projects Results */}
                 {results.projects.length > 0 && (
                   <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-3">Projekte ({results.projects.length})</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-sm">Projekte ({results.projects.length})</h3>
+                      <Link to="/projects" className="text-sm text-primary hover:underline flex items-center gap-1">
+                        Alle anzeigen <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
                     <div className="space-y-2">
                       {results.projects.slice(0, 3).map((project: any) => (
-                        <div key={project.id} className="p-3 bg-muted rounded-lg">
+                        <Link
+                          key={project.id}
+                          to="/projects"
+                          className="block p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                        >
                           <div className="font-medium">{project.project_name}</div>
                           <div className="text-sm text-muted-foreground">
                             Kunde: {project.customer} • Produkt: {project.product}
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -162,10 +172,19 @@ export default function Dashboard() {
                 {/* Products Results */}
                 {results.products.length > 0 && (
                   <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-3">Produkte ({results.products.length})</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-sm">Produkte ({results.products.length})</h3>
+                      <Link to="/products" className="text-sm text-primary hover:underline flex items-center gap-1">
+                        Alle anzeigen <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
                     <div className="space-y-2">
                       {results.products.slice(0, 3).map((product: any) => (
-                        <div key={product.id} className="p-3 bg-muted rounded-lg">
+                        <Link
+                          key={product.id}
+                          to="/products"
+                          className="block p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
+                        >
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="font-medium">{product.product}</div>
@@ -179,12 +198,13 @@ export default function Dashboard() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-primary hover:underline"
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>
                             )}
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -196,7 +216,10 @@ export default function Dashboard() {
                     <h3 className="font-semibold text-sm mb-3">Applikationen ({results.applications.length})</h3>
                     <div className="space-y-2">
                       {results.applications.slice(0, 3).map((app: any) => (
-                        <div key={app.id} className="p-3 bg-muted rounded-lg">
+                        <div
+                          key={app.id}
+                          className="p-3 bg-muted rounded-lg"
+                        >
                           <div className="font-medium">{app.application}</div>
                           <div className="text-sm text-muted-foreground">
                             Produkt: {app.related_product}
@@ -213,7 +236,10 @@ export default function Dashboard() {
                     <h3 className="font-semibold text-sm mb-3">Cross-Selling Möglichkeiten ({results.crossSells.length})</h3>
                     <div className="space-y-2">
                       {results.crossSells.slice(0, 3).map((cs: any) => (
-                        <div key={cs.id} className="p-3 bg-muted rounded-lg">
+                        <div
+                          key={cs.id}
+                          className="p-3 bg-muted rounded-lg"
+                        >
                           <div className="font-medium">{cs.cross_sell_product}</div>
                           <div className="text-sm text-muted-foreground">
                             Basis: {cs.base_product} • Applikation: {cs.application}
