@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      // @ts-expect-error - Supabase types not yet updated after migration
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')

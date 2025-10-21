@@ -58,13 +58,15 @@ export default function FileUploadDialog({
       });
 
       // Insert data based on type
+      // @ts-ignore - Supabase types will be updated after migration
       const { error } = await supabase
-        .from(dataType.id as any)
-        .insert(transformedData as any);
+        .from(dataType.id)
+        .insert(transformedData);
 
       if (error) throw error;
 
       // Record upload history
+      // @ts-ignore - Supabase types will be updated after migration
       await supabase.from('upload_history').insert({
         user_id: user.id,
         filename: fileName,

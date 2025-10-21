@@ -60,6 +60,7 @@ export default function DataHub() {
   }, []);
 
   const loadUploadHistory = async () => {
+    // @ts-ignore - Supabase types will be updated after migration
     const { data, error } = await supabase
       .from('upload_history')
       .select('*')
@@ -123,6 +124,7 @@ export default function DataHub() {
   const handleDelete = async (id: string) => {
     if (!confirm('Möchten Sie diesen Upload wirklich löschen?')) return;
 
+    // @ts-ignore - Supabase types will be updated after migration
     const { error } = await supabase
       .from('upload_history')
       .delete()
