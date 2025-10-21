@@ -14,8 +14,9 @@ export default function Products() {
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      // @ts-ignore - Supabase types will be updated after migration
+      // @ts-ignore - Supabase types not yet updated
       const { data, error } = await supabase
+        // @ts-ignore
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });

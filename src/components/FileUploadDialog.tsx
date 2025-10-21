@@ -58,22 +58,30 @@ export default function FileUploadDialog({
       });
 
       // Insert data based on type
-      // @ts-ignore - Supabase types will be updated after migration
+      // @ts-ignore - Supabase types not yet updated
       const { error } = await supabase
+        // @ts-ignore
         .from(dataType.id)
+        // @ts-ignore
         .insert(transformedData);
 
       if (error) throw error;
 
       // Record upload history
-      // @ts-ignore - Supabase types will be updated after migration
-      await supabase.from('upload_history').insert({
+      // @ts-ignore - Supabase types not yet updated
+      const uploadHistoryData: any = {
         user_id: user.id,
         filename: fileName,
         data_type: dataType.title,
         row_count: parsedData.length,
         status: 'success',
-      });
+      };
+      // @ts-ignore
+      await supabase
+        // @ts-ignore
+        .from('upload_history')
+        // @ts-ignore
+        .insert(uploadHistoryData);
 
       toast.success(`${parsedData.length} Einträge erfolgreich hochgeladen`);
       onOpenChange(false);
