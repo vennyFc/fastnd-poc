@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           response_data: Json
+          user_id: string
         }
         Insert: {
           cache_key: string
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           id?: string
           response_data: Json
+          user_id: string
         }
         Update: {
           cache_key?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string
           id?: string
           response_data?: Json
+          user_id?: string
         }
         Relationships: []
       }
