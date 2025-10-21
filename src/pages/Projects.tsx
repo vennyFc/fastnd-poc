@@ -36,12 +36,44 @@ export default function Projects() {
     },
   });
 
-  const filteredProjects = projects?.filter((project: any) =>
+  // Group projects by customer and project_name
+  const groupedProjects = projects?.reduce((acc: any[], project: any) => {
+    const key = `${project.customer}-${project.project_name}`;
+    const existing = acc.find(
+      (p) => p.customer === project.customer && p.project_name === project.project_name
+    );
+
+    if (existing) {
+      // Add application and product if not already included
+      if (project.application && !existing.applications.includes(project.application)) {
+        existing.applications.push(project.application);
+      }
+      if (project.product && !existing.products.includes(project.product)) {
+        existing.products.push(project.product);
+      }
+      // Keep the earliest created_at date
+      if (new Date(project.created_at) < new Date(existing.created_at)) {
+        existing.created_at = project.created_at;
+      }
+    } else {
+      acc.push({
+        id: project.id,
+        customer: project.customer,
+        project_name: project.project_name,
+        applications: project.application ? [project.application] : [],
+        products: project.product ? [project.product] : [],
+        created_at: project.created_at,
+      });
+    }
+    return acc;
+  }, []);
+
+  const filteredProjects = groupedProjects?.filter((project: any) =>
     searchQuery.length < 2 ? true :
     project.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     project.customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.application?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.product?.toLowerCase().includes(searchQuery.toLowerCase())
+    project.applications?.some((app: string) => app?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    project.products?.some((prod: string) => prod?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -111,8 +143,16 @@ export default function Projects() {
                   <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.project_name}</TableCell>
                     <TableCell>{project.customer}</TableCell>
-                    <TableCell>{project.application || '-'}</TableCell>
-                    <TableCell>{project.product || '-'}</TableCell>
+                    <TableCell>
+                      {project.applications.length > 0 
+                        ? project.applications.join(', ') 
+                        : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {project.products.length > 0 
+                        ? project.products.join(', ') 
+                        : '-'}
+                    </TableCell>
                     <TableCell>
                       {project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-'}
                     </TableCell>
