@@ -1,6 +1,7 @@
 import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import fastndLogo from '@/assets/fastnd-logo.png';
 import {
   Sidebar,
   SidebarContent,
@@ -32,11 +33,8 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-primary rounded-md" />
-          <span className="font-bold text-lg text-foreground group-data-[collapsible=icon]:hidden">
-            FASTND
-          </span>
+        <div className="flex items-center gap-3">
+          <img src={fastndLogo} alt="FASTND Logo" className="h-8 w-auto" />
         </div>
       </SidebarHeader>
       
