@@ -1,9 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, Bell } from 'lucide-react';
+import { Search, HelpCircle, Bell, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -11,10 +14,87 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   
   const getInitials = () => {
     if (!user?.email) return 'U';
     return user.email.substring(0, 2).toUpperCase();
+  };
+
+  // Fetch data for search
+  const { data: projects } = useQuery({
+    queryKey: ['customer_projects'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('customer_projects')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  const { data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('products')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  // Search function
+  const searchResults = () => {
+    if (searchQuery.length < 2) return null;
+
+    const query = searchQuery.toLowerCase();
+    const results: any = {
+      projects: [],
+      products: [],
+    };
+
+    results.projects = projects?.filter((p: any) =>
+      p.project_name?.toLowerCase().includes(query) ||
+      p.customer?.toLowerCase().includes(query) ||
+      p.application?.toLowerCase().includes(query) ||
+      p.product?.toLowerCase().includes(query)
+    ).slice(0, 3) || [];
+
+    results.products = products?.filter((p: any) =>
+      p.product?.toLowerCase().includes(query) ||
+      p.product_family?.toLowerCase().includes(query) ||
+      p.manufacturer?.toLowerCase().includes(query)
+    ).slice(0, 3) || [];
+
+    return results;
+  };
+
+  const results = searchResults();
+  const hasResults = results && (results.projects.length > 0 || results.products.length > 0);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && searchQuery.length >= 2) {
+      navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+      setShowResults(false);
+    }
   };
 
   return (
@@ -26,13 +106,95 @@ export function MainLayout({ children }: MainLayoutProps) {
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="h-8 w-8" />
-              <div className="relative w-96 max-w-md">
+              <div className="relative w-96 max-w-md" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Durchsuche all Daten aus Projekten, Kunden, Applikationen, etc."
                   className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowResults(e.target.value.length >= 2);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
                 />
+                
+                {/* Search Results Dropdown */}
+                {showResults && searchQuery.length >= 2 && (
+                  <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                    {!hasResults ? (
+                      <div className="p-4 text-sm text-muted-foreground">
+                        Keine Ergebnisse gefunden
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {/* Projects Results */}
+                        {results.projects.length > 0 && (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-xs text-muted-foreground">PROJEKTE</h3>
+                              <Link
+                                to={`/projects?search=${encodeURIComponent(searchQuery)}`}
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setShowResults(false)}
+                              >
+                                Alle <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                            <div className="space-y-1">
+                              {results.projects.map((project: any) => (
+                                <Link
+                                  key={project.id}
+                                  to={`/projects?search=${encodeURIComponent(project.project_name)}`}
+                                  className="block p-2 hover:bg-muted rounded text-sm"
+                                  onClick={() => setShowResults(false)}
+                                >
+                                  <div className="font-medium">{project.project_name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {project.customer}
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Products Results */}
+                        {results.products.length > 0 && (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-xs text-muted-foreground">PRODUKTE</h3>
+                              <Link
+                                to={`/products?search=${encodeURIComponent(searchQuery)}`}
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setShowResults(false)}
+                              >
+                                Alle <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                            <div className="space-y-1">
+                              {results.products.map((product: any) => (
+                                <Link
+                                  key={product.id}
+                                  to={`/products?search=${encodeURIComponent(product.product)}`}
+                                  className="block p-2 hover:bg-muted rounded text-sm"
+                                  onClick={() => setShowResults(false)}
+                                >
+                                  <div className="font-medium">{product.product}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {product.manufacturer}
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
