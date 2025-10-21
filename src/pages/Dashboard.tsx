@@ -1,9 +1,112 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch all data for search
+  const { data: projects } = useQuery({
+    queryKey: ['customer_projects'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('customer_projects')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  const { data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('products')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  const { data: applications } = useQuery({
+    queryKey: ['applications'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('applications')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  const { data: crossSells } = useQuery({
+    queryKey: ['cross_sells'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('cross_sells')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  // Search function
+  const searchResults = () => {
+    if (searchQuery.length < 3) return null;
+
+    const query = searchQuery.toLowerCase();
+    const results: any = {
+      projects: [],
+      products: [],
+      applications: [],
+      crossSells: [],
+    };
+
+    // Search projects
+    results.projects = projects?.filter((p: any) =>
+      p.customer?.toLowerCase().includes(query) ||
+      p.project_name?.toLowerCase().includes(query) ||
+      p.application?.toLowerCase().includes(query) ||
+      p.product?.toLowerCase().includes(query)
+    ) || [];
+
+    // Search products
+    results.products = products?.filter((p: any) =>
+      p.product?.toLowerCase().includes(query) ||
+      p.product_family?.toLowerCase().includes(query) ||
+      p.manufacturer?.toLowerCase().includes(query) ||
+      p.product_description?.toLowerCase().includes(query)
+    ) || [];
+
+    // Search applications
+    results.applications = applications?.filter((a: any) =>
+      a.application?.toLowerCase().includes(query) ||
+      a.related_product?.toLowerCase().includes(query)
+    ) || [];
+
+    // Search cross-sells
+    results.crossSells = crossSells?.filter((c: any) =>
+      c.application?.toLowerCase().includes(query) ||
+      c.base_product?.toLowerCase().includes(query) ||
+      c.cross_sell_product?.toLowerCase().includes(query)
+    ) || [];
+
+    return results;
+  };
+
+  const results = searchResults();
+  const hasResults = results && (
+    results.projects.length > 0 ||
+    results.products.length > 0 ||
+    results.applications.length > 0 ||
+    results.crossSells.length > 0
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -26,13 +129,102 @@ export default function Dashboard() {
         </div>
         
         {searchQuery.length >= 3 && (
-          <div className="mt-4 bg-white rounded-lg p-4 shadow-lg text-foreground">
-            <p className="text-sm text-muted-foreground">
-              Suche nach: <span className="font-semibold">{searchQuery}</span>
-            </p>
-            <div className="mt-2 text-sm text-muted-foreground">
-              Keine Ergebnisse gefunden. Laden Sie Daten im Datenhub hoch, um zu beginnen.
+          <div className="mt-4 bg-white rounded-lg shadow-lg text-foreground max-h-96 overflow-y-auto">
+            <div className="p-4 border-b">
+              <p className="text-sm text-muted-foreground">
+                Suche nach: <span className="font-semibold">{searchQuery}</span>
+              </p>
             </div>
+
+            {!hasResults ? (
+              <div className="p-4 text-sm text-muted-foreground">
+                Keine Ergebnisse gefunden. Laden Sie Daten im Datenhub hoch, um zu beginnen.
+              </div>
+            ) : (
+              <div className="divide-y">
+                {/* Projects Results */}
+                {results.projects.length > 0 && (
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm mb-3">Projekte ({results.projects.length})</h3>
+                    <div className="space-y-2">
+                      {results.projects.slice(0, 3).map((project: any) => (
+                        <div key={project.id} className="p-3 bg-muted rounded-lg">
+                          <div className="font-medium">{project.project_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Kunde: {project.customer} • Produkt: {project.product}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Products Results */}
+                {results.products.length > 0 && (
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm mb-3">Produkte ({results.products.length})</h3>
+                    <div className="space-y-2">
+                      {results.products.slice(0, 3).map((product: any) => (
+                        <div key={product.id} className="p-3 bg-muted rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-medium">{product.product}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {product.manufacturer} • {product.product_family}
+                              </div>
+                            </div>
+                            {product.manufacturer_link && (
+                              <a
+                                href={product.manufacturer_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:underline"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Applications Results */}
+                {results.applications.length > 0 && (
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm mb-3">Applikationen ({results.applications.length})</h3>
+                    <div className="space-y-2">
+                      {results.applications.slice(0, 3).map((app: any) => (
+                        <div key={app.id} className="p-3 bg-muted rounded-lg">
+                          <div className="font-medium">{app.application}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Produkt: {app.related_product}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cross-Sells Results */}
+                {results.crossSells.length > 0 && (
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm mb-3">Cross-Selling Möglichkeiten ({results.crossSells.length})</h3>
+                    <div className="space-y-2">
+                      {results.crossSells.slice(0, 3).map((cs: any) => (
+                        <div key={cs.id} className="p-3 bg-muted rounded-lg">
+                          <div className="font-medium">{cs.cross_sell_product}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Basis: {cs.base_product} • Applikation: {cs.application}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -44,7 +236,7 @@ export default function Dashboard() {
             <CardTitle className="text-lg">Projekte</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-primary">0</p>
+            <p className="text-3xl font-bold text-primary">{projects?.length || 0}</p>
             <p className="text-sm text-muted-foreground mt-1">In der Datenbank</p>
           </CardContent>
         </Card>
@@ -54,18 +246,18 @@ export default function Dashboard() {
             <CardTitle className="text-lg">Produkte</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-primary">0</p>
+            <p className="text-3xl font-bold text-primary">{products?.length || 0}</p>
             <p className="text-sm text-muted-foreground mt-1">Verfügbar</p>
           </CardContent>
         </Card>
 
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle className="text-lg">Kunden</CardTitle>
+            <CardTitle className="text-lg">Cross-Selling</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-primary">0</p>
-            <p className="text-sm text-muted-foreground mt-1">Registriert</p>
+            <p className="text-3xl font-bold text-primary">{crossSells?.length || 0}</p>
+            <p className="text-sm text-muted-foreground mt-1">Möglichkeiten</p>
           </CardContent>
         </Card>
       </div>
