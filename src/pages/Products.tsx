@@ -35,12 +35,39 @@ export default function Products() {
     },
   });
 
-  const filteredProducts = products?.filter((product: any) =>
-    searchQuery.length < 2 ? true :
-    product.product?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.product_family?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Fetch user preferences
+  const { data: userPreferences } = useQuery({
+    queryKey: ['user_preferences'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .single();
+      return data;
+    },
+  });
+
+  const filteredProducts = products?.filter((product: any) => {
+    // Search filter
+    const matchesSearch = searchQuery.length < 2 ? true :
+      product.product?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.product_family?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Preferences filter
+    if (userPreferences && product.product_family) {
+      const selectedFamilies = userPreferences.product_families || [];
+      
+      // If no families selected, show all; otherwise filter by selected families
+      if (selectedFamilies.length > 0 && !selectedFamilies.includes(product.product_family)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   return (
     <div className="p-6 space-y-6">

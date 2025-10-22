@@ -36,6 +36,18 @@ export default function Projects() {
     },
   });
 
+  // Fetch user preferences
+  const { data: userPreferences } = useQuery({
+    queryKey: ['user_preferences'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .single();
+      return data;
+    },
+  });
+
   // Group projects by customer and project_name
   const groupedProjects = projects?.reduce((acc: any[], project: any) => {
     const key = `${project.customer}-${project.project_name}`;
@@ -68,13 +80,30 @@ export default function Projects() {
     return acc;
   }, []);
 
-  const filteredProjects = groupedProjects?.filter((project: any) =>
-    searchQuery.length < 2 ? true :
-    project.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.applications?.some((app: string) => app?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    project.products?.some((prod: string) => prod?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredProjects = groupedProjects?.filter((project: any) => {
+    // Search filter
+    const matchesSearch = searchQuery.length < 2 ? true :
+      project.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.customer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.applications?.some((app: string) => app?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      project.products?.some((prod: string) => prod?.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (!matchesSearch) return false;
+
+    // Preferences filter
+    if (userPreferences) {
+      const selectedApps = userPreferences.target_applications || [];
+      const selectedFamilies = userPreferences.product_families || [];
+      
+      // If no preferences are selected, show nothing (unless both are empty arrays meaning show all)
+      const hasAppPreference = selectedApps.length === 0;
+      const matchesApp = hasAppPreference || project.applications?.some((app: string) => selectedApps.includes(app));
+      
+      if (!matchesApp) return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="p-6 space-y-6">

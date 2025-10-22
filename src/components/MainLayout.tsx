@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserPreferencesPopover } from './UserPreferencesPopover';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -199,6 +200,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
             
             <div className="flex items-center gap-4">
+              <UserPreferencesPopover />
               <button className="p-2 hover:bg-muted rounded-md">
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />
               </button>
