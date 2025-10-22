@@ -40,10 +40,14 @@ export default function Projects() {
   const { data: userPreferences } = useQuery({
     queryKey: ['user_preferences'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
-        .single();
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
       return data;
     },
   });

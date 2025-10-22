@@ -49,11 +49,15 @@ export function UserPreferencesPopover() {
   const { data: preferences } = useQuery({
     queryKey: ['user_preferences', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
+      
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
       return data;
     },
     enabled: !!user,
