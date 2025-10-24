@@ -4,11 +4,14 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Filter, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { useTableColumns } from '@/hooks/useTableColumns';
+import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
+import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -18,6 +21,17 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  const { columns, toggleColumn, updateColumnWidth, resetColumns } = useTableColumns(
+    'projects-columns',
+    [
+      { key: 'project_name', label: 'Projektname', visible: true, width: 200 },
+      { key: 'customer', label: 'Kunde', visible: true, width: 180 },
+      { key: 'applications', label: 'Applikation', visible: true, width: 200 },
+      { key: 'products', label: 'Produkt', visible: true, width: 200 },
+      { key: 'created_at', label: 'Erstellt', visible: true, width: 120 },
+    ]
+  );
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -158,12 +172,7 @@ export default function Projects() {
     }
   };
 
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-    if (sortDirection === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
-    if (sortDirection === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
-    return <ArrowUpDown className="ml-2 h-4 w-4" />;
-  };
+  const visibleColumns = columns.filter(col => col.visible);
 
   return (
     <div className="p-6 space-y-6">
@@ -197,6 +206,11 @@ export default function Projects() {
               <Filter className="mr-2 h-4 w-4" />
               Filter
             </Button>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
           </div>
         </CardContent>
       </Card>
@@ -220,76 +234,41 @@ export default function Projects() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('project_name')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Projektname
-                      {getSortIcon('project_name')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('customer')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Kunde
-                      {getSortIcon('customer')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('applications')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Applikation
-                      {getSortIcon('applications')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('products')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Produkt
-                      {getSortIcon('products')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('created_at')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Erstellt
-                      {getSortIcon('created_at')}
-                    </Button>
-                  </TableHead>
+                  {visibleColumns.map((column) => (
+                    <ResizableTableHeader
+                      key={column.key}
+                      label={column.label}
+                      width={column.width}
+                      onResize={(width) => updateColumnWidth(column.key, width)}
+                      sortable={true}
+                      sortDirection={sortField === column.key ? sortDirection : null}
+                      onSort={() => handleSort(column.key as SortField)}
+                    />
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedProjects.map((project: any) => (
                   <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.project_name}</TableCell>
-                    <TableCell>{project.customer}</TableCell>
-                    <TableCell>
-                      {project.applications.length > 0 
-                        ? project.applications.join(', ') 
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {project.products.length > 0 
-                        ? project.products.join(', ') 
-                        : '-'}
-                    </TableCell>
-                    <TableCell>
-                      {project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-'}
-                    </TableCell>
+                    {visibleColumns.map((column) => {
+                      const value = column.key === 'applications' 
+                        ? (project.applications.length > 0 ? project.applications.join(', ') : '-')
+                        : column.key === 'products'
+                        ? (project.products.length > 0 ? project.products.join(', ') : '-')
+                        : column.key === 'created_at'
+                        ? (project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-')
+                        : project[column.key];
+                      
+                      return (
+                        <TableCell 
+                          key={column.key}
+                          className={column.key === 'project_name' ? 'font-medium' : ''}
+                          style={{ width: `${column.width}px` }}
+                        >
+                          {value}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
               </TableBody>

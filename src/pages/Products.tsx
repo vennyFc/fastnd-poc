@@ -4,10 +4,13 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Search, Filter, Plus, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTableColumns } from '@/hooks/useTableColumns';
+import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
+import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
 type SortDirection = 'asc' | 'desc' | null;
@@ -17,6 +20,17 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  const { columns, toggleColumn, updateColumnWidth, resetColumns } = useTableColumns(
+    'products-columns',
+    [
+      { key: 'product', label: 'Produkt', visible: true, width: 200 },
+      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180 },
+      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150 },
+      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300 },
+      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100 },
+    ]
+  );
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -119,12 +133,7 @@ export default function Products() {
     }
   };
 
-  const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-    if (sortDirection === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
-    if (sortDirection === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
-    return <ArrowUpDown className="ml-2 h-4 w-4" />;
-  };
+  const visibleColumns = columns.filter(col => col.visible);
 
   return (
     <div className="p-6 space-y-6">
@@ -158,6 +167,11 @@ export default function Products() {
               <Filter className="mr-2 h-4 w-4" />
               Filter
             </Button>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
           </div>
         </CardContent>
       </Card>
@@ -181,72 +195,50 @@ export default function Products() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('product')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Produkt
-                      {getSortIcon('product')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('product_family')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Produktfamilie
-                      {getSortIcon('product_family')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('manufacturer')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Hersteller
-                      {getSortIcon('manufacturer')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleSort('product_description')}
-                      className="h-auto p-0 hover:bg-transparent"
-                    >
-                      Beschreibung
-                      {getSortIcon('product_description')}
-                    </Button>
-                  </TableHead>
-                  <TableHead>Link</TableHead>
+                  {visibleColumns.map((column) => (
+                    <ResizableTableHeader
+                      key={column.key}
+                      label={column.label}
+                      width={column.width}
+                      onResize={(width) => updateColumnWidth(column.key, width)}
+                      sortable={column.key !== 'manufacturer_link'}
+                      sortDirection={sortField === column.key ? sortDirection : null}
+                      onSort={column.key !== 'manufacturer_link' ? () => handleSort(column.key as SortField) : undefined}
+                    />
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedProducts.map((product: any) => (
                   <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.product}</TableCell>
-                    <TableCell>{product.product_family || '-'}</TableCell>
-                    <TableCell>{product.manufacturer || '-'}</TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {product.product_description || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {product.manufacturer_link ? (
-                        <a
-                          href={product.manufacturer_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-primary hover:underline"
+                    {visibleColumns.map((column) => {
+                      let value: any;
+                      
+                      if (column.key === 'manufacturer_link') {
+                        value = product.manufacturer_link ? (
+                          <a
+                            href={product.manufacturer_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        ) : '-';
+                      } else {
+                        value = product[column.key] || '-';
+                      }
+                      
+                      return (
+                        <TableCell 
+                          key={column.key}
+                          className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
+                          style={{ width: `${column.width}px` }}
                         >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
+                          {value}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
               </TableBody>
