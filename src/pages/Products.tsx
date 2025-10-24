@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
 import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
 type SortDirection = 'asc' | 'desc' | null;
@@ -20,6 +22,8 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'products-columns',
@@ -226,7 +230,14 @@ export default function Products() {
               </TableHeader>
               <TableBody>
                 {sortedProducts.map((product: any) => (
-                  <TableRow key={product.id}>
+                  <TableRow 
+                    key={product.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setIsSheetOpen(true);
+                    }}
+                  >
                     {visibleColumns.map((column) => {
                       let value: any;
                       
@@ -268,6 +279,54 @@ export default function Products() {
           )}
         </CardContent>
       </Card>
+
+      {/* Product Details Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedProduct?.product}</SheetTitle>
+            <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
+          </SheetHeader>
+          
+          {selectedProduct && (
+            <div className="mt-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
+                <Badge variant="secondary">
+                  {selectedProduct.product_family || 'Nicht zugeordnet'}
+                </Badge>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
+                <p className="text-base font-semibold">{selectedProduct.manufacturer || '-'}</p>
+              </div>
+
+              {selectedProduct.manufacturer_link && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller-Link</h3>
+                  <a
+                    href={selectedProduct.manufacturer_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Zur Website
+                  </a>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                <p className="text-base leading-relaxed">
+                  {selectedProduct.product_description || 'Keine Beschreibung verfügbar'}
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

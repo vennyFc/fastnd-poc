@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
 import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -21,6 +23,8 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
@@ -265,7 +269,14 @@ export default function Projects() {
               </TableHeader>
               <TableBody>
                 {sortedProjects.map((project: any) => (
-                  <TableRow key={project.id}>
+                  <TableRow 
+                    key={project.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setIsSheetOpen(true);
+                    }}
+                  >
                     {visibleColumns.map((column) => {
                       const value = column.key === 'applications' 
                         ? (project.applications.length > 0 ? project.applications.join(', ') : '-')
@@ -298,6 +309,60 @@ export default function Projects() {
           )}
         </CardContent>
       </Card>
+
+      {/* Project Details Sheet */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedProject?.project_name}</SheetTitle>
+            <SheetDescription>Projektdetails und Informationen</SheetDescription>
+          </SheetHeader>
+          
+          {selectedProject && (
+            <div className="mt-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Kunde</h3>
+                <p className="text-base font-semibold">{selectedProject.customer}</p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Applikationen</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProject.applications && selectedProject.applications.length > 0 ? (
+                    selectedProject.applications.map((app: string, index: number) => (
+                      <Badge key={index} variant="secondary">{app}</Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Keine Applikationen</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkte</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedProject.products && selectedProject.products.length > 0 ? (
+                    selectedProject.products.map((prod: string, index: number) => (
+                      <Badge key={index} variant="outline">{prod}</Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Keine Produkte</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Erstellt am</h3>
+                <p className="text-base">
+                  {selectedProject.created_at 
+                    ? format(new Date(selectedProject.created_at), 'dd.MM.yyyy') 
+                    : '-'}
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
