@@ -61,12 +61,21 @@ export default function Products() {
     if (!matchesSearch) return false;
 
     // Preferences filter
-    if (userPreferences && product.product_family) {
-      const selectedFamilies = userPreferences.product_families || [];
+    if (userPreferences) {
+      // Filter by product families
+      if (product.product_family) {
+        const selectedFamilies = userPreferences.product_families || [];
+        if (selectedFamilies.length > 0 && !selectedFamilies.includes(product.product_family)) {
+          return false;
+        }
+      }
       
-      // If no families selected, show all; otherwise filter by selected families
-      if (selectedFamilies.length > 0 && !selectedFamilies.includes(product.product_family)) {
-        return false;
+      // Filter by manufacturers
+      if (product.manufacturer) {
+        const selectedManufacturers = userPreferences.manufacturers || [];
+        if (selectedManufacturers.length > 0 && !selectedManufacturers.includes(product.manufacturer)) {
+          return false;
+        }
       }
     }
 

@@ -285,6 +285,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          manufacturers: string[] | null
           product_families: string[] | null
           target_applications: string[] | null
           updated_at: string
@@ -293,6 +294,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          manufacturers?: string[] | null
           product_families?: string[] | null
           target_applications?: string[] | null
           updated_at?: string
@@ -301,6 +303,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          manufacturers?: string[] | null
           product_families?: string[] | null
           target_applications?: string[] | null
           updated_at?: string

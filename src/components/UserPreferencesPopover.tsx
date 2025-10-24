@@ -15,6 +15,7 @@ export function UserPreferencesPopover() {
   const queryClient = useQueryClient();
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
+  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
 
   // Fetch available applications
   const { data: applications } = useQuery({
@@ -45,6 +46,21 @@ export function UserPreferencesPopover() {
     enabled: !!user,
   });
 
+  // Fetch available manufacturers
+  const { data: manufacturers } = useQuery({
+    queryKey: ['manufacturers'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('manufacturer')
+        .eq('user_id', user?.id)
+        .not('manufacturer', 'is', null);
+      const uniqueManufacturers = [...new Set(data?.map(p => p.manufacturer).filter(Boolean) || [])];
+      return uniqueManufacturers.sort();
+    },
+    enabled: !!user,
+  });
+
   // Fetch user preferences
   const { data: preferences } = useQuery({
     queryKey: ['user_preferences', user?.id],
@@ -68,12 +84,14 @@ export function UserPreferencesPopover() {
     if (preferences) {
       setSelectedApplications(preferences.target_applications || []);
       setSelectedFamilies(preferences.product_families || []);
-    } else if (applications && productFamilies) {
+      setSelectedManufacturers(preferences.manufacturers || []);
+    } else if (applications && productFamilies && manufacturers) {
       // Default: select all
       setSelectedApplications(applications);
       setSelectedFamilies(productFamilies);
+      setSelectedManufacturers(manufacturers);
     }
-  }, [preferences, applications, productFamilies]);
+  }, [preferences, applications, productFamilies, manufacturers]);
 
   // Save preferences mutation
   const saveMutation = useMutation({
@@ -92,6 +110,7 @@ export function UserPreferencesPopover() {
           .update({
             target_applications: selectedApplications,
             product_families: selectedFamilies,
+            manufacturers: selectedManufacturers,
           })
           .eq('user_id', user.id);
       } else {
@@ -101,6 +120,7 @@ export function UserPreferencesPopover() {
             user_id: user.id,
             target_applications: selectedApplications,
             product_families: selectedFamilies,
+            manufacturers: selectedManufacturers,
           });
       }
     },
@@ -145,6 +165,23 @@ export function UserPreferencesPopover() {
 
   const deselectAllFamilies = () => {
     setSelectedFamilies([]);
+  };
+
+  const toggleManufacturer = (manufacturer: string) => {
+    setSelectedManufacturers(prev => {
+      const newSelection = prev.includes(manufacturer)
+        ? prev.filter(m => m !== manufacturer)
+        : [...prev, manufacturer];
+      return newSelection;
+    });
+  };
+
+  const selectAllManufacturers = () => {
+    setSelectedManufacturers(manufacturers || []);
+  };
+
+  const deselectAllManufacturers = () => {
+    setSelectedManufacturers([]);
   };
 
   return (
@@ -240,6 +277,47 @@ export function UserPreferencesPopover() {
                       className="text-sm cursor-pointer flex-1"
                     >
                       {family}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Manufacturers */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Hersteller</Label>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAllManufacturers}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Alle
+                </button>
+                <span className="text-xs text-muted-foreground">|</span>
+                <button
+                  onClick={deselectAllManufacturers}
+                  className="text-xs text-primary hover:underline"
+                >
+                  Keine
+                </button>
+              </div>
+            </div>
+            <ScrollArea className="h-32 border rounded-md p-2">
+              <div className="space-y-2">
+                {manufacturers?.map(manufacturer => (
+                  <div key={manufacturer} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`manufacturer-${manufacturer}`}
+                      checked={selectedManufacturers.includes(manufacturer)}
+                      onCheckedChange={() => toggleManufacturer(manufacturer)}
+                    />
+                    <label
+                      htmlFor={`manufacturer-${manufacturer}`}
+                      className="text-sm cursor-pointer flex-1"
+                    >
+                      {manufacturer}
                     </label>
                   </div>
                 ))}
