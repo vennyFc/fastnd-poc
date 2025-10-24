@@ -6,13 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+
+type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
+type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -109,6 +114,57 @@ export default function Projects() {
     return true;
   });
 
+  const sortedProjects = filteredProjects?.sort((a: any, b: any) => {
+    if (!sortField || !sortDirection) return 0;
+
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+
+    // Handle array fields
+    if (sortField === 'applications' || sortField === 'products') {
+      aValue = aValue?.join(', ') || '';
+      bValue = bValue?.join(', ') || '';
+    }
+
+    // Handle date fields
+    if (sortField === 'created_at') {
+      aValue = new Date(aValue).getTime();
+      bValue = new Date(bValue).getTime();
+    }
+
+    // Handle string fields
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortField(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    if (sortDirection === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
+    if (sortDirection === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
+    return <ArrowUpDown className="ml-2 h-4 w-4" />;
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -160,19 +216,64 @@ export default function Projects() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : filteredProjects && filteredProjects.length > 0 ? (
+          ) : sortedProjects && sortedProjects.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Projektname</TableHead>
-                  <TableHead>Kunde</TableHead>
-                  <TableHead>Applikation</TableHead>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead>Erstellt</TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('project_name')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Projektname
+                      {getSortIcon('project_name')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('customer')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Kunde
+                      {getSortIcon('customer')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('applications')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Applikation
+                      {getSortIcon('applications')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('products')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Produkt
+                      {getSortIcon('products')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('created_at')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Erstellt
+                      {getSortIcon('created_at')}
+                    </Button>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProjects.map((project: any) => (
+                {sortedProjects.map((project: any) => (
                   <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.project_name}</TableCell>
                     <TableCell>{project.customer}</TableCell>

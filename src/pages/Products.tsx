@@ -5,13 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+
+type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
+type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -82,6 +87,45 @@ export default function Products() {
     return true;
   });
 
+  const sortedProducts = filteredProducts?.sort((a: any, b: any) => {
+    if (!sortField || !sortDirection) return 0;
+
+    let aValue = a[sortField] || '';
+    let bValue = b[sortField] || '';
+
+    // Handle string fields
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortField(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    if (sortDirection === 'asc') return <ArrowUp className="ml-2 h-4 w-4" />;
+    if (sortDirection === 'desc') return <ArrowDown className="ml-2 h-4 w-4" />;
+    return <ArrowUpDown className="ml-2 h-4 w-4" />;
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -133,19 +177,55 @@ export default function Products() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : filteredProducts && filteredProducts.length > 0 ? (
+          ) : sortedProducts && sortedProducts.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead>Produktfamilie</TableHead>
-                  <TableHead>Hersteller</TableHead>
-                  <TableHead>Beschreibung</TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('product')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Produkt
+                      {getSortIcon('product')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('product_family')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Produktfamilie
+                      {getSortIcon('product_family')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('manufacturer')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Hersteller
+                      {getSortIcon('manufacturer')}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleSort('product_description')}
+                      className="h-auto p-0 hover:bg-transparent"
+                    >
+                      Beschreibung
+                      {getSortIcon('product_description')}
+                    </Button>
+                  </TableHead>
                   <TableHead>Link</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product: any) => (
+                {sortedProducts.map((product: any) => (
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.product}</TableCell>
                     <TableCell>{product.product_family || '-'}</TableCell>
