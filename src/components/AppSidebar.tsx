@@ -17,10 +17,10 @@ import {
 
 const menuItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Datenhub', url: '/data-hub', icon: Upload },
   { title: 'Projekte', url: '/projects', icon: FolderKanban },
   { title: 'Produkte', url: '/products', icon: Package },
   { title: 'Kunden', url: '/customers', icon: Users },
+  { title: 'Datenhub', url: '/data-hub', icon: Upload },
 ];
 
 const adminMenuItems = [
