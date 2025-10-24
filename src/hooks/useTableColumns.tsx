@@ -5,6 +5,7 @@ export interface ColumnConfig {
   label: string;
   visible: boolean;
   width: number;
+  order: number;
 }
 
 export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig[]) {
@@ -12,7 +13,12 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Ensure all columns have order property
+        return parsed.map((col: any, idx: number) => ({
+          ...col,
+          order: col.order !== undefined ? col.order : idx
+        }));
       } catch {
         return defaultColumns;
       }
@@ -40,14 +46,29 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
     );
   };
 
+  const reorderColumns = (fromIndex: number, toIndex: number) => {
+    setColumns(cols => {
+      const sorted = [...cols].sort((a, b) => a.order - b.order);
+      const [movedColumn] = sorted.splice(fromIndex, 1);
+      sorted.splice(toIndex, 0, movedColumn);
+      
+      // Update order values
+      return sorted.map((col, idx) => ({ ...col, order: idx }));
+    });
+  };
+
   const resetColumns = () => {
     setColumns(defaultColumns);
   };
 
+  // Return columns sorted by order
+  const sortedColumns = [...columns].sort((a, b) => a.order - b.order);
+
   return {
-    columns,
+    columns: sortedColumns,
     toggleColumn,
     updateColumnWidth,
+    reorderColumns,
     resetColumns,
   };
 }

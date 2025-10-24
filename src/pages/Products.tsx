@@ -21,16 +21,18 @@ export default function Products() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
-  const { columns, toggleColumn, updateColumnWidth, resetColumns } = useTableColumns(
+  const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'products-columns',
     [
-      { key: 'product', label: 'Produkt', visible: true, width: 200 },
-      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180 },
-      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150 },
-      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300 },
-      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100 },
+      { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
+      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
+      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
+      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
+      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 4 },
     ]
   );
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -195,7 +197,7 @@ export default function Products() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {visibleColumns.map((column) => (
+                  {visibleColumns.map((column, index) => (
                     <ResizableTableHeader
                       key={column.key}
                       label={column.label}
@@ -204,6 +206,20 @@ export default function Products() {
                       sortable={column.key !== 'manufacturer_link'}
                       sortDirection={sortField === column.key ? sortDirection : null}
                       onSort={column.key !== 'manufacturer_link' ? () => handleSort(column.key as SortField) : undefined}
+                      draggable={true}
+                      onDragStart={() => setDraggedIndex(index)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedIndex !== null && draggedIndex !== index) {
+                          reorderColumns(draggedIndex, index);
+                        }
+                        setDraggedIndex(null);
+                      }}
+                      onDragEnd={() => setDraggedIndex(null)}
                     />
                   ))}
                 </TableRow>

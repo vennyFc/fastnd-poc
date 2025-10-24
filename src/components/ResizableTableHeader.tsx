@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { TableHead } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 
 interface ResizableTableHeaderProps {
   label: string;
@@ -11,6 +11,11 @@ interface ResizableTableHeaderProps {
   sortDirection?: 'asc' | 'desc' | null;
   onSort?: () => void;
   className?: string;
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
 }
 
 export function ResizableTableHeader({
@@ -21,13 +26,20 @@ export function ResizableTableHeader({
   sortDirection = null,
   onSort,
   className = '',
+  draggable = false,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
 }: ResizableTableHeaderProps) {
   const [isResizing, setIsResizing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsResizing(true);
     startXRef.current = e.clientX;
     startWidthRef.current = width;
@@ -62,21 +74,43 @@ export function ResizableTableHeader({
     return <ArrowUpDown className="ml-1 h-3 w-3" />;
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+    onDragStart?.(e);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    onDragEnd?.();
+  };
+
   return (
-    <TableHead style={{ width: `${width}px`, position: 'relative' }} className={className}>
-      <div className="flex items-center justify-between">
+    <TableHead 
+      style={{ width: `${width}px`, position: 'relative' }} 
+      className={`${className} ${isDragging ? 'opacity-50' : ''}`}
+      draggable={draggable}
+      onDragStart={handleDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex items-center justify-between gap-1">
+        {draggable && (
+          <GripVertical className="h-4 w-4 text-muted-foreground cursor-move flex-shrink-0" />
+        )}
         {sortable && onSort ? (
           <Button
             variant="ghost"
             size="sm"
             onClick={onSort}
-            className="h-auto p-0 font-semibold hover:bg-transparent"
+            className="h-auto p-0 font-semibold hover:bg-transparent flex-1 justify-start"
           >
             {label}
             {getSortIcon()}
           </Button>
         ) : (
-          <span className="font-semibold">{label}</span>
+          <span className="font-semibold flex-1">{label}</span>
         )}
         <div
           onMouseDown={handleMouseDown}

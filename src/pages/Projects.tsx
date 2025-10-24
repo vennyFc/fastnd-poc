@@ -22,16 +22,18 @@ export default function Projects() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
-  const { columns, toggleColumn, updateColumnWidth, resetColumns } = useTableColumns(
+  const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
     [
-      { key: 'project_name', label: 'Projektname', visible: true, width: 200 },
-      { key: 'customer', label: 'Kunde', visible: true, width: 180 },
-      { key: 'applications', label: 'Applikation', visible: true, width: 200 },
-      { key: 'products', label: 'Produkt', visible: true, width: 200 },
-      { key: 'created_at', label: 'Erstellt', visible: true, width: 120 },
+      { key: 'project_name', label: 'Projektname', visible: true, width: 200, order: 0 },
+      { key: 'customer', label: 'Kunde', visible: true, width: 180, order: 1 },
+      { key: 'applications', label: 'Applikation', visible: true, width: 200, order: 2 },
+      { key: 'products', label: 'Produkt', visible: true, width: 200, order: 3 },
+      { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 4 },
     ]
   );
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -234,7 +236,7 @@ export default function Projects() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {visibleColumns.map((column) => (
+                  {visibleColumns.map((column, index) => (
                     <ResizableTableHeader
                       key={column.key}
                       label={column.label}
@@ -243,6 +245,20 @@ export default function Projects() {
                       sortable={true}
                       sortDirection={sortField === column.key ? sortDirection : null}
                       onSort={() => handleSort(column.key as SortField)}
+                      draggable={true}
+                      onDragStart={() => setDraggedIndex(index)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedIndex !== null && draggedIndex !== index) {
+                          reorderColumns(draggedIndex, index);
+                        }
+                        setDraggedIndex(null);
+                      }}
+                      onDragEnd={() => setDraggedIndex(null)}
                     />
                   ))}
                 </TableRow>
