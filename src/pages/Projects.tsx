@@ -514,27 +514,27 @@ export default function Projects() {
               onReset={resetColumns}
             />
           </div>
-          
-          {/* Quick Filter Chips */}
-          <div className="flex gap-2 mt-4">
-            <Badge
-              variant={quickFilter === 'favorites' ? 'default' : 'outline'}
-              className="cursor-pointer px-3 py-1.5 text-sm"
-              onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
-            >
-              <Star className="mr-1.5 h-3.5 w-3.5" />
-              Favoriten
-            </Badge>
-            <Badge
-              variant={quickFilter === 'recent' ? 'default' : 'outline'}
-              className="cursor-pointer px-3 py-1.5 text-sm"
-              onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
-            >
-              Zuletzt angesehen
-            </Badge>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Quick Filter Chips */}
+      <div className="flex gap-2">
+        <Badge
+          variant={quickFilter === 'favorites' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
+        >
+          <Star className={`mr-1.5 h-3.5 w-3.5 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
+          Favoriten
+        </Badge>
+        <Badge
+          variant={quickFilter === 'recent' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
+        >
+          Zuletzt angesehen
+        </Badge>
+      </div>
 
       {/* Projects Table */}
       <Card className="shadow-card">
