@@ -17,6 +17,7 @@ export function ActionItemsWidget() {
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [assignmentType, setAssignmentType] = useState<'project' | 'customer'>('project');
+  const [sortBy, setSortBy] = useState<'priority' | 'due_date' | 'created'>('created');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -238,24 +239,51 @@ export function ActionItemsWidget() {
     }
   };
 
-  const openItems = actionItems.filter(item => item.status === 'open');
-  const inProgressItems = actionItems.filter(item => item.status === 'in_progress');
-  const completedItems = actionItems.filter(item => item.status === 'completed');
+  const sortItems = (items: any[]) => {
+    return [...items].sort((a, b) => {
+      if (sortBy === 'priority') {
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        return priorityOrder[b.priority as keyof typeof priorityOrder] - priorityOrder[a.priority as keyof typeof priorityOrder];
+      } else if (sortBy === 'due_date') {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  };
+
+  const openItems = sortItems(actionItems.filter(item => item.status === 'open'));
+  const inProgressItems = sortItems(actionItems.filter(item => item.status === 'in_progress'));
+  const completedItems = sortItems(actionItems.filter(item => item.status === 'completed'));
 
   return (
     <Card className="shadow-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle>Action Items</CardTitle>
-        <Dialog open={open} onOpenChange={(isOpen) => {
-          setOpen(isOpen);
-          if (!isOpen) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Neu
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(value: 'priority' | 'due_date' | 'created') => setSortBy(value)}>
+            <SelectTrigger className="w-[160px] h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created">Nach Erstellung</SelectItem>
+              <SelectItem value="priority">Nach Priorität</SelectItem>
+              <SelectItem value="due_date">Nach Fälligkeit</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={open} onOpenChange={(isOpen) => {
+            setOpen(isOpen);
+            if (!isOpen) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Neu
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingItem ? 'Action Item bearbeiten' : 'Neues Action Item'}</DialogTitle>
@@ -405,6 +433,7 @@ export function ActionItemsWidget() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
