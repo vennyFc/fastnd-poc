@@ -37,8 +37,7 @@ export default function Collections() {
         .from('collections')
         .select(`
           *,
-          collection_products(count),
-          profiles!collections_user_id_fkey(email, full_name)
+          collection_products(count)
         `)
         .order('updated_at', { ascending: false });
 
