@@ -251,14 +251,13 @@ export function ActionItemsWidget() {
               <div>
                 <label className="text-sm font-medium">Projekt (optional)</label>
                 <Select
-                  value={formData.project_id}
+                  value={formData.project_id || undefined}
                   onValueChange={(value) => setFormData({ ...formData, project_id: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Projekt auswählen..." />
+                    <SelectValue placeholder="Kein Projekt ausgewählt" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Kein Projekt</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.customer} - {project.project_name}
