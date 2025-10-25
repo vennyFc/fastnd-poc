@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -14,6 +14,7 @@ import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -24,7 +25,9 @@ export default function Projects() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
@@ -49,12 +52,23 @@ export default function Projects() {
   const { data: projects, isLoading } = useQuery({
     queryKey: ['customer_projects'],
     queryFn: async () => {
-      // @ts-ignore
       const { data, error } = await supabase
-        // @ts-ignore
         .from('customer_projects')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch cross-sells
+  const { data: crossSells = [] } = useQuery({
+    queryKey: ['cross_sells'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cross_sells')
+        .select('*');
       
       if (error) throw error;
       return data as any[];
@@ -180,6 +194,176 @@ export default function Projects() {
 
   const visibleColumns = columns.filter(col => col.visible);
 
+  // Get projects for selected customer or single project
+  const getDetailProjects = () => {
+    if (!projects) return [];
+    
+    if (selectedCustomer) {
+      // Return all projects for this customer, grouped by project_name
+      const customerProjects = projects.filter(p => p.customer === selectedCustomer);
+      const grouped = customerProjects.reduce((acc: any[], project: any) => {
+        const existing = acc.find(p => p.project_name === project.project_name);
+        
+        if (existing) {
+          if (project.application && !existing.applications.includes(project.application)) {
+            existing.applications.push(project.application);
+          }
+          if (project.product && !existing.products.includes(project.product)) {
+            existing.products.push(project.product);
+          }
+        } else {
+          acc.push({
+            id: project.id,
+            customer: project.customer,
+            project_name: project.project_name,
+            applications: project.application ? [project.application] : [],
+            products: project.product ? [project.product] : [],
+            created_at: project.created_at,
+          });
+        }
+        return acc;
+      }, []);
+      return grouped;
+    } else if (selectedProject) {
+      // Return single project
+      const projectData = projects.filter(
+        p => p.customer === selectedProject.customer && p.project_name === selectedProject.project_name
+      );
+      return [{
+        id: selectedProject.id,
+        customer: selectedProject.customer,
+        project_name: selectedProject.project_name,
+        applications: projectData.map(p => p.application).filter(Boolean),
+        products: projectData.map(p => p.product).filter(Boolean),
+        created_at: selectedProject.created_at,
+      }];
+    }
+    return [];
+  };
+
+  const getCrossSells = (products: string[]) => {
+    if (!products || products.length === 0) return [];
+    
+    return crossSells.filter((cs: any) => 
+      products.includes(cs.base_product)
+    );
+  };
+
+  const handleRowClick = (project: any) => {
+    setSelectedProject(project);
+    setSelectedCustomer(null);
+    setViewMode('detail');
+  };
+
+  const handleCustomerClick = (customer: string) => {
+    setSelectedCustomer(customer);
+    setSelectedProject(null);
+    setViewMode('detail');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedProject(null);
+    setSelectedCustomer(null);
+  };
+
+  if (viewMode === 'detail') {
+    const detailProjects = getDetailProjects();
+    
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={handleBackToList}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Zurück
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              {selectedCustomer ? `Kunde: ${selectedCustomer}` : `Projekt: ${selectedProject?.project_name}`}
+            </h1>
+            <p className="text-muted-foreground">
+              {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {detailProjects.map((project: any) => (
+            <Card key={project.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-xl">{project.project_name}</CardTitle>
+                    <CardDescription className="mt-1">
+                      <span className="font-medium">{project.customer}</span>
+                      {project.applications.length > 0 && (
+                        <span className="ml-2">• {project.applications.join(', ')}</span>
+                      )}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Products Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Package className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Produkte im Projekt</h3>
+                    </div>
+                    <Separator className="mb-4" />
+                    {project.products.length > 0 ? (
+                      <div className="space-y-2">
+                        {project.products.map((product: string, idx: number) => (
+                          <div key={idx} className="p-3 bg-muted rounded-lg">
+                            <p className="font-medium">{product}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Keine Produkte vorhanden</p>
+                    )}
+                  </div>
+
+                  {/* Cross-Sells Section */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <TrendingUp className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">Cross-Sell Opportunities</h3>
+                    </div>
+                    <Separator className="mb-4" />
+                    {(() => {
+                      const projectCrossSells = getCrossSells(project.products);
+                      return projectCrossSells.length > 0 ? (
+                        <div className="space-y-2">
+                          {projectCrossSells.map((cs: any, idx: number) => (
+                            <div key={idx} className="p-3 bg-accent/50 rounded-lg">
+                              <p className="font-medium text-sm">{cs.cross_sell_product}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Basis: {cs.base_product}
+                              </p>
+                              {cs.application && (
+                                <Badge variant="outline" className="mt-2 text-xs">
+                                  {cs.application}
+                                </Badge>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Keine Cross-Sells verfügbar</p>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -272,10 +456,7 @@ export default function Projects() {
                   <TableRow 
                     key={project.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => {
-                      setSelectedProject(project);
-                      setIsSheetOpen(true);
-                    }}
+                    onClick={() => handleRowClick(project)}
                   >
                     {visibleColumns.map((column) => {
                       const value = column.key === 'applications' 
@@ -291,8 +472,20 @@ export default function Projects() {
                           key={column.key}
                           className={column.key === 'project_name' ? 'font-medium' : ''}
                           style={{ width: `${column.width}px` }}
+                          onClick={(e) => {
+                            if (column.key === 'customer') {
+                              e.stopPropagation();
+                              handleCustomerClick(project.customer);
+                            }
+                          }}
                         >
-                          {value}
+                          {column.key === 'customer' ? (
+                            <span className="text-primary hover:underline cursor-pointer">
+                              {value}
+                            </span>
+                          ) : (
+                            value
+                          )}
                         </TableCell>
                       );
                     })}
