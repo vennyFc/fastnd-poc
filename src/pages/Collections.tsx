@@ -423,10 +423,12 @@ export default function Collections() {
                       {collection.collection_products?.[0]?.count || 0} Produkte
                     </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-2">
-                    Erstellt: {format(new Date(collection.created_at), 'dd.MM.yyyy', { locale: de })}
-                  </div>
-                  {collection.updated_at !== collection.created_at && (
+                  {collection.created_at && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Erstellt: {format(new Date(collection.created_at), 'dd.MM.yyyy', { locale: de })}
+                    </div>
+                  )}
+                  {collection.updated_at && collection.updated_at !== collection.created_at && (
                     <div className="text-xs text-muted-foreground">
                       Geändert: {format(new Date(collection.updated_at), 'dd.MM.yyyy', { locale: de })}
                     </div>
@@ -487,9 +489,11 @@ export default function Collections() {
                               {item.products.product_description}
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Hinzugefügt: {format(new Date(item.added_at), 'dd.MM.yyyy HH:mm', { locale: de })}
-                          </p>
+                          {item.added_at && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Hinzugefügt: {format(new Date(item.added_at), 'dd.MM.yyyy HH:mm', { locale: de })}
+                            </p>
+                          )}
                         </div>
                         <Button
                           size="sm"
