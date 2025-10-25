@@ -6,6 +6,7 @@ import { useWidgets } from '@/hooks/useWidgets';
 import { SearchWidget } from '@/components/dashboard/SearchWidget';
 import { StatisticsWidget } from '@/components/dashboard/StatisticsWidget';
 import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidget';
+import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -111,6 +112,20 @@ export default function Dashboard() {
               applications={applications || []}
               crossSells={crossSells || []}
             />
+          </WidgetContainer>
+        );
+      case 'action-items':
+        return (
+          <WidgetContainer
+            key="action-items"
+            id="action-items"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+          >
+            <ActionItemsWidget />
           </WidgetContainer>
         );
       case 'statistics':

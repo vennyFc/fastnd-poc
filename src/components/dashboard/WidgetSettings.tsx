@@ -16,6 +16,7 @@ interface WidgetSettingsProps {
 
 const widgetLabels: Record<string, string> = {
   'search': 'Suche',
+  'action-items': 'Action Items',
   'statistics': 'Statistiken',
   'getting-started': 'Erste Schritte',
 };

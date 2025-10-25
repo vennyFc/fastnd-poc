@@ -9,8 +9,9 @@ export interface WidgetConfig {
 
 export const defaultWidgets: WidgetConfig[] = [
   { id: 'search', type: 'search', visible: true, order: 0 },
-  { id: 'statistics', type: 'statistics', visible: true, order: 1 },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 2 },
+  { id: 'action-items', type: 'action-items', visible: true, order: 1 },
+  { id: 'statistics', type: 'statistics', visible: true, order: 2 },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 3 },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {

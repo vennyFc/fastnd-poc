@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_items: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: Database["public"]["Enums"]["action_item_priority"]
+          project_id: string | null
+          status: Database["public"]["Enums"]["action_item_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["action_item_priority"]
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["action_item_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: Database["public"]["Enums"]["action_item_priority"]
+          project_id?: string | null
+          status?: Database["public"]["Enums"]["action_item_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_items_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "customer_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_cache: {
         Row: {
           cache_key: string
@@ -354,6 +404,8 @@ export type Database = {
       }
     }
     Enums: {
+      action_item_priority: "low" | "medium" | "high"
+      action_item_status: "open" | "in_progress" | "completed"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -482,6 +534,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      action_item_priority: ["low", "medium", "high"],
+      action_item_status: ["open", "in_progress", "completed"],
       app_role: ["admin", "user"],
     },
   },
