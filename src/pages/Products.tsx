@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -13,6 +13,9 @@ import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
 type SortDirection = 'asc' | 'desc' | null;
@@ -24,6 +27,10 @@ export default function Products() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
+
+  const queryClient = useQueryClient();
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'products-columns',
@@ -73,6 +80,51 @@ export default function Products() {
         throw error;
       }
       return data;
+    },
+  });
+
+  // Fetch collections for adding products
+  const { data: collections = [] } = useQuery({
+    queryKey: ['collections'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('collections')
+        .select('id, name, visibility')
+        .order('name');
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Add product to collection mutation
+  const addToCollectionMutation = useMutation({
+    mutationFn: async ({ collectionId, productId }: { collectionId: string; productId: string }) => {
+      const { error } = await supabase
+        .from('collection_products')
+        .insert({
+          collection_id: collectionId,
+          product_id: productId,
+        });
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error('Produkt ist bereits in dieser Sammlung');
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collection_products'] });
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setAddToCollectionOpen(false);
+      setSelectedCollectionId('');
+      toast.success('Produkt zur Sammlung hinzugefügt');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 
@@ -290,6 +342,69 @@ export default function Products() {
           
           {selectedProduct && (
             <div className="mt-6 space-y-6">
+              <div className="flex gap-2">
+                <Dialog open={addToCollectionOpen} onOpenChange={setAddToCollectionOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="gap-2 flex-1">
+                      <Layers className="h-4 w-4" />
+                      Zu Sammlung hinzufügen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Zu Sammlung hinzufügen</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium">Sammlung auswählen</label>
+                        <Select
+                          value={selectedCollectionId}
+                          onValueChange={setSelectedCollectionId}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sammlung auswählen..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {collections.map((collection: any) => (
+                              <SelectItem key={collection.id} value={collection.id}>
+                                {collection.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {collections.length === 0 && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Keine Sammlungen vorhanden. Erstellen Sie zuerst eine Sammlung.
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setAddToCollectionOpen(false)}
+                        >
+                          Abbrechen
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (selectedCollectionId && selectedProduct) {
+                              addToCollectionMutation.mutate({
+                                collectionId: selectedCollectionId,
+                                productId: selectedProduct.id,
+                              });
+                            }
+                          }}
+                          disabled={!selectedCollectionId || addToCollectionMutation.isPending}
+                        >
+                          {addToCollectionMutation.isPending ? 'Hinzufügen...' : 'Hinzufügen'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
                 <Badge variant="secondary">

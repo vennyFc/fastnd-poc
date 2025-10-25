@@ -133,6 +133,101 @@ export type Database = {
           },
         ]
       }
+      collection_products: {
+        Row: {
+          added_at: string
+          collection_id: string
+          id: string
+          product_id: string
+        }
+        Insert: {
+          added_at?: string
+          collection_id: string
+          id?: string
+          product_id: string
+        }
+        Update: {
+          added_at?: string
+          collection_id?: string
+          id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_shares: {
+        Row: {
+          collection_id: string
+          created_at: string
+          id: string
+          shared_with_user_id: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          id?: string
+          shared_with_user_id: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          id?: string
+          shared_with_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_shares_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+          visibility: Database["public"]["Enums"]["collection_visibility"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+          visibility?: Database["public"]["Enums"]["collection_visibility"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: Database["public"]["Enums"]["collection_visibility"]
+        }
+        Relationships: []
+      }
       cross_sells: {
         Row: {
           application: string
@@ -417,6 +512,7 @@ export type Database = {
       action_item_priority: "low" | "medium" | "high"
       action_item_status: "open" | "in_progress" | "completed"
       app_role: "admin" | "user"
+      collection_visibility: "private" | "selected" | "organization"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -547,6 +643,7 @@ export const Constants = {
       action_item_priority: ["low", "medium", "high"],
       action_item_status: ["open", "in_progress", "completed"],
       app_role: ["admin", "user"],
+      collection_visibility: ["private", "selected", "organization"],
     },
   },
 } as const

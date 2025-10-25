@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import fastndLogo from '@/assets/fastnd-logo.png';
@@ -20,6 +20,7 @@ const menuItems = [
   { title: 'Projekte', url: '/projects', icon: FolderKanban },
   { title: 'Produkte', url: '/products', icon: Package },
   { title: 'Kunden', url: '/customers', icon: Users },
+  { title: 'Sammlungen', url: '/collections', icon: Layers },
   { title: 'Datenhub', url: '/data-hub', icon: Upload },
 ];
 
