@@ -29,6 +29,7 @@ export default function Products() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
+  const [newCollectionName, setNewCollectionName] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -97,6 +98,36 @@ export default function Products() {
 
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Create new collection mutation
+  const createCollectionMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('collections')
+        .insert({
+          user_id: user.id,
+          name: name,
+          visibility: 'private',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (newCollection) => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      setSelectedCollectionId(newCollection.id);
+      setNewCollectionName('');
+      toast.success('Sammlung erstellt');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Erstellen: ' + error.message);
     },
   });
 
@@ -356,6 +387,40 @@ export default function Products() {
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
+                        <label className="text-sm font-medium">Neue Sammlung erstellen</label>
+                        <div className="flex gap-2 mt-1">
+                          <Input
+                            placeholder="Name der neuen Sammlung"
+                            value={newCollectionName}
+                            onChange={(e) => setNewCollectionName(e.target.value)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              if (newCollectionName.trim()) {
+                                createCollectionMutation.mutate(newCollectionName.trim());
+                              }
+                            }}
+                            disabled={!newCollectionName.trim() || createCollectionMutation.isPending}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-background px-2 text-muted-foreground">
+                            Oder existierende wählen
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
                         <label className="text-sm font-medium">Sammlung auswählen</label>
                         <Select
                           value={selectedCollectionId}
@@ -374,7 +439,7 @@ export default function Products() {
                         </Select>
                         {collections.length === 0 && (
                           <p className="text-sm text-muted-foreground mt-2">
-                            Keine Sammlungen vorhanden. Erstellen Sie zuerst eine Sammlung.
+                            Noch keine Sammlungen vorhanden
                           </p>
                         )}
                       </div>
