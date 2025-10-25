@@ -29,9 +29,29 @@ export default function Projects() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
 
   const queryClient = useQueryClient();
+
+  // Load recently viewed projects from localStorage
+  const getRecentlyViewed = (): Array<{ customer: string; project_name: string }> => {
+    const stored = localStorage.getItem('recentlyViewedProjects');
+    return stored ? JSON.parse(stored) : [];
+  };
+
+  const addToRecentlyViewed = (customer: string, project_name: string) => {
+    const recent = getRecentlyViewed();
+    const newEntry = { customer, project_name };
+    
+    // Remove if already exists
+    const filtered = recent.filter(
+      item => !(item.customer === customer && item.project_name === project_name)
+    );
+    
+    // Add to beginning and keep only last 10
+    const updated = [newEntry, ...filtered].slice(0, 10);
+    localStorage.setItem('recentlyViewedProjects', JSON.stringify(updated));
+  };
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
@@ -186,9 +206,17 @@ export default function Projects() {
   };
 
   const filteredProjects = groupedProjects?.filter((project: any) => {
-    // Favorites filter
-    if (showFavoritesOnly && !isFavorite(project.customer, project.project_name)) {
+    // Quick filter
+    if (quickFilter === 'favorites' && !isFavorite(project.customer, project.project_name)) {
       return false;
+    }
+    
+    if (quickFilter === 'recent') {
+      const recentlyViewed = getRecentlyViewed();
+      const isRecent = recentlyViewed.some(
+        rv => rv.customer === project.customer && rv.project_name === project.project_name
+      );
+      if (!isRecent) return false;
     }
 
     // Search filter
@@ -317,6 +345,7 @@ export default function Projects() {
   };
 
   const handleRowClick = (project: any) => {
+    addToRecentlyViewed(project.customer, project.project_name);
     setSelectedProject(project);
     setSelectedCustomer(null);
     setViewMode('detail');
@@ -479,18 +508,30 @@ export default function Projects() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button
-              variant={showFavoritesOnly ? 'default' : 'outline'}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            >
-              <Star className={`mr-2 h-4 w-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
-              {showFavoritesOnly ? 'Alle' : 'Favoriten'}
-            </Button>
             <ColumnVisibilityToggle
               columns={columns}
               onToggle={toggleColumn}
               onReset={resetColumns}
             />
+          </div>
+          
+          {/* Quick Filter Chips */}
+          <div className="flex gap-2 mt-4">
+            <Badge
+              variant={quickFilter === 'favorites' ? 'default' : 'outline'}
+              className="cursor-pointer px-3 py-1.5 text-sm"
+              onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
+            >
+              <Star className="mr-1.5 h-3.5 w-3.5" />
+              Favoriten
+            </Badge>
+            <Badge
+              variant={quickFilter === 'recent' ? 'default' : 'outline'}
+              className="cursor-pointer px-3 py-1.5 text-sm"
+              onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
+            >
+              Zuletzt angesehen
+            </Badge>
           </div>
         </CardContent>
       </Card>
