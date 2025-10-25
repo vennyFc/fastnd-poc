@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 export function ActionItemsWidget() {
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [assignmentType, setAssignmentType] = useState<'project' | 'customer'>('project');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -23,6 +24,8 @@ export function ActionItemsWidget() {
     status: 'open',
     due_date: '',
     project_id: '',
+    customer_id: '',
+    assigned_to: '',
   });
 
   const queryClient = useQueryClient();
@@ -36,11 +39,32 @@ export function ActionItemsWidget() {
 
       const { data, error } = await supabase
         .from('action_items')
-        .select('*, customer_projects(customer, project_name)')
+        .select(`
+          *, 
+          project:customer_projects!action_items_project_id_fkey(customer, project_name),
+          customer:customer_projects!action_items_customer_id_fkey(customer, project_name)
+        `)
         .or(`user_id.eq.${user.id},assigned_to.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      // Fetch assigned user details separately
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(item => item.assigned_to).filter(Boolean))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds);
+        
+        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+        
+        return data.map(item => ({
+          ...item,
+          assigned_user: item.assigned_to ? profilesMap.get(item.assigned_to) : null,
+        }));
+      }
+      
       return data || [];
     },
   });
@@ -57,31 +81,66 @@ export function ActionItemsWidget() {
     },
   });
 
+  // Fetch unique customers
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_projects')
+        .select('id, customer')
+        .order('customer');
+      if (error) throw error;
+      
+      // Get unique customers
+      const uniqueCustomers = Array.from(
+        new Map(data?.map(item => [item.customer, item])).values()
+      );
+      return uniqueCustomers || [];
+    },
+  });
+
+  // Fetch all users for assignment
+  const { data: users = [] } = useQuery({
+    queryKey: ['profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .order('email');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Create/Update mutation
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      const payload = {
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        status: data.status,
+        due_date: data.due_date || null,
+        project_id: assignmentType === 'project' ? (data.project_id || null) : null,
+        customer_id: assignmentType === 'customer' ? (data.customer_id || null) : null,
+        assigned_to: data.assigned_to || user.id,
+      };
+
       if (editingItem) {
         const { error } = await supabase
           .from('action_items')
-          .update({
-            ...data,
-            project_id: data.project_id || null,
-            due_date: data.due_date || null,
-          })
+          .update(payload)
           .eq('id', editingItem.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('action_items')
           .insert({
-            ...data,
+            ...payload,
             user_id: user.id,
-            assigned_to: user.id,
-            project_id: data.project_id || null,
-            due_date: data.due_date || null,
           });
         if (error) throw error;
       }
@@ -134,12 +193,16 @@ export function ActionItemsWidget() {
       status: 'open',
       due_date: '',
       project_id: '',
+      customer_id: '',
+      assigned_to: '',
     });
+    setAssignmentType('project');
     setEditingItem(null);
   };
 
   const handleEdit = (item: any) => {
     setEditingItem(item);
+    setAssignmentType(item.project_id ? 'project' : item.customer_id ? 'customer' : 'project');
     setFormData({
       title: item.title,
       description: item.description || '',
@@ -147,6 +210,8 @@ export function ActionItemsWidget() {
       status: item.status,
       due_date: item.due_date ? format(new Date(item.due_date), 'yyyy-MM-dd') : '',
       project_id: item.project_id || '',
+      customer_id: item.customer_id || '',
+      assigned_to: item.assigned_to || '',
     });
     setOpen(true);
   };
@@ -249,22 +314,77 @@ export function ActionItemsWidget() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Projekt (optional)</label>
+                <label className="text-sm font-medium">Zugewiesen an</label>
                 <Select
-                  value={formData.project_id || undefined}
-                  onValueChange={(value) => setFormData({ ...formData, project_id: value })}
+                  value={formData.assigned_to || undefined}
+                  onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Kein Projekt ausgewählt" />
+                    <SelectValue placeholder="Mich selbst" />
                   </SelectTrigger>
                   <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.customer} - {project.project_name}
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.full_name || user.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Zuordnung (optional)</label>
+                <div className="space-y-2">
+                  <Select
+                    value={assignmentType}
+                    onValueChange={(value: 'project' | 'customer') => {
+                      setAssignmentType(value);
+                      setFormData({ ...formData, project_id: '', customer_id: '' });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="project">Projekt</SelectItem>
+                      <SelectItem value="customer">Kunde</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {assignmentType === 'project' ? (
+                    <Select
+                      value={formData.project_id || undefined}
+                      onValueChange={(value) => setFormData({ ...formData, project_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Projekt auswählen..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.customer} - {project.project_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Select
+                      value={formData.customer_id || undefined}
+                      onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kunde auswählen..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((customer) => (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {customer.customer}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium">Fälligkeitsdatum (optional)</label>
@@ -314,9 +434,19 @@ export function ActionItemsWidget() {
                           {item.description && (
                             <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
                           )}
-                          {item.customer_projects && (
+                          {(item as any).assigned_user && (
                             <p className="text-xs text-muted-foreground">
-                              📁 {item.customer_projects.customer} - {item.customer_projects.project_name}
+                              👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
+                            </p>
+                          )}
+                          {item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              📁 {item.project.customer} - {item.project.project_name}
+                            </p>
+                          )}
+                          {item.customer && !item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              🏢 {item.customer.customer}
                             </p>
                           )}
                           {item.due_date && (
@@ -377,9 +507,19 @@ export function ActionItemsWidget() {
                           {item.description && (
                             <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
                           )}
-                          {item.customer_projects && (
+                          {(item as any).assigned_user && (
                             <p className="text-xs text-muted-foreground">
-                              📁 {item.customer_projects.customer} - {item.customer_projects.project_name}
+                              👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
+                            </p>
+                          )}
+                          {item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              📁 {item.project.customer} - {item.project.project_name}
+                            </p>
+                          )}
+                          {item.customer && !item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              🏢 {item.customer.customer}
                             </p>
                           )}
                           {item.due_date && (
@@ -434,9 +574,19 @@ export function ActionItemsWidget() {
                             {getStatusIcon(item.status)}
                             <span className="font-medium text-sm line-through">{item.title}</span>
                           </div>
-                          {item.customer_projects && (
+                          {(item as any).assigned_user && (
                             <p className="text-xs text-muted-foreground">
-                              📁 {item.customer_projects.customer} - {item.customer_projects.project_name}
+                              👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
+                            </p>
+                          )}
+                          {item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              📁 {item.project.customer} - {item.project.project_name}
+                            </p>
+                          )}
+                          {item.customer && !item.project && (
+                            <p className="text-xs text-muted-foreground">
+                              🏢 {item.customer.customer}
                             </p>
                           )}
                         </div>

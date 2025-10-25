@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           assigned_to: string | null
           created_at: string
+          customer_id: string | null
           description: string | null
           due_date: string | null
           id: string
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           created_at?: string
+          customer_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -44,6 +46,7 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           created_at?: string
+          customer_id?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
@@ -55,6 +58,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "action_items_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_projects"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "action_items_project_id_fkey"
             columns: ["project_id"]
