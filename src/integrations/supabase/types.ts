@@ -398,6 +398,30 @@ export type Database = {
         }
         Relationships: []
       }
+      project_favorites: {
+        Row: {
+          created_at: string
+          customer: string
+          id: string
+          project_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer: string
+          id?: string
+          project_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer?: string
+          id?: string
+          project_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       upload_history: {
         Row: {
           data_type: string

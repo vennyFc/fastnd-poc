@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -15,6 +15,7 @@ import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -28,6 +29,9 @@ export default function Projects() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
@@ -72,6 +76,58 @@ export default function Projects() {
       
       if (error) throw error;
       return data as any[];
+    },
+  });
+
+  // Fetch favorites
+  const { data: favorites = [] } = useQuery({
+    queryKey: ['project_favorites'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('project_favorites')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Toggle favorite mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async ({ customer, project_name, isFavorite }: { customer: string; project_name: string; isFavorite: boolean }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      if (isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('project_favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('customer', customer)
+          .eq('project_name', project_name);
+        if (error) throw error;
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('project_favorites')
+          .insert({
+            user_id: user.id,
+            customer,
+            project_name,
+          });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project_favorites'] });
+      toast.success('Favorit aktualisiert');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler: ' + error.message);
     },
   });
 
@@ -123,7 +179,18 @@ export default function Projects() {
     return acc;
   }, []);
 
+  const isFavorite = (customer: string, project_name: string) => {
+    return favorites.some(
+      (fav: any) => fav.customer === customer && fav.project_name === project_name
+    );
+  };
+
   const filteredProjects = groupedProjects?.filter((project: any) => {
+    // Favorites filter
+    if (showFavoritesOnly && !isFavorite(project.customer, project.project_name)) {
+      return false;
+    }
+
     // Search filter
     const matchesSearch = searchQuery.length < 2 ? true :
       project.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -301,6 +368,26 @@ export default function Projects() {
                       )}
                     </CardDescription>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavoriteMutation.mutate({
+                        customer: project.customer,
+                        project_name: project.project_name,
+                        isFavorite: isFavorite(project.customer, project.project_name),
+                      });
+                    }}
+                  >
+                    <Star
+                      className={`h-5 w-5 ${
+                        isFavorite(project.customer, project.project_name)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -392,9 +479,12 @@ export default function Projects() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
+            <Button
+              variant={showFavoritesOnly ? 'default' : 'outline'}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              <Star className={`mr-2 h-4 w-4 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+              {showFavoritesOnly ? 'Alle' : 'Favoriten'}
             </Button>
             <ColumnVisibilityToggle
               columns={columns}
@@ -424,6 +514,7 @@ export default function Projects() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <th className="w-12"></th>
                   {visibleColumns.map((column, index) => (
                     <ResizableTableHeader
                       key={column.key}
@@ -458,6 +549,29 @@ export default function Projects() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(project)}
                   >
+                    <TableCell className="w-12">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavoriteMutation.mutate({
+                            customer: project.customer,
+                            project_name: project.project_name,
+                            isFavorite: isFavorite(project.customer, project.project_name),
+                          });
+                        }}
+                      >
+                        <Star
+                          className={`h-4 w-4 ${
+                            isFavorite(project.customer, project.project_name)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </Button>
+                    </TableCell>
                     {visibleColumns.map((column) => {
                       const value = column.key === 'applications' 
                         ? (project.applications.length > 0 ? project.applications.join(', ') : '-')
