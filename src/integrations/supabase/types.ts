@@ -507,6 +507,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      user_can_view_collection: {
+        Args: { _collection_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       action_item_priority: "low" | "medium" | "high"
