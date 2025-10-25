@@ -21,7 +21,7 @@ type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'cr
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -32,6 +32,14 @@ export default function Projects() {
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
 
   const queryClient = useQueryClient();
+
+  // Initialize filter from URL params
+  useEffect(() => {
+    const filterParam = searchParams.get('filter');
+    if (filterParam === 'favorites' || filterParam === 'recent') {
+      setQuickFilter(filterParam);
+    }
+  }, []);
 
   // Load recently viewed projects from localStorage
   const getRecentlyViewed = (): Array<{ customer: string; project_name: string }> => {

@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { Search, ArrowRight, ExternalLink, Star } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 interface SearchWidgetProps {
   searchQuery: string;
@@ -22,35 +20,7 @@ export function SearchWidget({
   applications,
   crossSells,
 }: SearchWidgetProps) {
-  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
-
-  // Load recently viewed projects from localStorage
-  const getRecentlyViewed = (): Array<{ customer: string; project_name: string }> => {
-    const stored = localStorage.getItem('recentlyViewedProjects');
-    return stored ? JSON.parse(stored) : [];
-  };
-
-  // Fetch favorites
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['project_favorites'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
-
-      const { data, error } = await supabase
-        .from('project_favorites')
-        .select('*');
-      
-      if (error) throw error;
-      return data as any[];
-    },
-  });
-
-  const isFavorite = (customer: string, project_name: string) => {
-    return favorites.some(
-      (fav: any) => fav.customer === customer && fav.project_name === project_name
-    );
-  };
+  const navigate = useNavigate();
 
   const searchResults = () => {
     if (searchQuery.length < 3) return null;
@@ -69,20 +39,6 @@ export function SearchWidget({
       p.application?.toLowerCase().includes(query) ||
       p.product?.toLowerCase().includes(query)
     ) || [];
-
-    // Apply quick filter to projects
-    if (quickFilter === 'favorites') {
-      results.projects = results.projects.filter((p: any) =>
-        isFavorite(p.customer, p.project_name)
-      );
-    } else if (quickFilter === 'recent') {
-      const recentlyViewed = getRecentlyViewed();
-      results.projects = results.projects.filter((p: any) =>
-        recentlyViewed.some(
-          rv => rv.customer === p.customer && rv.project_name === p.project_name
-        )
-      );
-    }
 
     results.products = products?.filter((p: any) =>
       p.product?.toLowerCase().includes(query) ||
@@ -134,17 +90,17 @@ export function SearchWidget({
       {/* Quick Filter Chips */}
       <div className="flex gap-2 mt-4">
         <Badge
-          variant={quickFilter === 'favorites' ? 'default' : 'outline'}
+          variant="outline"
           className="cursor-pointer px-3 py-1.5 text-sm bg-white/90 hover:bg-white transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
+          onClick={() => navigate('/projects?filter=favorites')}
         >
-          <Star className={`mr-1.5 h-3.5 w-3.5 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
+          <Star className="mr-1.5 h-3.5 w-3.5" />
           Favoriten
         </Badge>
         <Badge
-          variant={quickFilter === 'recent' ? 'default' : 'outline'}
+          variant="outline"
           className="cursor-pointer px-3 py-1.5 text-sm bg-white/90 hover:bg-white transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
+          onClick={() => navigate('/projects?filter=recent')}
         >
           Zuletzt angesehen
         </Badge>
