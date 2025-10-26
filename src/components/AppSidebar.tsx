@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/sidebar';
 
 const menuItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Cockpit', url: '/', icon: LayoutDashboard },
   { title: 'Projekte', url: '/projects', icon: FolderKanban },
   { title: 'Produkte', url: '/products', icon: Package },
   { title: 'Kunden', url: '/customers', icon: Users },
