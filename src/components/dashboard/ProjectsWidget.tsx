@@ -89,13 +89,18 @@ export function ProjectsWidget() {
                 <div className="text-sm text-muted-foreground truncate">
                   {project.customer}
                 </div>
-              </div>
-              <div className="ml-2 flex flex-col items-end gap-1">
-                {project.product && (
-                  <Badge variant="secondary" className="text-xs">
-                    {project.product}
-                  </Badge>
-                )}
+                <div className="flex items-center gap-2 mt-1">
+                  {project.application && (
+                    <span className="text-xs text-muted-foreground">
+                      App: {project.application}
+                    </span>
+                  )}
+                  {project.created_at && (
+                    <span className="text-xs text-muted-foreground">
+                      • {new Date(project.created_at).toLocaleDateString('de-DE')}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </Link>
