@@ -50,6 +50,17 @@ export function MainLayout({ children }: MainLayoutProps) {
     },
   });
 
+  const { data: collections } = useQuery({
+    queryKey: ['collections_search'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('collections')
+        .select('id, name, description, visibility')
+        .order('updated_at', { ascending: false });
+      return data || [];
+    },
+  });
+
   // Search function
   const searchResults = () => {
     if (searchQuery.length < 2) return null;
@@ -58,7 +69,14 @@ export function MainLayout({ children }: MainLayoutProps) {
     const results: any = {
       projects: [],
       products: [],
+      customers: [],
+      collections: [],
     };
+
+    // Extract unique customers from projects
+    const uniqueCustomers = [...new Set(
+      projects?.map((p: any) => p.customer).filter(Boolean) || []
+    )];
 
     results.projects = projects?.filter((p: any) =>
       p.project_name?.toLowerCase().includes(query) ||
@@ -73,11 +91,25 @@ export function MainLayout({ children }: MainLayoutProps) {
       p.manufacturer?.toLowerCase().includes(query)
     ).slice(0, 3) || [];
 
+    results.customers = uniqueCustomers.filter((c: string) =>
+      c.toLowerCase().includes(query)
+    ).slice(0, 3);
+
+    results.collections = collections?.filter((c: any) =>
+      c.name?.toLowerCase().includes(query) ||
+      c.description?.toLowerCase().includes(query)
+    ).slice(0, 3) || [];
+
     return results;
   };
 
   const results = searchResults();
-  const hasResults = results && (results.projects.length > 0 || results.products.length > 0);
+  const hasResults = results && (
+    results.projects.length > 0 || 
+    results.products.length > 0 || 
+    results.customers.length > 0 ||
+    results.collections.length > 0
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -187,6 +219,67 @@ export function MainLayout({ children }: MainLayoutProps) {
                                   <div className="text-xs text-muted-foreground">
                                     {product.manufacturer}
                                   </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Customers Results */}
+                        {results.customers.length > 0 && (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-xs text-muted-foreground">KUNDEN</h3>
+                              <Link
+                                to={`/customers?search=${encodeURIComponent(searchQuery)}`}
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setShowResults(false)}
+                              >
+                                Alle <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                            <div className="space-y-1">
+                              {results.customers.map((customer: string, idx: number) => (
+                                <Link
+                                  key={idx}
+                                  to={`/customers?search=${encodeURIComponent(customer)}`}
+                                  className="block p-2 hover:bg-muted rounded text-sm"
+                                  onClick={() => setShowResults(false)}
+                                >
+                                  <div className="font-medium">{customer}</div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Collections Results */}
+                        {results.collections.length > 0 && (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-xs text-muted-foreground">SAMMLUNGEN</h3>
+                              <Link
+                                to="/collections"
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setShowResults(false)}
+                              >
+                                Alle <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                            <div className="space-y-1">
+                              {results.collections.map((collection: any) => (
+                                <Link
+                                  key={collection.id}
+                                  to="/collections"
+                                  className="block p-2 hover:bg-muted rounded text-sm"
+                                  onClick={() => setShowResults(false)}
+                                >
+                                  <div className="font-medium">{collection.name}</div>
+                                  {collection.description && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {collection.description}
+                                    </div>
+                                  )}
                                 </Link>
                               ))}
                             </div>
