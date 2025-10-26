@@ -139,7 +139,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="h-8 w-8" />
-              <div className="relative w-96 max-w-md" ref={searchRef}>
+              <div className="relative w-[576px] max-w-2xl" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
