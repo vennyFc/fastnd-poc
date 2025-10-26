@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type WidgetSize = 'small' | 'medium' | 'large' | 'full';
+export type WidgetSize = 'medium' | 'full';
 
 export interface WidgetConfig {
   id: string;
@@ -11,8 +11,8 @@ export interface WidgetConfig {
 }
 
 export const defaultWidgets: WidgetConfig[] = [
-  { id: 'projects', type: 'projects', visible: true, order: 0, size: 'large' },
-  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'large' },
+  { id: 'projects', type: 'projects', visible: true, order: 0, size: 'medium' },
+  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'medium' },
   { id: 'statistics', type: 'statistics', visible: true, order: 2, size: 'full' },
   { id: 'getting-started', type: 'getting-started', visible: true, order: 3, size: 'medium' },
 ];

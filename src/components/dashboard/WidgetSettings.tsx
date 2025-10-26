@@ -30,10 +30,8 @@ const widgetLabels: Record<string, string> = {
 };
 
 const sizeLabels: Record<WidgetSize, string> = {
-  small: 'Klein (1/3)',
-  medium: 'Mittel (1/2)',
-  large: 'Groß (2/3)',
-  full: 'Voll',
+  medium: 'Halbe Breite',
+  full: 'Volle Breite',
 };
 
 export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize }: WidgetSettingsProps) {
@@ -88,9 +86,7 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSi
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="small">{sizeLabels.small}</SelectItem>
                         <SelectItem value="medium">{sizeLabels.medium}</SelectItem>
-                        <SelectItem value="large">{sizeLabels.large}</SelectItem>
                         <SelectItem value="full">{sizeLabels.full}</SelectItem>
                       </SelectContent>
                     </Select>

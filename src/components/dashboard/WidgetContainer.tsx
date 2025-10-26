@@ -14,9 +14,7 @@ interface WidgetContainerProps {
 }
 
 const sizeClasses: Record<WidgetSize, string> = {
-  small: 'col-span-1 md:col-span-4',
   medium: 'col-span-1 md:col-span-6',
-  large: 'col-span-1 md:col-span-8',
   full: 'col-span-1 md:col-span-12',
 };
 
