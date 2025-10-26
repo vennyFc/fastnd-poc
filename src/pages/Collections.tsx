@@ -42,6 +42,23 @@ export default function Collections() {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
+      
+      // Fetch profile data separately for each collection
+      if (data) {
+        const userIds = [...new Set(data.map(c => c.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', userIds);
+        
+        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+        
+        return data.map(collection => ({
+          ...collection,
+          profile: profilesMap.get(collection.user_id)
+        }));
+      }
+      
       return data || [];
     },
   });
@@ -422,6 +439,11 @@ export default function Collections() {
                       {collection.collection_products?.[0]?.count || 0} Produkte
                     </Badge>
                   </div>
+                  {(collection as any).profile && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Ersteller: {(collection as any).profile.full_name || (collection as any).profile.email}
+                    </div>
+                  )}
                   {collection.created_at && (
                     <div className="text-xs text-muted-foreground mt-2">
                       Erstellt: {format(new Date(collection.created_at), 'dd.MM.yyyy', { locale: de })}
