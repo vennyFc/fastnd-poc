@@ -12,9 +12,10 @@ export interface WidgetConfig {
 
 export const defaultWidgets: WidgetConfig[] = [
   { id: 'search', type: 'search', visible: true, order: 0, size: 'full' },
-  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'large' },
-  { id: 'statistics', type: 'statistics', visible: true, order: 2, size: 'full' },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 3, size: 'medium' },
+  { id: 'projects', type: 'projects', visible: true, order: 1, size: 'large' },
+  { id: 'action-items', type: 'action-items', visible: true, order: 2, size: 'large' },
+  { id: 'statistics', type: 'statistics', visible: true, order: 3, size: 'full' },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 4, size: 'medium' },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {

@@ -7,6 +7,7 @@ import { SearchWidget } from '@/components/dashboard/SearchWidget';
 import { StatisticsWidget } from '@/components/dashboard/StatisticsWidget';
 import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidget';
 import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
+import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -113,6 +114,21 @@ export default function Dashboard() {
               applications={applications || []}
               crossSells={crossSells || []}
             />
+          </WidgetContainer>
+        );
+      case 'projects':
+        return (
+          <WidgetContainer
+            key="projects"
+            id="projects"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <ProjectsWidget />
           </WidgetContainer>
         );
       case 'action-items':
