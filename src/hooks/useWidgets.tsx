@@ -23,7 +23,27 @@ export function useWidgets(storageKey: string = 'dashboard-widgets') {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const storedWidgets = JSON.parse(stored);
+        
+        // Migrate: Add new widgets from defaultWidgets that aren't in stored config
+        const storedIds = new Set(storedWidgets.map((w: WidgetConfig) => w.id));
+        const newWidgets = defaultWidgets.filter(dw => !storedIds.has(dw.id));
+        
+        if (newWidgets.length > 0) {
+          // Find max order in stored widgets
+          const maxOrder = storedWidgets.reduce((max: number, w: WidgetConfig) => 
+            Math.max(max, w.order), -1);
+          
+          // Add new widgets with incremented orders
+          const migratedWidgets = [
+            ...storedWidgets,
+            ...newWidgets.map((w, idx) => ({ ...w, order: maxOrder + 1 + idx }))
+          ];
+          
+          return migratedWidgets;
+        }
+        
+        return storedWidgets;
       } catch {
         return defaultWidgets;
       }
