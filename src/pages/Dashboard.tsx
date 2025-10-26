@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   
-  const { widgets, toggleWidget, reorderWidgets, resetWidgets } = useWidgets();
+  const { widgets, toggleWidget, reorderWidgets, resetWidgets, setWidgetSize } = useWidgets();
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -91,8 +91,8 @@ export default function Dashboard() {
     setDraggedIndex(null);
   };
 
-  const renderWidget = (widgetType: string, index: number) => {
-    switch (widgetType) {
+  const renderWidget = (widget: typeof widgets[0], index: number) => {
+    switch (widget.type) {
       case 'search':
         return (
           <WidgetContainer
@@ -103,6 +103,7 @@ export default function Dashboard() {
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
             onDragEnd={handleDragEnd}
+            size={widget.size}
           >
             <SearchWidget
               searchQuery={searchQuery}
@@ -124,6 +125,7 @@ export default function Dashboard() {
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
             onDragEnd={handleDragEnd}
+            size={widget.size}
           >
             <ActionItemsWidget />
           </WidgetContainer>
@@ -138,6 +140,7 @@ export default function Dashboard() {
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
             onDragEnd={handleDragEnd}
+            size={widget.size}
           >
             <StatisticsWidget
               projects={projects || []}
@@ -156,6 +159,7 @@ export default function Dashboard() {
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
             onDragEnd={handleDragEnd}
+            size={widget.size}
           >
             <GettingStartedWidget />
           </WidgetContainer>
@@ -172,13 +176,14 @@ export default function Dashboard() {
           widgets={widgets}
           onToggleWidget={toggleWidget}
           onReset={resetWidgets}
+          onSetWidgetSize={setWidgetSize}
         />
       </div>
 
       <div className="space-y-6 pl-8">
         {widgets
           .filter(widget => widget.visible)
-          .map((widget, index) => renderWidget(widget.type, index))}
+          .map((widget, index) => renderWidget(widget, index))}
       </div>
     </div>
   );

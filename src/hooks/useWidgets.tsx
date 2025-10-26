@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 
+export type WidgetSize = 'small' | 'medium' | 'large' | 'full';
+
 export interface WidgetConfig {
   id: string;
   type: string;
   visible: boolean;
   order: number;
+  size: WidgetSize;
 }
 
 export const defaultWidgets: WidgetConfig[] = [
-  { id: 'search', type: 'search', visible: true, order: 0 },
-  { id: 'action-items', type: 'action-items', visible: true, order: 1 },
-  { id: 'statistics', type: 'statistics', visible: true, order: 2 },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 3 },
+  { id: 'search', type: 'search', visible: true, order: 0, size: 'full' },
+  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'large' },
+  { id: 'statistics', type: 'statistics', visible: true, order: 2, size: 'full' },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 3, size: 'medium' },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {
@@ -53,6 +56,14 @@ export function useWidgets(storageKey: string = 'dashboard-widgets') {
     setWidgets(defaultWidgets);
   };
 
+  const setWidgetSize = (id: string, size: WidgetSize) => {
+    setWidgets(prev =>
+      prev.map(widget =>
+        widget.id === id ? { ...widget, size } : widget
+      )
+    );
+  };
+
   const sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);
 
   return {
@@ -60,5 +71,6 @@ export function useWidgets(storageKey: string = 'dashboard-widgets') {
     toggleWidget,
     reorderWidgets,
     resetWidgets,
+    setWidgetSize,
   };
 }

@@ -1,4 +1,4 @@
-import { Settings, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { Settings, Eye, EyeOff, RotateCcw, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -6,12 +6,20 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { WidgetConfig } from '@/hooks/useWidgets';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { WidgetConfig, WidgetSize } from '@/hooks/useWidgets';
 
 interface WidgetSettingsProps {
   widgets: WidgetConfig[];
   onToggleWidget: (id: string) => void;
   onReset: () => void;
+  onSetWidgetSize: (id: string, size: WidgetSize) => void;
 }
 
 const widgetLabels: Record<string, string> = {
@@ -21,7 +29,14 @@ const widgetLabels: Record<string, string> = {
   'getting-started': 'Erste Schritte',
 };
 
-export function WidgetSettings({ widgets, onToggleWidget, onReset }: WidgetSettingsProps) {
+const sizeLabels: Record<WidgetSize, string> = {
+  small: 'Klein',
+  medium: 'Mittel',
+  large: 'Groß',
+  full: 'Voll',
+};
+
+export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize }: WidgetSettingsProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -41,25 +56,46 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset }: WidgetSetti
 
           <Separator />
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {widgets.map((widget) => (
               <div
                 key={widget.id}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-muted"
+                className="space-y-2 p-2 rounded-lg hover:bg-muted"
               >
-                <span className="text-sm font-medium">{widgetLabels[widget.type]}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onToggleWidget(widget.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  {widget.visible ? (
-                    <Eye className="h-4 w-4" />
-                  ) : (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{widgetLabels[widget.type]}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onToggleWidget(widget.id)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {widget.visible ? (
+                      <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                {widget.visible && (
+                  <div className="flex items-center gap-2">
+                    <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Select
+                      value={widget.size}
+                      onValueChange={(value) => onSetWidgetSize(widget.id, value as WidgetSize)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">{sizeLabels.small}</SelectItem>
+                        <SelectItem value="medium">{sizeLabels.medium}</SelectItem>
+                        <SelectItem value="large">{sizeLabels.large}</SelectItem>
+                        <SelectItem value="full">{sizeLabels.full}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             ))}
           </div>
