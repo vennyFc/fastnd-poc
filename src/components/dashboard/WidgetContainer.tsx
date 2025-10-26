@@ -14,10 +14,10 @@ interface WidgetContainerProps {
 }
 
 const sizeClasses: Record<WidgetSize, string> = {
-  small: 'max-w-2xl',
-  medium: 'max-w-4xl',
-  large: 'max-w-6xl',
-  full: 'w-full',
+  small: 'col-span-1 md:col-span-4',
+  medium: 'col-span-1 md:col-span-6',
+  large: 'col-span-1 md:col-span-8',
+  full: 'col-span-1 md:col-span-12',
 };
 
 export function WidgetContainer({
@@ -38,10 +38,12 @@ export function WidgetContainer({
       onDragEnd={onDragEnd}
       className={`relative group ${isDragging ? 'opacity-50' : ''} ${sizeClasses[size]}`}
     >
-      <div className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-move z-10">
+      <div className="absolute -left-8 top-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-move z-10">
         <GripVertical className="h-5 w-5 text-muted-foreground" />
       </div>
-      {children}
+      <div className="h-full">
+        {children}
+      </div>
     </div>
   );
 }

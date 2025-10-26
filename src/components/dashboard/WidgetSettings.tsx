@@ -30,9 +30,9 @@ const widgetLabels: Record<string, string> = {
 };
 
 const sizeLabels: Record<WidgetSize, string> = {
-  small: 'Klein',
-  medium: 'Mittel',
-  large: 'Groß',
+  small: 'Klein (1/3)',
+  medium: 'Mittel (1/2)',
+  large: 'Groß (2/3)',
   full: 'Voll',
 };
 

@@ -196,7 +196,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="space-y-6 pl-8">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pl-8">
         {widgets
           .filter(widget => widget.visible)
           .map((widget, index) => renderWidget(widget, index))}
