@@ -83,24 +83,20 @@ export function ProjectsWidget() {
             to={`/projects?search=${encodeURIComponent(project.project_name)}`}
             className="block p-3 rounded-lg hover:bg-muted transition-colors"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{project.project_name}</div>
                 <div className="text-sm text-muted-foreground truncate">
                   {project.customer}
                 </div>
-                <div className="flex items-center gap-2 mt-1">
-                  {project.application && (
-                    <span className="text-xs text-muted-foreground">
-                      App: {project.application}
-                    </span>
-                  )}
-                  {project.created_at && (
-                    <span className="text-xs text-muted-foreground">
-                      • {new Date(project.created_at).toLocaleDateString('de-DE')}
-                    </span>
-                  )}
-                </div>
+              </div>
+              <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                {project.application && (
+                  <span>App: {project.application}</span>
+                )}
+                {project.created_at && (
+                  <span>{new Date(project.created_at).toLocaleDateString('de-DE')}</span>
+                )}
               </div>
             </div>
           </Link>
