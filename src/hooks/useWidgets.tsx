@@ -11,11 +11,10 @@ export interface WidgetConfig {
 }
 
 export const defaultWidgets: WidgetConfig[] = [
-  { id: 'search', type: 'search', visible: true, order: 0, size: 'full' },
-  { id: 'projects', type: 'projects', visible: true, order: 1, size: 'large' },
-  { id: 'action-items', type: 'action-items', visible: true, order: 2, size: 'large' },
-  { id: 'statistics', type: 'statistics', visible: true, order: 3, size: 'full' },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 4, size: 'medium' },
+  { id: 'projects', type: 'projects', visible: true, order: 0, size: 'large' },
+  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'large' },
+  { id: 'statistics', type: 'statistics', visible: true, order: 2, size: 'full' },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 3, size: 'medium' },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {
@@ -25,25 +24,31 @@ export function useWidgets(storageKey: string = 'dashboard-widgets') {
       try {
         const storedWidgets = JSON.parse(stored);
         
-        // Migrate: Add new widgets from defaultWidgets that aren't in stored config
-        const storedIds = new Set(storedWidgets.map((w: WidgetConfig) => w.id));
+        // Get IDs from defaultWidgets
+        const defaultIds = new Set(defaultWidgets.map(dw => dw.id));
+        
+        // Filter out widgets that are no longer in defaults
+        const validWidgets = storedWidgets.filter((w: WidgetConfig) => defaultIds.has(w.id));
+        
+        // Add new widgets from defaultWidgets that aren't in stored config
+        const storedIds = new Set(validWidgets.map((w: WidgetConfig) => w.id));
         const newWidgets = defaultWidgets.filter(dw => !storedIds.has(dw.id));
         
         if (newWidgets.length > 0) {
           // Find max order in stored widgets
-          const maxOrder = storedWidgets.reduce((max: number, w: WidgetConfig) => 
+          const maxOrder = validWidgets.reduce((max: number, w: WidgetConfig) => 
             Math.max(max, w.order), -1);
           
           // Add new widgets with incremented orders
           const migratedWidgets = [
-            ...storedWidgets,
+            ...validWidgets,
             ...newWidgets.map((w, idx) => ({ ...w, order: maxOrder + 1 + idx }))
           ];
           
           return migratedWidgets;
         }
         
-        return storedWidgets;
+        return validWidgets;
       } catch {
         return defaultWidgets;
       }
