@@ -21,11 +21,11 @@ const menuItems = [
   { title: 'Produkte', url: '/products', icon: Package },
   { title: 'Kunden', url: '/customers', icon: Users },
   { title: 'Sammlungen', url: '/collections', icon: Layers },
-  { title: 'Datenhub', url: '/data-hub', icon: Upload },
 ];
 
 const adminMenuItems = [
   { title: 'Admin', url: '/admin', icon: Shield },
+  { title: 'Datenhub', url: '/data-hub', icon: Upload },
 ];
 
 export function AppSidebar() {
