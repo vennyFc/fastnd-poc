@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type WidgetSize = 'medium' | 'full';
 
@@ -18,76 +21,119 @@ export const defaultWidgets: WidgetConfig[] = [
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Fetch widget settings from database
+  const { data: dbSettings } = useQuery({
+    queryKey: ['user-dashboard-settings', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from('user_dashboard_settings')
+        .select('settings')
+        .eq('user_id', user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
-    const stored = localStorage.getItem(storageKey);
-    if (stored) {
-      try {
-        const storedWidgets = JSON.parse(stored);
-        
-        // Get IDs from defaultWidgets
-        const defaultIds = new Set(defaultWidgets.map(dw => dw.id));
-        
-        // Filter out widgets that are no longer in defaults
-        const validWidgets = storedWidgets.filter((w: WidgetConfig) => defaultIds.has(w.id));
-        
-        // Add new widgets from defaultWidgets that aren't in stored config
-        const storedIds = new Set(validWidgets.map((w: WidgetConfig) => w.id));
-        const newWidgets = defaultWidgets.filter(dw => !storedIds.has(dw.id));
-        
-        if (newWidgets.length > 0) {
-          // Find max order in stored widgets
-          const maxOrder = validWidgets.reduce((max: number, w: WidgetConfig) => 
-            Math.max(max, w.order), -1);
-          
-          // Add new widgets with incremented orders
-          const migratedWidgets = [
-            ...validWidgets,
-            ...newWidgets.map((w, idx) => ({ ...w, order: maxOrder + 1 + idx }))
-          ];
-          
-          return migratedWidgets;
-        }
-        
-        return validWidgets;
-      } catch {
-        return defaultWidgets;
-      }
-    }
     return defaultWidgets;
   });
 
+  // Update local state when database settings are loaded
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(widgets));
-  }, [widgets, storageKey]);
+    if (dbSettings?.settings) {
+      const storedWidgets = dbSettings.settings as any[];
+      
+      // Get IDs from defaultWidgets
+      const defaultIds = new Set(defaultWidgets.map(dw => dw.id));
+      
+      // Filter out widgets that are no longer in defaults
+      const validWidgets = storedWidgets.filter((w: WidgetConfig) => defaultIds.has(w.id));
+      
+      // Add new widgets from defaultWidgets that aren't in stored config
+      const storedIds = new Set(validWidgets.map((w: WidgetConfig) => w.id));
+      const newWidgets = defaultWidgets.filter(dw => !storedIds.has(dw.id));
+      
+      if (newWidgets.length > 0) {
+        // Find max order in stored widgets
+        const maxOrder = validWidgets.reduce((max: number, w: WidgetConfig) => 
+          Math.max(max, w.order), -1);
+        
+        // Add new widgets with incremented orders
+        const migratedWidgets = [
+          ...validWidgets,
+          ...newWidgets.map((w, idx) => ({ ...w, order: maxOrder + 1 + idx }))
+        ];
+        
+        setWidgets(migratedWidgets);
+      } else {
+        setWidgets(validWidgets);
+      }
+    }
+  }, [dbSettings]);
+
+  // Mutation to save settings to database
+  const saveSettings = useMutation({
+    mutationFn: async (newWidgets: WidgetConfig[]) => {
+      if (!user) return;
+      
+      const { data: existing } = await supabase
+        .from('user_dashboard_settings')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('user_dashboard_settings')
+          .update({ settings: newWidgets as any })
+          .eq('user_id', user.id);
+      } else {
+        await supabase
+          .from('user_dashboard_settings')
+          .insert({ user_id: user.id, settings: newWidgets as any });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-dashboard-settings', user?.id] });
+    },
+  });
+
+  // Update widgets and save to database
+  const updateWidgets = (newWidgets: WidgetConfig[]) => {
+    setWidgets(newWidgets);
+    saveSettings.mutate(newWidgets);
+  };
 
   const toggleWidget = (id: string) => {
-    setWidgets(prev =>
-      prev.map(widget =>
-        widget.id === id ? { ...widget, visible: !widget.visible } : widget
-      )
+    const newWidgets = widgets.map(widget =>
+      widget.id === id ? { ...widget, visible: !widget.visible } : widget
     );
+    updateWidgets(newWidgets);
   };
 
   const reorderWidgets = (fromIndex: number, toIndex: number) => {
-    setWidgets(prev => {
-      const sorted = [...prev].sort((a, b) => a.order - b.order);
-      const [movedWidget] = sorted.splice(fromIndex, 1);
-      sorted.splice(toIndex, 0, movedWidget);
-      
-      return sorted.map((widget, idx) => ({ ...widget, order: idx }));
-    });
+    const sorted = [...widgets].sort((a, b) => a.order - b.order);
+    const [movedWidget] = sorted.splice(fromIndex, 1);
+    sorted.splice(toIndex, 0, movedWidget);
+    
+    const newWidgets = sorted.map((widget, idx) => ({ ...widget, order: idx }));
+    updateWidgets(newWidgets);
   };
 
   const resetWidgets = () => {
-    setWidgets(defaultWidgets);
+    updateWidgets(defaultWidgets);
   };
 
   const setWidgetSize = (id: string, size: WidgetSize) => {
-    setWidgets(prev =>
-      prev.map(widget =>
-        widget.id === id ? { ...widget, size } : widget
-      )
+    const newWidgets = widgets.map(widget =>
+      widget.id === id ? { ...widget, size } : widget
     );
+    updateWidgets(newWidgets);
   };
 
   const sortedWidgets = [...widgets].sort((a, b) => a.order - b.order);

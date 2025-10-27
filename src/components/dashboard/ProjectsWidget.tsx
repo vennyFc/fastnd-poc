@@ -6,15 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Star, Package, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('recent');
-
-  // Load recently viewed from localStorage
-  const getRecentlyViewed = (): Array<{ customer: string; project_name: string }> => {
-    const stored = localStorage.getItem('recentlyViewedProjects');
-    return stored ? JSON.parse(stored) : [];
-  };
+  const { user } = useAuth();
+  const { favorites: favoriteIds } = useFavorites('project');
 
   // Fetch all projects
   const { data: allProjects = [] } = useQuery({
@@ -28,31 +26,33 @@ export function ProjectsWidget() {
     },
   });
 
-  // Fetch favorites
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['project_favorites'],
+  // Fetch recently viewed projects from database
+  const { data: recentHistory = [] } = useQuery({
+    queryKey: ['user-project-history', user?.id],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
-
       const { data } = await supabase
-        .from('project_favorites')
-        .select('*');
-      
+        .from('user_project_history')
+        .select('project_id, viewed_at')
+        .eq('user_id', user.id)
+        .order('viewed_at', { ascending: false })
+        .limit(10);
       return data || [];
     },
+    enabled: !!user,
   });
 
   // Get recently viewed projects with full data
-  const recentlyViewed = getRecentlyViewed();
   const recentProjects = allProjects.filter((p: any) =>
-    recentlyViewed.some(rv => rv.customer === p.customer && rv.project_name === p.project_name)
-  );
+    recentHistory.some(rh => rh.project_id === p.id)
+  ).sort((a: any, b: any) => {
+    const aHistory = recentHistory.find(rh => rh.project_id === a.id);
+    const bHistory = recentHistory.find(rh => rh.project_id === b.id);
+    return new Date(bHistory?.viewed_at || 0).getTime() - new Date(aHistory?.viewed_at || 0).getTime();
+  });
 
   // Get favorite projects with full data
-  const favoriteProjects = allProjects.filter((p: any) =>
-    favorites.some((fav: any) => fav.customer === p.customer && fav.project_name === p.project_name)
-  );
+  const favoriteProjects = allProjects.filter((p: any) => favoriteIds.includes(p.id));
 
   // Get new projects (last 7 days)
   const sevenDaysAgo = new Date();
