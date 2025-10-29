@@ -32,6 +32,7 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
+  const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
 
@@ -381,7 +382,6 @@ export default function Projects() {
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
     const visibleProductColumns = productColumns.filter(col => col.visible);
-    const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
     
     return (
       <div className="p-6 space-y-6">
