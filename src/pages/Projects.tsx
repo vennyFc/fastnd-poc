@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useProjectHistory } from '@/hooks/useProjectHistory';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -35,6 +36,7 @@ export default function Projects() {
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
+  const { addToHistory } = useProjectHistory();
 
   
 
@@ -46,24 +48,21 @@ export default function Projects() {
     }
   }, []);
 
-  // Load recently viewed projects from localStorage
-  const getRecentlyViewed = (): Array<{ customer: string; project_name: string }> => {
-    const stored = localStorage.getItem('recentlyViewedProjects');
-    return stored ? JSON.parse(stored) : [];
-  };
+  // Load recently viewed projects from database
+  const { data: recentHistory = [] } = useQuery({
+    queryKey: ['user-project-history'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_project_history')
+        .select('project_id, viewed_at')
+        .order('viewed_at', { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+  });
 
-  const addToRecentlyViewed = (customer: string, project_name: string) => {
-    const recent = getRecentlyViewed();
-    const newEntry = { customer, project_name };
-    
-    // Remove if already exists
-    const filtered = recent.filter(
-      item => !(item.customer === customer && item.project_name === project_name)
-    );
-    
-    // Add to beginning and keep only last 10
-    const updated = [newEntry, ...filtered].slice(0, 10);
-    localStorage.setItem('recentlyViewedProjects', JSON.stringify(updated));
+  const getRecentlyViewed = (): string[] => {
+    return recentHistory.map(rh => rh.project_id);
   };
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -232,10 +231,7 @@ export default function Projects() {
     
     if (quickFilter === 'recent') {
       const recentlyViewed = getRecentlyViewed();
-      const isRecent = recentlyViewed.some(
-        rv => rv.customer === project.customer && rv.project_name === project.project_name
-      );
-      if (!isRecent) return false;
+      if (!recentlyViewed.includes(project.id)) return false;
     }
 
     // Search filter
@@ -379,7 +375,7 @@ export default function Projects() {
   };
 
   const handleRowClick = (project: any) => {
-    addToRecentlyViewed(project.customer, project.project_name);
+    addToHistory(project.id);
     setSelectedProject(project);
     setSelectedCustomer(null);
     setViewMode('detail');
