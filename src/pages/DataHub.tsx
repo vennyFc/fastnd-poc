@@ -62,6 +62,13 @@ const dataTypes = [
     fields: ['base_product', 'alternative_product', 'similarity'],
     icon: FileSpreadsheet,
   },
+  {
+    id: 'app_insights',
+    title: 'App Insights',
+    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends',
+    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends'],
+    icon: FileSpreadsheet,
+  },
 ];
 
 export default function DataHub() {
