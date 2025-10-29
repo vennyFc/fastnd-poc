@@ -510,9 +510,9 @@ export default function Projects() {
                               const hasAlternatives = alternatives.length > 0;
                               const isExpanded = expandedAlternatives[productName];
 
-                              return (
+                                return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
-                                  <TableRow key={idx}>
+                                  <TableRow key={idx} className={hasAlternatives ? 'bg-muted/20' : ''}>
                                     <TableCell className="w-12">
                                       {hasAlternatives && (
                                         <Button
