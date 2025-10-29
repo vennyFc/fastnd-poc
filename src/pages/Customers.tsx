@@ -58,27 +58,30 @@ export default function Customers() {
       // Load projects to calculate counts and last activity
       const { data: projectsData, error: projectsError } = await supabase
         .from('customer_projects')
-        .select('customer, created_at');
+        .select('customer, project_name, created_at');
 
       if (projectsError) throw projectsError;
 
-      // Aggregate project data per customer
+      // Aggregate project data per customer (count unique project names)
       const projectStats = (projectsData || []).reduce((acc, project) => {
         const customerName = project.customer;
         if (!acc[customerName]) {
-          acc[customerName] = { count: 0, lastActivity: project.created_at };
+          acc[customerName] = { 
+            projectNames: new Set<string>(), 
+            lastActivity: project.created_at 
+          };
         }
-        acc[customerName].count += 1;
+        acc[customerName].projectNames.add(project.project_name);
         if (new Date(project.created_at) > new Date(acc[customerName].lastActivity)) {
           acc[customerName].lastActivity = project.created_at;
         }
         return acc;
-      }, {} as Record<string, { count: number; lastActivity: string }>);
+      }, {} as Record<string, { projectNames: Set<string>; lastActivity: string }>);
 
       // Combine customer data with project stats
       const enrichedCustomers = (customersData || []).map(customer => ({
         ...customer,
-        project_count: projectStats[customer.customer_name]?.count || 0,
+        project_count: projectStats[customer.customer_name]?.projectNames.size || 0,
         last_activity: projectStats[customer.customer_name]?.lastActivity || customer.created_at,
       }));
 
