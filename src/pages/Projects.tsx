@@ -94,7 +94,25 @@ export default function Projects() {
     ]
   );
 
+  // Cross-sell columns for detail view
+  const { 
+    columns: crossSellColumns, 
+    toggleColumn: toggleCrossSellColumn, 
+    updateColumnWidth: updateCrossSellColumnWidth, 
+    reorderColumns: reorderCrossSellColumns, 
+    resetColumns: resetCrossSellColumns 
+  } = useTableColumns(
+    'project-detail-crosssell-columns',
+    [
+      { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
+      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
+      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 3 },
+    ]
+  );
+
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [draggedCrossSellIndex, setDraggedCrossSellIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -382,6 +400,7 @@ export default function Projects() {
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
     const visibleProductColumns = productColumns.filter(col => col.visible);
+    const visibleCrossSellColumns = crossSellColumns.filter(col => col.visible);
     
     return (
       <div className="p-6 space-y-6">
@@ -400,11 +419,18 @@ export default function Projects() {
               </p>
             </div>
           </div>
-          <ColumnVisibilityToggle
-            columns={productColumns}
-            onToggle={toggleProductColumn}
-            onReset={resetProductColumns}
-          />
+          <div className="flex gap-2">
+            <ColumnVisibilityToggle
+              columns={productColumns}
+              onToggle={toggleProductColumn}
+              onReset={resetProductColumns}
+            />
+            <ColumnVisibilityToggle
+              columns={crossSellColumns}
+              onToggle={toggleCrossSellColumn}
+              onReset={resetCrossSellColumns}
+            />
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -589,12 +615,66 @@ export default function Projects() {
                     {(() => {
                       const projectCrossSells = getCrossSells(project.products);
                       return projectCrossSells.length > 0 ? (
-                        <div className="space-y-2">
-                          {projectCrossSells.map((cs: any, idx: number) => (
-                            <div key={idx} className="p-3 bg-accent/50 rounded-lg">
-                              <p className="font-medium text-sm">{cs.cross_sell_product}</p>
-                            </div>
-                          ))}
+                        <div className="rounded-lg border">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                {visibleCrossSellColumns.map((column, index) => (
+                                  <ResizableTableHeader
+                                    key={column.key}
+                                    label={column.label}
+                                    width={column.width}
+                                    onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
+                                    sortable={false}
+                                    draggable={true}
+                                    onDragStart={() => setDraggedCrossSellIndex(index)}
+                                    onDragOver={(e) => {
+                                      e.preventDefault();
+                                      e.dataTransfer.dropEffect = 'move';
+                                    }}
+                                    onDrop={(e) => {
+                                      e.preventDefault();
+                                      if (draggedCrossSellIndex !== null && draggedCrossSellIndex !== index) {
+                                        reorderCrossSellColumns(draggedCrossSellIndex, index);
+                                      }
+                                      setDraggedCrossSellIndex(null);
+                                    }}
+                                    onDragEnd={() => setDraggedCrossSellIndex(null)}
+                                  />
+                                ))}
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {projectCrossSells.map((cs: any, idx: number) => {
+                                const details = getProductDetails(cs.cross_sell_product);
+                                
+                                return (
+                                  <TableRow key={idx}>
+                                    {visibleCrossSellColumns.map((column) => {
+                                      let value = '-';
+                                      if (column.key === 'product') {
+                                        value = cs.cross_sell_product;
+                                      } else if (details) {
+                                        if (column.key === 'manufacturer') value = details.manufacturer || '-';
+                                        if (column.key === 'product_family') value = details.product_family || '-';
+                                        if (column.key === 'description') value = details.product_description || '-';
+                                      }
+
+                                      return (
+                                        <TableCell 
+                                          key={column.key}
+                                          className={column.key === 'product' ? 'font-medium' : ''}
+                                          style={{ width: `${column.width}px` }}
+                                        >
+                                          {value}
+                                        </TableCell>
+                                      );
+                                    })}
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground">Keine Cross-Sells verfügbar</p>
