@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -511,7 +511,7 @@ export default function Projects() {
                               const isExpanded = expandedAlternatives[productName];
 
                               return (
-                                <>
+                                <React.Fragment key={`prod-${productName}-${idx}`}>
                                   <TableRow key={idx}>
                                     <TableCell className="w-12">
                                       {hasAlternatives && (
@@ -604,7 +604,7 @@ export default function Projects() {
                                       </TableRow>
                                     );
                                   })}
-                                </>
+                                </React.Fragment>
                               );
                             })}
                           </TableBody>
@@ -704,6 +704,50 @@ export default function Projects() {
             </Card>
           ))}
         </div>
+
+        {/* Product Quick View Sheet */}
+        <Sheet open={productQuickViewOpen} onOpenChange={setProductQuickViewOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
+              <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
+            </SheetHeader>
+            {selectedProductForQuickView && (
+              <div className="mt-6 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
+                  <Badge variant="secondary">
+                    {selectedProductForQuickView.product_family || 'Nicht zugeordnet'}
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
+                  <p className="text-base font-semibold">{selectedProductForQuickView.manufacturer || '-'}</p>
+                </div>
+                {selectedProductForQuickView.manufacturer_link && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller-Link</h3>
+                    <a
+                      href={selectedProductForQuickView.manufacturer_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-primary hover:underline"
+                    >
+                      <Package className="h-4 w-4" />
+                      Zur Website
+                    </a>
+                  </div>
+                )}
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                  <p className="text-base leading-relaxed">
+                    {selectedProductForQuickView.product_description || 'Keine Beschreibung verfügbar'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     );
   }
