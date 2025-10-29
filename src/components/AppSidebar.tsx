@@ -20,7 +20,6 @@ const menuItems = [
   { title: 'Projekte', url: '/projects', icon: FolderKanban },
   { title: 'Produkte', url: '/products', icon: Package },
   { title: 'Kunden', url: '/customers', icon: Users },
-  { title: 'Applikationen', url: '/applications', icon: Target },
   { title: 'Sammlungen', url: '/collections', icon: Layers },
 ];
 
