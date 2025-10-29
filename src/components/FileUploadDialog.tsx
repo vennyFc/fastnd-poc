@@ -51,7 +51,17 @@ export default function FileUploadDialog({
         dataType.fields.forEach(field => {
           const sourceColumn = columnMapping[field];
           if (sourceColumn) {
-            transformed[field] = (row as Record<string, any>)[sourceColumn];
+            let value = (row as Record<string, any>)[sourceColumn];
+            
+            // Convert similarity to number if present
+            if (field === 'similarity' && value !== null && value !== undefined && value !== '') {
+              value = parseFloat(value);
+              if (isNaN(value)) {
+                value = null;
+              }
+            }
+            
+            transformed[field] = value;
           }
         });
         return transformed;
