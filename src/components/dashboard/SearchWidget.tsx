@@ -50,7 +50,11 @@ export function SearchWidget({
     results.applications = applications?.filter((a: any) =>
       a.application?.toLowerCase().includes(query) ||
       a.related_product?.toLowerCase().includes(query)
-    ) || [];
+    ).map((a: any) => ({
+      ...a,
+      application: String(a.application || ''),
+      related_product: String(a.related_product || '')
+    })) || [];
 
     results.crossSells = crossSells?.filter((c: any) =>
       c.application?.toLowerCase().includes(query) ||
@@ -194,9 +198,9 @@ export function SearchWidget({
                         key={app.id}
                         className="p-3 bg-muted rounded-lg"
                       >
-                        <div className="font-medium">{app.application}</div>
+                        <div className="font-medium">{app.application || '-'}</div>
                         <div className="text-sm text-muted-foreground">
-                          Produkt: {app.related_product}
+                          Produkt: {app.related_product || '-'}
                         </div>
                       </div>
                     ))}

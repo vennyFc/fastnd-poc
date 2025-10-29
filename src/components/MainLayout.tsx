@@ -120,7 +120,11 @@ export function MainLayout({ children }: MainLayoutProps) {
     results.applications = applications?.filter((a: any) =>
       a.application?.toLowerCase().includes(query) ||
       a.related_product?.toLowerCase().includes(query)
-    ).slice(0, 3) || [];
+    ).slice(0, 3).map((a: any) => ({
+      ...a,
+      application: String(a.application || ''),
+      related_product: String(a.related_product || '')
+    })) || [];
 
     results.collections = collections?.filter((c: any) =>
       c.name?.toLowerCase().includes(query) ||
@@ -299,17 +303,17 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 Alle <ArrowRight className="h-3 w-3" />
                               </Link>
                             </div>
-                            <div className="space-y-1">
+                             <div className="space-y-1">
                               {results.applications.map((application: any) => (
                                 <Link
                                   key={application.id}
-                                  to={`/applications?search=${encodeURIComponent(application.application)}`}
+                                  to={`/applications?search=${encodeURIComponent(application.application || '')}`}
                                   className="block p-2 hover:bg-muted rounded text-sm"
                                   onClick={() => setShowResults(false)}
                                 >
-                                  <div className="font-medium">{application.application}</div>
+                                  <div className="font-medium">{application.application || '-'}</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {application.related_product}
+                                    {application.related_product || '-'}
                                   </div>
                                 </Link>
                               ))}
