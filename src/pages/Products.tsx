@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
@@ -32,6 +34,7 @@ export default function Products() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -328,26 +331,60 @@ export default function Products() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Select
-              value={selectedApplication}
-              onValueChange={setSelectedApplication}
-            >
-              <SelectTrigger className="w-[250px]">
-                <SelectValue placeholder="Nach Applikation filtern" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle Applikationen</SelectItem>
-                {uniqueApplications.map((app: string) => (
-                  <SelectItem key={app} value={app}>
-                    {app}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                  {selectedApplication !== 'all' && (
+                    <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
+                      1
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Filter</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Produkte nach Kriterien filtern
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="application-filter">Applikation</Label>
+                    <Select
+                      value={selectedApplication}
+                      onValueChange={setSelectedApplication}
+                    >
+                      <SelectTrigger id="application-filter">
+                        <SelectValue placeholder="Nach Applikation filtern" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Applikationen</SelectItem>
+                        {uniqueApplications.map((app: string) => (
+                          <SelectItem key={app} value={app}>
+                            {app}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {selectedApplication !== 'all' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        setSelectedApplication('all');
+                      }}
+                    >
+                      Filter zurücksetzen
+                    </Button>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
             <ColumnVisibilityToggle
               columns={columns}
               onToggle={toggleColumn}
