@@ -109,6 +109,7 @@ export type Database = {
           application_trends: string | null
           created_at: string
           id: string
+          industry: string | null
           updated_at: string
           user_id: string
         }
@@ -119,6 +120,7 @@ export type Database = {
           application_trends?: string | null
           created_at?: string
           id?: string
+          industry?: string | null
           updated_at?: string
           user_id: string
         }
@@ -129,6 +131,7 @@ export type Database = {
           application_trends?: string | null
           created_at?: string
           id?: string
+          industry?: string | null
           updated_at?: string
           user_id?: string
         }

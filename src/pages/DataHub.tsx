@@ -65,8 +65,8 @@ const dataTypes = [
   {
     id: 'app_insights',
     title: 'App Insights',
-    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends',
-    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends'],
+    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry',
+    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry'],
     icon: FileSpreadsheet,
   },
 ];
