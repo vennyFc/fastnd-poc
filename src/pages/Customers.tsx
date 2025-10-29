@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { Search, Filter, Building2, MapPin, Briefcase, Tag, Eye, FolderOpen } from 'lucide-react';
+import { Search, Filter, Building2, MapPin, Briefcase, Tag, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,24 +20,15 @@ interface Customer {
   last_activity?: string;
 }
 
-interface Project {
-  id: string;
-  project_name: string;
-  application: string;
-  product: string;
-  created_at: string;
-}
-
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [customerProjects, setCustomerProjects] = useState<Project[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadCustomers();
@@ -110,34 +102,12 @@ export default function Customers() {
 
   const handleCustomerClick = (customer: Customer) => {
     setSelectedCustomer(customer);
-    setCustomerProjects([]);
     setIsSheetOpen(true);
   };
 
-  const handleProjectsClick = async (e: React.MouseEvent, customer: Customer) => {
+  const handleProjectsClick = (e: React.MouseEvent, customer: Customer) => {
     e.stopPropagation();
-    setSelectedCustomer(customer);
-    setIsSheetOpen(true);
-    
-    try {
-      setIsLoadingProjects(true);
-      const { data, error } = await supabase
-        .from('customer_projects')
-        .select('*')
-        .eq('customer', customer.customer_name)
-        .order('project_name', { ascending: true });
-
-      if (error) throw error;
-      setCustomerProjects(data || []);
-    } catch (error) {
-      toast({
-        title: 'Fehler beim Laden',
-        description: 'Projekte konnten nicht geladen werden.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoadingProjects(false);
-    }
+    navigate(`/projects?customer=${encodeURIComponent(customer.customer_name)}`);
   };
 
   return (
@@ -307,37 +277,6 @@ export default function Customers() {
                     </div>
                   </div>
                 </div>
-
-                {/* Projects Section */}
-                {customerProjects.length > 0 && (
-                  <div className="pt-6 border-t">
-                    <div className="flex items-center gap-2 mb-4">
-                      <FolderOpen className="h-5 w-5 text-foreground" />
-                      <h3 className="text-lg font-semibold text-foreground">
-                        Projekte ({customerProjects.length})
-                      </h3>
-                    </div>
-                    
-                    {isLoadingProjects ? (
-                      <p className="text-sm text-muted-foreground">Lädt...</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {customerProjects.map((project) => (
-                          <Card key={project.id} className="p-4">
-                            <h4 className="font-medium text-foreground mb-2">
-                              {project.project_name}
-                            </h4>
-                            <div className="space-y-1 text-sm text-muted-foreground">
-                              <p><span className="font-medium">Anwendung:</span> {project.application}</p>
-                              <p><span className="font-medium">Produkt:</span> {project.product}</p>
-                              <p><span className="font-medium">Erstellt:</span> {new Date(project.created_at).toLocaleDateString('de-DE')}</p>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </>
           )}

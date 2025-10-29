@@ -42,13 +42,13 @@ export default function Projects() {
 
   
 
-  // Initialize filter from URL params
+  // Initialize customer filter from URL params
   useEffect(() => {
-    const filterParam = searchParams.get('filter');
-    if (filterParam === 'favorites' || filterParam === 'recent') {
-      setQuickFilter(filterParam);
+    const customerParam = searchParams.get('customer');
+    if (customerParam) {
+      handleCustomerClick(customerParam);
     }
-  }, []);
+  }, [searchParams]);
 
   // Load recently viewed projects from database
   const { data: recentHistory = [] } = useQuery({
