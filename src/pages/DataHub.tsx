@@ -1,13 +1,23 @@
 import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { Upload, FileSpreadsheet, Trash2, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import FileUploadDialog from '@/components/FileUploadDialog';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const dataTypes = [
   {
@@ -54,6 +64,8 @@ export default function DataHub() {
   const [parsedData, setParsedData] = useState<any[]>([]);
   const [fileName, setFileName] = useState('');
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [deleteTableDialogOpen, setDeleteTableDialogOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadUploadHistory();
@@ -141,6 +153,38 @@ export default function DataHub() {
     loadUploadHistory();
   };
 
+  const openDeleteTableDialog = (tableId: string) => {
+    setTableToDelete(tableId);
+    setDeleteTableDialogOpen(true);
+  };
+
+  const handleDeleteTable = async () => {
+    if (!tableToDelete) return;
+
+    try {
+      // @ts-ignore - Supabase types not yet updated
+      const { error } = await supabase
+        // @ts-ignore
+        .from(tableToDelete)
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
+
+      if (error) {
+        toast.error(`Fehler beim Löschen der Tabelle: ${error.message}`);
+        return;
+      }
+
+      toast.success(`Alle Einträge aus "${dataTypes.find(dt => dt.id === tableToDelete)?.title}" wurden gelöscht`);
+      loadUploadHistory();
+    } catch (err) {
+      toast.error('Ein unerwarteter Fehler ist aufgetreten');
+      console.error(err);
+    } finally {
+      setDeleteTableDialogOpen(false);
+      setTableToDelete(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -165,7 +209,7 @@ export default function DataHub() {
                 {dataType.description}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <Button
                 onClick={() => handleFileSelect(dataType)}
                 className="w-full"
@@ -173,6 +217,14 @@ export default function DataHub() {
               >
                 <Upload className="mr-2 h-4 w-4" />
                 XLS/CSV hochladen
+              </Button>
+              <Button
+                onClick={() => openDeleteTableDialog(dataType.id)}
+                className="w-full"
+                variant="destructive"
+              >
+                <Database className="mr-2 h-4 w-4" />
+                Tabelle leeren
               </Button>
             </CardContent>
           </Card>
@@ -254,6 +306,23 @@ export default function DataHub() {
           fileName={fileName}
         />
       )}
+
+      <AlertDialog open={deleteTableDialogOpen} onOpenChange={setDeleteTableDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sind Sie absolut sicher?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Diese Aktion kann nicht rückgängig gemacht werden. Alle Einträge in der Tabelle "{dataTypes.find(dt => dt.id === tableToDelete)?.title}" werden permanent gelöscht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTable} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Ja, Tabelle leeren
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
