@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export default function FileUploadDialog({
 }: FileUploadDialogProps) {
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
+  const { user } = useAuth();
 
   const fileColumns = parsedData.length > 0 ? Object.keys(parsedData[0]) : [];
 
@@ -39,12 +41,14 @@ export default function FileUploadDialog({
       return;
     }
 
+    if (!user) {
+      toast.error('Nicht authentifiziert. Bitte melden Sie sich an.');
+      return;
+    }
+
     setIsUploading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Nicht authentifiziert');
-
       // First, create upload history entry to get upload_id
       // @ts-ignore - Supabase types not yet updated
       const { data: uploadHistoryData, error: historyError } = await supabase
