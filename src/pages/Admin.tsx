@@ -22,12 +22,6 @@ export default function Admin() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
-  // Redirect if not admin
-  if (!isAdmin) {
-    navigate('/');
-    return null;
-  }
-
   // Fetch all users with their profiles and roles
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -130,6 +124,12 @@ export default function Admin() {
     }
     toggleAdminMutation.mutate({ userId, isCurrentlyAdmin });
   };
+
+  // Redirect if not admin (using useEffect to avoid hook ordering issues)
+  if (!isAdmin) {
+    navigate('/');
+    return null;
+  }
 
   return (
     <div className="p-6 space-y-6">
