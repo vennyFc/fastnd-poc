@@ -3,11 +3,13 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { Search, HelpCircle, Bell, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserPreferencesPopover } from './UserPreferencesPopover';
+import { LanguageSelector } from './LanguageSelector';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -15,6 +17,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
@@ -210,7 +213,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Durchsuche all Daten aus Projekten, Kunden, Applikationen, etc."
+                  placeholder={t('search.placeholder')}
                   className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   value={searchQuery}
                   onChange={(e) => {
@@ -226,7 +229,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
                     {!hasResults ? (
                       <div className="p-4 text-sm text-muted-foreground">
-                        Keine Ergebnisse gefunden
+                        {t('search.noResults')}
                       </div>
                     ) : (
                       <div className="divide-y">
@@ -234,7 +237,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {results.projects.length > 0 && (
                           <div className="p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">PROJEKTE</h3>
+                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.projects').toUpperCase()}</h3>
                               <Link
                                 to={`/projects?search=${encodeURIComponent(searchQuery)}`}
                                 className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -268,7 +271,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {results.products.length > 0 && (
                           <div className="p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">PRODUKTE</h3>
+                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.products').toUpperCase()}</h3>
                               <Link
                                 to={`/products?search=${encodeURIComponent(searchQuery)}`}
                                 className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -299,7 +302,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {results.customers.length > 0 && (
                           <div className="p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">KUNDEN</h3>
+                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.customers').toUpperCase()}</h3>
                               <Link
                                 to={`/customers?search=${encodeURIComponent(searchQuery)}`}
                                 className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -332,7 +335,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {results.applications.length > 0 && (
                           <div className="p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">APPLIKATIONEN</h3>
+                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.applications').toUpperCase()}</h3>
                               <Link
                                 to={`/applications?search=${encodeURIComponent(searchQuery)}`}
                                 className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -365,7 +368,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {results.collections.length > 0 && (
                           <div className="p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">SAMMLUNGEN</h3>
+                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.collections').toUpperCase()}</h3>
                               <Link
                                 to="/collections"
                                 className="text-xs text-primary hover:underline flex items-center gap-1"
@@ -401,6 +404,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
             
             <div className="flex items-center gap-4">
+              <LanguageSelector />
               <UserPreferencesPopover />
               <button className="p-2 hover:bg-muted rounded-md">
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />

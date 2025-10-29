@@ -1,6 +1,7 @@
 import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import fastndLogo from '@/assets/fastnd-logo.png';
 import {
   Sidebar,
@@ -30,6 +31,20 @@ const adminMenuItems = [
 
 export function AppSidebar() {
   const { signOut, isAdmin } = useAuth();
+  const { t } = useLanguage();
+  
+  const menuItems = [
+    { title: t('nav.cockpit'), url: '/', icon: LayoutDashboard },
+    { title: t('nav.projects'), url: '/projects', icon: FolderKanban },
+    { title: t('nav.products'), url: '/products', icon: Package },
+    { title: t('nav.customers'), url: '/customers', icon: Users },
+    { title: t('nav.collections'), url: '/collections', icon: Layers },
+  ];
+
+  const adminMenuItems = [
+    { title: t('nav.admin'), url: '/admin', icon: Shield },
+    { title: t('nav.dataHub'), url: '/data-hub', icon: Upload },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -41,7 +56,7 @@ export function AppSidebar() {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('nav.cockpit')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -65,7 +80,7 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('nav.administration')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminMenuItems.map((item) => (
@@ -94,7 +109,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={signOut}>
               <LogOut className="h-4 w-4" />
-              <span>Abmelden</span>
+              <span>{t('nav.logout')}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
