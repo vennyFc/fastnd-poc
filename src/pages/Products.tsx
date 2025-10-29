@@ -30,6 +30,7 @@ export default function Products() {
   const [addToCollectionOpen, setAddToCollectionOpen] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
   const [newCollectionName, setNewCollectionName] = useState('');
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
   const queryClient = useQueryClient();
 
@@ -101,6 +102,29 @@ export default function Products() {
   const productsWithAlternatives = new Set(
     productAlternatives.map((alt: any) => alt.base_product)
   );
+
+  // Function to get alternative products for a given product
+  const getAlternativeProducts = (productName: string) => {
+    const alternatives = productAlternatives
+      .filter((alt: any) => alt.base_product === productName)
+      .map((alt: any) => alt.alternative_product);
+    
+    return products?.filter((p: any) => alternatives.includes(p.product)) || [];
+  };
+
+  // Toggle expanded state
+  const toggleExpanded = (productName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productName)) {
+        newSet.delete(productName);
+      } else {
+        newSet.add(productName);
+      }
+      return newSet;
+    });
+  };
 
   // Fetch collections for adding products
   const { data: collections = [] } = useQuery({
@@ -330,56 +354,116 @@ export default function Products() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedProducts.map((product: any) => (
-                  <TableRow 
-                    key={product.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setIsSheetOpen(true);
-                    }}
-                  >
-                    {visibleColumns.map((column) => {
-                      let value: any;
+                {sortedProducts.map((product: any) => {
+                  const alternativeProducts = getAlternativeProducts(product.product);
+                  const isExpanded = expandedProducts.has(product.product);
+                  
+                  return (
+                    <>
+                      <TableRow 
+                        key={product.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setIsSheetOpen(true);
+                        }}
+                      >
+                        {visibleColumns.map((column) => {
+                          let value: any;
+                          
+                          if (column.key === 'manufacturer_link') {
+                            value = product.manufacturer_link ? (
+                              <a
+                                href={product.manufacturer_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-primary hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            ) : '-';
+                          } else if (column.key === 'product') {
+                            const hasAlternative = productsWithAlternatives.has(product.product);
+                            value = (
+                              <div className="flex items-center gap-2">
+                                <span>{product[column.key] || '-'}</span>
+                                {hasAlternative && (
+                                  <Replace 
+                                    className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                    aria-label="Alternative verfügbar" 
+                                    onClick={(e) => toggleExpanded(product.product, e)}
+                                  />
+                                )}
+                              </div>
+                            );
+                          } else {
+                            value = product[column.key] || '-';
+                          }
+                          
+                          return (
+                            <TableCell 
+                              key={column.key}
+                              className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
+                              style={{ width: `${column.width}px` }}
+                            >
+                              {value}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
                       
-                      if (column.key === 'manufacturer_link') {
-                        value = product.manufacturer_link ? (
-                          <a
-                            href={product.manufacturer_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-primary hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        ) : '-';
-                      } else if (column.key === 'product') {
-                        const hasAlternative = productsWithAlternatives.has(product.product);
-                        value = (
-                          <div className="flex items-center gap-2">
-                            <span>{product[column.key] || '-'}</span>
-                            {hasAlternative && (
-                              <Replace className="h-4 w-4 text-primary" aria-label="Alternative verfügbar" />
-                            )}
-                          </div>
-                        );
-                      } else {
-                        value = product[column.key] || '-';
-                      }
-                      
-                      return (
-                        <TableCell 
-                          key={column.key}
-                          className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
-                          style={{ width: `${column.width}px` }}
+                      {/* Alternative Products */}
+                      {isExpanded && alternativeProducts.map((altProduct: any) => (
+                        <TableRow 
+                          key={`alt-${altProduct.id}`}
+                          className="cursor-pointer hover:bg-muted/50 bg-muted/30"
+                          onClick={() => {
+                            setSelectedProduct(altProduct);
+                            setIsSheetOpen(true);
+                          }}
                         >
-                          {value}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
+                          {visibleColumns.map((column) => {
+                            let value: any;
+                            
+                            if (column.key === 'manufacturer_link') {
+                              value = altProduct.manufacturer_link ? (
+                                <a
+                                  href={altProduct.manufacturer_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-primary hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              ) : '-';
+                            } else if (column.key === 'product') {
+                              value = (
+                                <div className="flex items-center gap-2 pl-6">
+                                  <span className="text-muted-foreground text-sm">↳</span>
+                                  <span>{altProduct[column.key] || '-'}</span>
+                                </div>
+                              );
+                            } else {
+                              value = altProduct[column.key] || '-';
+                            }
+                            
+                            return (
+                              <TableCell 
+                                key={column.key}
+                                className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
+                                style={{ width: `${column.width}px` }}
+                              >
+                                {value}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      ))}
+                    </>
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (
