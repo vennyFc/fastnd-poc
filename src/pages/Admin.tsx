@@ -60,9 +60,15 @@ export default function Admin() {
   // Invite user mutation
   const inviteUserMutation = useMutation({
     mutationFn: async (email: string) => {
-      const { data, error } = await supabase.auth.admin.inviteUserByEmail(email);
-      if (error) throw error;
-      return data;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('invite-user', {
+        body: { email },
+      });
+
+      if (response.error) throw response.error;
+      return response.data;
     },
     onSuccess: () => {
       toast.success('Einladung erfolgreich versendet');
