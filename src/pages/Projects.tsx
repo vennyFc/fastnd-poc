@@ -34,6 +34,8 @@ export default function Projects() {
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
+  const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
+  const [selectedProductForQuickView, setSelectedProductForQuickView] = useState<any>(null);
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
@@ -523,26 +525,33 @@ export default function Projects() {
                                         </Button>
                                       )}
                                     </TableCell>
-                                    {visibleProductColumns.map((column) => {
-                                      let value = '-';
-                                      if (column.key === 'product') {
-                                        value = productName;
-                                      } else if (details) {
-                                        if (column.key === 'manufacturer') value = details.manufacturer || '-';
-                                        if (column.key === 'product_family') value = details.product_family || '-';
-                                        if (column.key === 'description') value = details.product_description || '-';
-                                      }
+                                     {visibleProductColumns.map((column) => {
+                                       let value = '-';
+                                       if (column.key === 'product') {
+                                         value = productName;
+                                       } else if (details) {
+                                         if (column.key === 'manufacturer') value = details.manufacturer || '-';
+                                         if (column.key === 'product_family') value = details.product_family || '-';
+                                         if (column.key === 'description') value = details.product_description || '-';
+                                       }
 
-                                      return (
-                                        <TableCell 
-                                          key={column.key}
-                                          className={column.key === 'product' ? 'font-medium' : ''}
-                                          style={{ width: `${column.width}px` }}
-                                        >
-                                          {value}
-                                        </TableCell>
-                                      );
-                                    })}
+                                       return (
+                                         <TableCell 
+                                           key={column.key}
+                                           className={column.key === 'product' ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                                           style={{ width: `${column.width}px` }}
+                                           onClick={(e) => {
+                                             if (column.key === 'product') {
+                                               e.stopPropagation();
+                                               setSelectedProductForQuickView(details || { product: productName });
+                                               setProductQuickViewOpen(true);
+                                             }
+                                           }}
+                                         >
+                                           {value}
+                                         </TableCell>
+                                       );
+                                     })}
                                   </TableRow>
                                   
                                   {/* Alternative Products - Expandable */}
@@ -553,40 +562,45 @@ export default function Projects() {
                                         <TableCell className="w-12 pl-8">
                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                         </TableCell>
-                                        {visibleProductColumns.map((column) => {
-                                          let value = '-';
-                                          if (column.key === 'product') {
-                                            return (
-                                              <TableCell 
-                                                key={column.key}
-                                                className="font-medium"
-                                                style={{ width: `${column.width}px` }}
-                                              >
-                                                <div className="flex items-center gap-2">
-                                                  <span>{alt.alternative_product}</span>
-                                                  {alt.similarity && (
-                                                    <Badge variant="secondary" className="text-xs">
-                                                      {alt.similarity}% ähnlich
-                                                    </Badge>
-                                                  )}
-                                                </div>
-                                              </TableCell>
-                                            );
-                                          } else if (altDetails) {
-                                            if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                            if (column.key === 'product_family') value = altDetails.product_family || '-';
-                                            if (column.key === 'description') value = altDetails.product_description || '-';
-                                          }
+                                         {visibleProductColumns.map((column) => {
+                                           let value = '-';
+                                           if (column.key === 'product') {
+                                             return (
+                                               <TableCell 
+                                                 key={column.key}
+                                                 className="font-medium cursor-pointer text-primary hover:underline"
+                                                 style={{ width: `${column.width}px` }}
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
+                                                   setProductQuickViewOpen(true);
+                                                 }}
+                                               >
+                                                 <div className="flex items-center gap-2">
+                                                   <span>{alt.alternative_product}</span>
+                                                   {alt.similarity && (
+                                                     <Badge variant="secondary" className="text-xs">
+                                                       {alt.similarity}% ähnlich
+                                                     </Badge>
+                                                   )}
+                                                 </div>
+                                               </TableCell>
+                                             );
+                                           } else if (altDetails) {
+                                             if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                             if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                             if (column.key === 'description') value = altDetails.product_description || '-';
+                                           }
 
-                                          return (
-                                            <TableCell 
-                                              key={column.key}
-                                              style={{ width: `${column.width}px` }}
-                                            >
-                                              {value}
-                                            </TableCell>
-                                          );
-                                        })}
+                                           return (
+                                             <TableCell 
+                                               key={column.key}
+                                               style={{ width: `${column.width}px` }}
+                                             >
+                                               {value}
+                                             </TableCell>
+                                           );
+                                         })}
                                       </TableRow>
                                     );
                                   })}
@@ -646,8 +660,9 @@ export default function Projects() {
                                 
                                 return (
                                   <TableRow key={idx}>
-                                    {visibleCrossSellColumns.map((column) => {
-                                      let value = '-';
+                                     {visibleCrossSellColumns.map((column) => {
+                                       let value = '-';
+                                       const isProductColumn = column.key === 'product';
                                       if (column.key === 'product') {
                                         value = cs.cross_sell_product;
                                       } else if (details) {
@@ -656,15 +671,22 @@ export default function Projects() {
                                         if (column.key === 'description') value = details.product_description || '-';
                                       }
 
-                                      return (
-                                        <TableCell 
-                                          key={column.key}
-                                          className={column.key === 'product' ? 'font-medium' : ''}
-                                          style={{ width: `${column.width}px` }}
-                                        >
-                                          {value}
-                                        </TableCell>
-                                      );
+                                       return (
+                                         <TableCell 
+                                           key={column.key}
+                                           className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                                           style={{ width: `${column.width}px` }}
+                                           onClick={(e) => {
+                                             if (isProductColumn) {
+                                               e.stopPropagation();
+                                               setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                               setProductQuickViewOpen(true);
+                                             }
+                                           }}
+                                         >
+                                           {value}
+                                         </TableCell>
+                                       );
                                     })}
                                   </TableRow>
                                 );
@@ -907,6 +929,54 @@ export default function Projects() {
                   {selectedProject.created_at 
                     ? format(new Date(selectedProject.created_at), 'dd.MM.yyyy') 
                     : '-'}
+                </p>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Product Quick View Sheet */}
+      <Sheet open={productQuickViewOpen} onOpenChange={setProductQuickViewOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
+            <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
+          </SheetHeader>
+          
+          {selectedProductForQuickView && (
+            <div className="mt-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
+                <Badge variant="secondary">
+                  {selectedProductForQuickView.product_family || 'Nicht zugeordnet'}
+                </Badge>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
+                <p className="text-base font-semibold">{selectedProductForQuickView.manufacturer || '-'}</p>
+              </div>
+
+              {selectedProductForQuickView.manufacturer_link && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller-Link</h3>
+                  <a
+                    href={selectedProductForQuickView.manufacturer_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                  >
+                    <Package className="h-4 w-4" />
+                    Zur Website
+                  </a>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                <p className="text-base leading-relaxed">
+                  {selectedProductForQuickView.product_description || 'Keine Beschreibung verfügbar'}
                 </p>
               </div>
             </div>
