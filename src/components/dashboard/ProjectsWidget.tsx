@@ -133,7 +133,11 @@ export function ProjectsWidget() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                {project.applications && project.applications.length > 0 && <span className="font-medium text-base">App: {project.applications[0]}</span>}
+                {project.applications && project.applications.length > 0 && (
+                  <span className="font-medium text-base">
+                    App: {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}
+                  </span>
+                )}
                 {project.created_at && <span>{new Date(project.created_at).toLocaleDateString('de-DE')}</span>}
               </div>
             </div>
