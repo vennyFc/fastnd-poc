@@ -34,6 +34,8 @@ export default function Products() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
+  const [selectedProductFamily, setSelectedProductFamily] = useState<string>('all');
+  const [selectedManufacturer, setSelectedManufacturer] = useState<string>('all');
   const [filterOpen, setFilterOpen] = useState(false);
 
   const queryClient = useQueryClient();
@@ -107,6 +109,15 @@ export default function Products() {
   // Get unique applications for filter
   const uniqueApplications = Array.from(
     new Set(applications.map((app: any) => app.application).filter(Boolean))
+  ).sort();
+
+  // Get unique product families and manufacturers
+  const uniqueProductFamilies = Array.from(
+    new Set(products?.map((p: any) => p.product_family).filter(Boolean) || [])
+  ).sort();
+
+  const uniqueManufacturers = Array.from(
+    new Set(products?.map((p: any) => p.manufacturer).filter(Boolean) || [])
   ).sort();
 
   // Fetch product alternatives
@@ -247,6 +258,16 @@ export default function Products() {
       if (!hasMatchingApplication) return false;
     }
 
+    // Product family filter
+    if (selectedProductFamily && selectedProductFamily !== 'all') {
+      if (product.product_family !== selectedProductFamily) return false;
+    }
+
+    // Manufacturer filter
+    if (selectedManufacturer && selectedManufacturer !== 'all') {
+      if (product.manufacturer !== selectedManufacturer) return false;
+    }
+
     // Preferences filter
     if (userPreferences) {
       // Filter by product families
@@ -336,9 +357,9 @@ export default function Products() {
                 <Button variant="outline">
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
-                  {selectedApplication !== 'all' && (
+                  {(selectedApplication !== 'all' || selectedProductFamily !== 'all' || selectedManufacturer !== 'all') && (
                     <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
-                      1
+                      {[selectedApplication !== 'all', selectedProductFamily !== 'all', selectedManufacturer !== 'all'].filter(Boolean).length}
                     </Badge>
                   )}
                 </Button>
@@ -351,6 +372,7 @@ export default function Products() {
                       Produkte nach Kriterien filtern
                     </p>
                   </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="application-filter">Applikation</Label>
                     <Select
@@ -370,16 +392,59 @@ export default function Products() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {selectedApplication !== 'all' && (
+
+                  <div className="space-y-2">
+                    <Label htmlFor="family-filter">Produktfamilie</Label>
+                    <Select
+                      value={selectedProductFamily}
+                      onValueChange={setSelectedProductFamily}
+                    >
+                      <SelectTrigger id="family-filter">
+                        <SelectValue placeholder="Nach Produktfamilie filtern" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Produktfamilien</SelectItem>
+                        {uniqueProductFamilies.map((family: string) => (
+                          <SelectItem key={family} value={family}>
+                            {family}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="manufacturer-filter">Hersteller</Label>
+                    <Select
+                      value={selectedManufacturer}
+                      onValueChange={setSelectedManufacturer}
+                    >
+                      <SelectTrigger id="manufacturer-filter">
+                        <SelectValue placeholder="Nach Hersteller filtern" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Hersteller</SelectItem>
+                        {uniqueManufacturers.map((manufacturer: string) => (
+                          <SelectItem key={manufacturer} value={manufacturer}>
+                            {manufacturer}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {(selectedApplication !== 'all' || selectedProductFamily !== 'all' || selectedManufacturer !== 'all') && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
                       onClick={() => {
                         setSelectedApplication('all');
+                        setSelectedProductFamily('all');
+                        setSelectedManufacturer('all');
                       }}
                     >
-                      Filter zurücksetzen
+                      Alle Filter zurücksetzen
                     </Button>
                   )}
                 </div>
