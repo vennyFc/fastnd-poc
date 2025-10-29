@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,12 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Edit, Users, Lock, Globe, Eye, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Users, Lock, Globe, Eye, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function Collections() {
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [open, setOpen] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<any>(null);
   const [editingCollection, setEditingCollection] = useState<any>(null);
@@ -23,6 +26,13 @@ export default function Collections() {
     visibility: 'private',
     shared_users: [] as string[],
   });
+
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search) {
+      setSearchQuery(search);
+    }
+  }, [searchParams]);
 
   const queryClient = useQueryClient();
 
@@ -246,6 +256,16 @@ export default function Collections() {
     }
   };
 
+  // Filter collections based on search query
+  const filteredCollections = collections.filter((collection: any) => {
+    if (searchQuery.length < 2) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      collection.name?.toLowerCase().includes(query) ||
+      collection.description?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -365,6 +385,21 @@ export default function Collections() {
         </Dialog>
       </div>
 
+      {/* Search Bar */}
+      <Card className="shadow-card">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Sammlungen durchsuchen..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Collections List */}
         <div className="lg:col-span-1 space-y-4">
@@ -374,16 +409,16 @@ export default function Collections() {
                 <p className="text-sm text-muted-foreground">Lädt...</p>
               </CardContent>
             </Card>
-          ) : collections.length === 0 ? (
+          ) : filteredCollections.length === 0 ? (
             <Card>
               <CardContent className="p-6">
                 <p className="text-sm text-muted-foreground text-center">
-                  Noch keine Sammlungen vorhanden
+                  {searchQuery.length >= 2 ? 'Keine Sammlungen gefunden' : 'Noch keine Sammlungen vorhanden'}
                 </p>
               </CardContent>
             </Card>
           ) : (
-            collections.map((collection) => (
+            filteredCollections.map((collection) => (
               <Card
                 key={collection.id}
                 className={`cursor-pointer transition-colors hover:bg-muted/50 ${

@@ -332,12 +332,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             <div className="space-y-1">
                               {results.collections.map((collection: any) => (
-                                <Link
-                                  key={collection.id}
-                                  to="/collections"
-                                  className="block p-2 hover:bg-muted rounded text-sm"
-                                  onClick={() => setShowResults(false)}
-                                >
+                              <Link
+                                key={collection.id}
+                                to={`/collections?search=${encodeURIComponent(collection.name)}`}
+                                className="block p-2 hover:bg-muted rounded text-sm"
+                                onClick={() => setShowResults(false)}
+                              >
                                   <div className="font-medium">{collection.name}</div>
                                   {collection.description && (
                                     <div className="text-xs text-muted-foreground truncate">
