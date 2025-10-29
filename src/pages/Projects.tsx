@@ -450,7 +450,7 @@ export default function Projects() {
                     <CardDescription className="mt-1">
                       <span className="font-medium">{project.customer}</span>
                       {project.applications.length > 0 && (
-                        <span className="ml-2">• {project.applications.join(', ')}</span>
+                        <span className="ml-2">• {project.applications[0]}</span>
                       )}
                     </CardDescription>
                   </div>
