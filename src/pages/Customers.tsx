@@ -15,6 +15,8 @@ interface Customer {
   city: string | null;
   customer_category: string | null;
   created_at: string;
+  project_count?: number;
+  last_activity?: string;
 }
 
 export default function Customers() {
@@ -44,14 +46,44 @@ export default function Customers() {
   const loadCustomers = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      
+      // Load customers
+      const { data: customersData, error: customersError } = await supabase
         .from('customers')
         .select('*')
         .order('customer_name', { ascending: true });
 
-      if (error) throw error;
-      setCustomers(data || []);
-      setFilteredCustomers(data || []);
+      if (customersError) throw customersError;
+
+      // Load projects to calculate counts and last activity
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('customer_projects')
+        .select('customer, created_at');
+
+      if (projectsError) throw projectsError;
+
+      // Aggregate project data per customer
+      const projectStats = (projectsData || []).reduce((acc, project) => {
+        const customerName = project.customer;
+        if (!acc[customerName]) {
+          acc[customerName] = { count: 0, lastActivity: project.created_at };
+        }
+        acc[customerName].count += 1;
+        if (new Date(project.created_at) > new Date(acc[customerName].lastActivity)) {
+          acc[customerName].lastActivity = project.created_at;
+        }
+        return acc;
+      }, {} as Record<string, { count: number; lastActivity: string }>);
+
+      // Combine customer data with project stats
+      const enrichedCustomers = (customersData || []).map(customer => ({
+        ...customer,
+        project_count: projectStats[customer.customer_name]?.count || 0,
+        last_activity: projectStats[customer.customer_name]?.lastActivity || customer.created_at,
+      }));
+
+      setCustomers(enrichedCustomers);
+      setFilteredCustomers(enrichedCustomers);
     } catch (error) {
       toast({
         title: 'Fehler beim Laden',
@@ -114,10 +146,10 @@ export default function Customers() {
               <thead className="bg-muted">
                 <tr>
                   <th className="text-left p-3 text-sm font-semibold">Kunde</th>
-                  <th className="text-left p-3 text-sm font-semibold">Branche</th>
-                  <th className="text-left p-3 text-sm font-semibold">Land</th>
-                  <th className="text-left p-3 text-sm font-semibold">Stadt</th>
+                  <th className="text-left p-3 text-sm font-semibold">Anzahl Projekte</th>
+                  <th className="text-left p-3 text-sm font-semibold">Letzte Aktivität</th>
                   <th className="text-left p-3 text-sm font-semibold">Kategorie</th>
+                  <th className="text-left p-3 text-sm font-semibold">Standort</th>
                 </tr>
               </thead>
               <tbody>
@@ -141,10 +173,29 @@ export default function Customers() {
                       onClick={() => handleCustomerClick(customer)}
                     >
                       <td className="p-3 font-medium text-primary">{customer.customer_name}</td>
-                      <td className="p-3 text-muted-foreground">{customer.industry || '-'}</td>
-                      <td className="p-3 text-muted-foreground">{customer.country || '-'}</td>
-                      <td className="p-3 text-muted-foreground">{customer.city || '-'}</td>
-                      <td className="p-3 text-muted-foreground">{customer.customer_category || '-'}</td>
+                      <td className="p-3 text-muted-foreground">{customer.project_count || 0}</td>
+                      <td className="p-3 text-muted-foreground">
+                        {customer.last_activity 
+                          ? new Date(customer.last_activity).toLocaleDateString('de-DE')
+                          : '-'
+                        }
+                      </td>
+                      <td className="p-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          customer.customer_category === 'TOP' 
+                            ? 'bg-primary/10 text-primary' 
+                            : customer.customer_category === 'KEY'
+                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {customer.customer_category || '-'}
+                        </span>
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        {customer.city && customer.country
+                          ? `${customer.city}, ${customer.country}`
+                          : customer.city || customer.country || '-'}
+                      </td>
                     </tr>
                   ))
                 )}
