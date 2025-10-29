@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ export function UserPreferencesPopover() {
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
+  const [recentProjectsLimit, setRecentProjectsLimit] = useState<number>(10);
 
   // Fetch available applications
   const { data: applications } = useQuery({
@@ -86,11 +88,13 @@ export function UserPreferencesPopover() {
       setSelectedApplications(preferences.target_applications || []);
       setSelectedFamilies(preferences.product_families || []);
       setSelectedManufacturers(preferences.manufacturers || []);
+      setRecentProjectsLimit(preferences.recent_projects_limit || 10);
     } else if (applications && productFamilies && manufacturers) {
       // Default: select all
       setSelectedApplications(applications);
       setSelectedFamilies(productFamilies);
       setSelectedManufacturers(manufacturers);
+      setRecentProjectsLimit(10);
     }
   }, [preferences, applications, productFamilies, manufacturers]);
 
@@ -112,6 +116,7 @@ export function UserPreferencesPopover() {
             target_applications: selectedApplications,
             product_families: selectedFamilies,
             manufacturers: selectedManufacturers,
+            recent_projects_limit: recentProjectsLimit,
           })
           .eq('user_id', user.id);
       } else {
@@ -122,6 +127,7 @@ export function UserPreferencesPopover() {
             target_applications: selectedApplications,
             product_families: selectedFamilies,
             manufacturers: selectedManufacturers,
+            recent_projects_limit: recentProjectsLimit,
           });
       }
     },
@@ -343,10 +349,34 @@ export function UserPreferencesPopover() {
             </TabsContent>
 
             <TabsContent value="view" className="space-y-4 mt-4">
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <p>Ansichtseinstellungen werden hier angezeigt.</p>
-                <p className="text-xs mt-2">Weitere Optionen folgen in Kürze.</p>
+              {/* Recent Projects Limit */}
+              <div>
+                <Label className="text-sm font-medium">Anzahl "Zuletzt" Projekte</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Wie viele zuletzt angesehene Projekte sollen angezeigt werden?
+                </p>
+                <Select
+                  value={recentProjectsLimit.toString()}
+                  onValueChange={(value) => setRecentProjectsLimit(parseInt(value))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Anzahl wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 Projekte</SelectItem>
+                    <SelectItem value="20">20 Projekte</SelectItem>
+                    <SelectItem value="30">30 Projekte</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
+              >
+                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+              </button>
             </TabsContent>
           </Tabs>
         </div>

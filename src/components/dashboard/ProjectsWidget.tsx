@@ -26,17 +26,33 @@ export function ProjectsWidget() {
     },
   });
 
+  // Fetch user preferences for recent limit
+  const { data: userPreferences } = useQuery({
+    queryKey: ['user_preferences', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('recent_projects_limit')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
   // Fetch recently viewed projects from database
   const { data: recentHistory = [] } = useQuery({
-    queryKey: ['user-project-history', user?.id],
+    queryKey: ['user-project-history', user?.id, userPreferences?.recent_projects_limit],
     queryFn: async () => {
       if (!user) return [];
+      const limit = userPreferences?.recent_projects_limit || 10;
       const { data } = await supabase
         .from('user_project_history')
         .select('project_id, viewed_at')
         .eq('user_id', user.id)
         .order('viewed_at', { ascending: false })
-        .limit(10);
+        .limit(limit);
       return data || [];
     },
     enabled: !!user,

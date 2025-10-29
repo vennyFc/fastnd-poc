@@ -517,6 +517,7 @@ export type Database = {
           id: string
           manufacturers: string[] | null
           product_families: string[] | null
+          recent_projects_limit: number
           target_applications: string[] | null
           updated_at: string
           user_id: string
@@ -526,6 +527,7 @@ export type Database = {
           id?: string
           manufacturers?: string[] | null
           product_families?: string[] | null
+          recent_projects_limit?: number
           target_applications?: string[] | null
           updated_at?: string
           user_id: string
@@ -535,6 +537,7 @@ export type Database = {
           id?: string
           manufacturers?: string[] | null
           product_families?: string[] | null
+          recent_projects_limit?: number
           target_applications?: string[] | null
           updated_at?: string
           user_id?: string
