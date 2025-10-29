@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers, Replace } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
@@ -34,8 +36,8 @@ export default function Products() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
-  const [selectedProductFamily, setSelectedProductFamily] = useState<string>('all');
-  const [selectedManufacturer, setSelectedManufacturer] = useState<string>('all');
+  const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
+  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const queryClient = useQueryClient();
@@ -259,13 +261,17 @@ export default function Products() {
     }
 
     // Product family filter
-    if (selectedProductFamily && selectedProductFamily !== 'all') {
-      if (product.product_family !== selectedProductFamily) return false;
+    if (selectedProductFamilies.length > 0) {
+      if (!product.product_family || !selectedProductFamilies.includes(product.product_family)) {
+        return false;
+      }
     }
 
     // Manufacturer filter
-    if (selectedManufacturer && selectedManufacturer !== 'all') {
-      if (product.manufacturer !== selectedManufacturer) return false;
+    if (selectedManufacturers.length > 0) {
+      if (!product.manufacturer || !selectedManufacturers.includes(product.manufacturer)) {
+        return false;
+      }
     }
 
     // Preferences filter
@@ -357,9 +363,13 @@ export default function Products() {
                 <Button variant="outline">
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
-                  {(selectedApplication !== 'all' || selectedProductFamily !== 'all' || selectedManufacturer !== 'all') && (
+                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0) && (
                     <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
-                      {[selectedApplication !== 'all', selectedProductFamily !== 'all', selectedManufacturer !== 'all'].filter(Boolean).length}
+                      {[
+                        selectedApplication !== 'all' ? 1 : 0,
+                        selectedProductFamilies.length,
+                        selectedManufacturers.length
+                      ].reduce((a, b) => a + b, 0)}
                     </Badge>
                   )}
                 </Button>
@@ -394,54 +404,102 @@ export default function Products() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="family-filter">Produktfamilie</Label>
-                    <Select
-                      value={selectedProductFamily}
-                      onValueChange={setSelectedProductFamily}
-                    >
-                      <SelectTrigger id="family-filter">
-                        <SelectValue placeholder="Nach Produktfamilie filtern" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Produktfamilien</SelectItem>
-                        {uniqueProductFamilies.map((family: string) => (
-                          <SelectItem key={family} value={family}>
+                    <Label>Produktfamilie</Label>
+                    {selectedProductFamilies.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {selectedProductFamilies.map((family) => (
+                          <Badge key={family} variant="secondary" className="text-xs">
                             {family}
-                          </SelectItem>
+                            <X
+                              className="ml-1 h-3 w-3 cursor-pointer"
+                              onClick={() => {
+                                setSelectedProductFamilies(prev => prev.filter(f => f !== family));
+                              }}
+                            />
+                          </Badge>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    )}
+                    <ScrollArea className="h-32 border rounded-md">
+                      <div className="p-2 space-y-2">
+                        {uniqueProductFamilies.map((family: string) => (
+                          <div key={family} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`family-${family}`}
+                              checked={selectedProductFamilies.includes(family)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedProductFamilies(prev => [...prev, family]);
+                                } else {
+                                  setSelectedProductFamilies(prev => prev.filter(f => f !== family));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`family-${family}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {family}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="manufacturer-filter">Hersteller</Label>
-                    <Select
-                      value={selectedManufacturer}
-                      onValueChange={setSelectedManufacturer}
-                    >
-                      <SelectTrigger id="manufacturer-filter">
-                        <SelectValue placeholder="Nach Hersteller filtern" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Hersteller</SelectItem>
-                        {uniqueManufacturers.map((manufacturer: string) => (
-                          <SelectItem key={manufacturer} value={manufacturer}>
+                    <Label>Hersteller</Label>
+                    {selectedManufacturers.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {selectedManufacturers.map((manufacturer) => (
+                          <Badge key={manufacturer} variant="secondary" className="text-xs">
                             {manufacturer}
-                          </SelectItem>
+                            <X
+                              className="ml-1 h-3 w-3 cursor-pointer"
+                              onClick={() => {
+                                setSelectedManufacturers(prev => prev.filter(m => m !== manufacturer));
+                              }}
+                            />
+                          </Badge>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </div>
+                    )}
+                    <ScrollArea className="h-32 border rounded-md">
+                      <div className="p-2 space-y-2">
+                        {uniqueManufacturers.map((manufacturer: string) => (
+                          <div key={manufacturer} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`manufacturer-${manufacturer}`}
+                              checked={selectedManufacturers.includes(manufacturer)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedManufacturers(prev => [...prev, manufacturer]);
+                                } else {
+                                  setSelectedManufacturers(prev => prev.filter(m => m !== manufacturer));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`manufacturer-${manufacturer}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {manufacturer}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   </div>
 
-                  {(selectedApplication !== 'all' || selectedProductFamily !== 'all' || selectedManufacturer !== 'all') && (
+                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0) && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
                       onClick={() => {
                         setSelectedApplication('all');
-                        setSelectedProductFamily('all');
-                        setSelectedManufacturer('all');
+                        setSelectedProductFamilies([]);
+                        setSelectedManufacturers([]);
                       }}
                     >
                       Alle Filter zurücksetzen
