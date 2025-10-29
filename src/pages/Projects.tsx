@@ -512,7 +512,7 @@ export default function Projects() {
 
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
-                                  <TableRow key={idx} className={hasAlternatives ? 'bg-muted/20' : ''}>
+                                  <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
                                     <TableCell className="w-12">
                                       {hasAlternatives && (
                                         <Button
@@ -554,11 +554,11 @@ export default function Projects() {
                                      })}
                                   </TableRow>
                                   
-                                  {/* Alternative Products - Expandable */}
-                                  {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
-                                    const altDetails = getProductDetails(alt.alternative_product);
-                                    return (
-                                      <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/30">
+                                   {/* Alternative Products - Expandable */}
+                                   {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
+                                     const altDetails = getProductDetails(alt.alternative_product);
+                                     return (
+                                       <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
                                         <TableCell className="w-12 pl-8">
                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                         </TableCell>
