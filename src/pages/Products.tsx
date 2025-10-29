@@ -31,6 +31,7 @@ export default function Products() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [selectedApplication, setSelectedApplication] = useState<string>('');
 
   const queryClient = useQueryClient();
 
@@ -84,6 +85,26 @@ export default function Products() {
       return data;
     },
   });
+
+  // Fetch applications
+  const { data: applications = [] } = useQuery({
+    queryKey: ['applications'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data, error } = await supabase
+        // @ts-ignore
+        .from('applications')
+        .select('*');
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Get unique applications for filter
+  const uniqueApplications = Array.from(
+    new Set(applications.map((app: any) => app.application).filter(Boolean))
+  ).sort();
 
   // Fetch product alternatives
   const { data: productAlternatives = [] } = useQuery({
@@ -212,6 +233,17 @@ export default function Products() {
     
     if (!matchesSearch) return false;
 
+    // Application filter
+    if (selectedApplication) {
+      const productApplications = applications.filter(
+        (app: any) => app.related_product === product.product
+      );
+      const hasMatchingApplication = productApplications.some(
+        (app: any) => app.application === selectedApplication
+      );
+      if (!hasMatchingApplication) return false;
+    }
+
     // Preferences filter
     if (userPreferences) {
       // Filter by product families
@@ -296,6 +328,22 @@ export default function Products() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Select
+              value={selectedApplication}
+              onValueChange={setSelectedApplication}
+            >
+              <SelectTrigger className="w-[250px]">
+                <SelectValue placeholder="Nach Applikation filtern" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Alle Applikationen</SelectItem>
+                {uniqueApplications.map((app: string) => (
+                  <SelectItem key={app} value={app}>
+                    {app}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button variant="outline">
               <Filter className="mr-2 h-4 w-4" />
               Filter
