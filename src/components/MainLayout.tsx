@@ -61,6 +61,30 @@ export function MainLayout({ children }: MainLayoutProps) {
     },
   });
 
+  const { data: customers } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('customers')
+        .select('*');
+      return data || [];
+    },
+  });
+
+  const { data: applications } = useQuery({
+    queryKey: ['applications'],
+    queryFn: async () => {
+      // @ts-ignore
+      const { data } = await supabase
+        // @ts-ignore
+        .from('applications')
+        .select('*');
+      return data || [];
+    },
+  });
+
   // Search function
   const searchResults = () => {
     if (searchQuery.length < 2) return null;
@@ -70,13 +94,9 @@ export function MainLayout({ children }: MainLayoutProps) {
       projects: [],
       products: [],
       customers: [],
+      applications: [],
       collections: [],
     };
-
-    // Extract unique customers from projects
-    const uniqueCustomers = [...new Set(
-      projects?.map((p: any) => p.customer).filter(Boolean) || []
-    )];
 
     results.projects = projects?.filter((p: any) =>
       p.project_name?.toLowerCase().includes(query) ||
@@ -91,9 +111,16 @@ export function MainLayout({ children }: MainLayoutProps) {
       p.manufacturer?.toLowerCase().includes(query)
     ).slice(0, 3) || [];
 
-    results.customers = uniqueCustomers.filter((c: string) =>
-      c.toLowerCase().includes(query)
-    ).slice(0, 3);
+    results.customers = customers?.filter((c: any) =>
+      c.customer_name?.toLowerCase().includes(query) ||
+      c.industry?.toLowerCase().includes(query) ||
+      c.country?.toLowerCase().includes(query)
+    ).slice(0, 3) || [];
+
+    results.applications = applications?.filter((a: any) =>
+      a.application?.toLowerCase().includes(query) ||
+      a.related_product?.toLowerCase().includes(query)
+    ).slice(0, 3) || [];
 
     results.collections = collections?.filter((c: any) =>
       c.name?.toLowerCase().includes(query) ||
@@ -108,6 +135,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     results.projects.length > 0 || 
     results.products.length > 0 || 
     results.customers.length > 0 ||
+    results.applications.length > 0 ||
     results.collections.length > 0
   );
 
@@ -239,14 +267,50 @@ export function MainLayout({ children }: MainLayoutProps) {
                               </Link>
                             </div>
                             <div className="space-y-1">
-                              {results.customers.map((customer: string, idx: number) => (
+                              {results.customers.map((customer: any) => (
                                 <Link
-                                  key={idx}
-                                  to={`/customers?search=${encodeURIComponent(customer)}`}
+                                  key={customer.id}
+                                  to={`/customers?search=${encodeURIComponent(customer.customer_name)}`}
                                   className="block p-2 hover:bg-muted rounded text-sm"
                                   onClick={() => setShowResults(false)}
                                 >
-                                  <div className="font-medium">{customer}</div>
+                                  <div className="font-medium">{customer.customer_name}</div>
+                                  {customer.industry && (
+                                    <div className="text-xs text-muted-foreground">
+                                      {customer.industry}
+                                    </div>
+                                  )}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Applications Results */}
+                        {results.applications.length > 0 && (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h3 className="font-semibold text-xs text-muted-foreground">APPLIKATIONEN</h3>
+                              <Link
+                                to={`/applications?search=${encodeURIComponent(searchQuery)}`}
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setShowResults(false)}
+                              >
+                                Alle <ArrowRight className="h-3 w-3" />
+                              </Link>
+                            </div>
+                            <div className="space-y-1">
+                              {results.applications.map((application: any) => (
+                                <Link
+                                  key={application.id}
+                                  to={`/applications?search=${encodeURIComponent(application.application)}`}
+                                  className="block p-2 hover:bg-muted rounded text-sm"
+                                  onClick={() => setShowResults(false)}
+                                >
+                                  <div className="font-medium">{application.application}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {application.related_product}
+                                  </div>
                                 </Link>
                               ))}
                             </div>
