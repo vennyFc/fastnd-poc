@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -31,6 +31,7 @@ export default function Projects() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
+  const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
 
@@ -75,6 +76,23 @@ export default function Projects() {
     ]
   );
 
+  // Product columns for detail view
+  const { 
+    columns: productColumns, 
+    toggleColumn: toggleProductColumn, 
+    updateColumnWidth: updateProductColumnWidth, 
+    reorderColumns: reorderProductColumns, 
+    resetColumns: resetProductColumns 
+  } = useTableColumns(
+    'project-detail-product-columns',
+    [
+      { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
+      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
+      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 3 },
+    ]
+  );
+
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -103,6 +121,32 @@ export default function Projects() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('cross_sells')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch product details
+  const { data: productDetails = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch product alternatives
+  const { data: productAlternatives = [] } = useQuery({
+    queryKey: ['product_alternatives'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_alternatives')
         .select('*');
       
       if (error) throw error;
@@ -300,6 +344,21 @@ export default function Projects() {
     );
   };
 
+  const getProductDetails = (productName: string) => {
+    return productDetails.find((p: any) => p.product === productName);
+  };
+
+  const getProductAlternatives = (productName: string) => {
+    return productAlternatives.filter((pa: any) => pa.base_product === productName);
+  };
+
+  const toggleAlternatives = (productName: string) => {
+    setExpandedAlternatives(prev => ({
+      ...prev,
+      [productName]: !prev[productName]
+    }));
+  };
+
   const handleRowClick = (project: any) => {
     addToRecentlyViewed(project.customer, project.project_name);
     setSelectedProject(project);
@@ -321,22 +380,31 @@ export default function Projects() {
 
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
+    const visibleProductColumns = productColumns.filter(col => col.visible);
+    const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
     
     return (
       <div className="p-6 space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={handleBackToList}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Zurück
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              {selectedCustomer ? `Kunde: ${selectedCustomer}` : `Projekt: ${selectedProject?.project_name}`}
-            </h1>
-            <p className="text-muted-foreground">
-              {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={handleBackToList}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Zurück
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                {selectedCustomer ? `Kunde: ${selectedCustomer}` : `Projekt: ${selectedProject?.project_name}`}
+              </h1>
+              <p className="text-muted-foreground">
+                {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
+              </p>
+            </div>
           </div>
+          <ColumnVisibilityToggle
+            columns={productColumns}
+            onToggle={toggleProductColumn}
+            onReset={resetProductColumns}
+          />
         </div>
 
         <div className="space-y-6">
@@ -372,8 +440,8 @@ export default function Projects() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Products Section */}
+                <div className="space-y-6">
+                  {/* Products Table */}
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <Package className="h-5 w-5 text-primary" />
@@ -381,12 +449,130 @@ export default function Projects() {
                     </div>
                     <Separator className="mb-4" />
                     {project.products.length > 0 ? (
-                      <div className="space-y-2">
-                        {project.products.map((product: string, idx: number) => (
-                          <div key={idx} className="p-3 bg-muted rounded-lg">
-                            <p className="font-medium">{product}</p>
-                          </div>
-                        ))}
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <th className="w-12"></th>
+                              {visibleProductColumns.map((column, index) => (
+                                <ResizableTableHeader
+                                  key={column.key}
+                                  label={column.label}
+                                  width={column.width}
+                                  onResize={(width) => updateProductColumnWidth(column.key, width)}
+                                  sortable={false}
+                                  draggable={true}
+                                  onDragStart={() => setDraggedProductIndex(index)}
+                                  onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = 'move';
+                                  }}
+                                  onDrop={(e) => {
+                                    e.preventDefault();
+                                    if (draggedProductIndex !== null && draggedProductIndex !== index) {
+                                      reorderProductColumns(draggedProductIndex, index);
+                                    }
+                                    setDraggedProductIndex(null);
+                                  }}
+                                  onDragEnd={() => setDraggedProductIndex(null)}
+                                />
+                              ))}
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {project.products.map((productName: string, idx: number) => {
+                              const details = getProductDetails(productName);
+                              const alternatives = getProductAlternatives(productName);
+                              const hasAlternatives = alternatives.length > 0;
+                              const isExpanded = expandedAlternatives[productName];
+
+                              return (
+                                <>
+                                  <TableRow key={idx}>
+                                    <TableCell className="w-12">
+                                      {hasAlternatives && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => toggleAlternatives(productName)}
+                                        >
+                                          <GitBranch className="h-4 w-4 text-primary" />
+                                        </Button>
+                                      )}
+                                    </TableCell>
+                                    {visibleProductColumns.map((column) => {
+                                      let value = '-';
+                                      if (column.key === 'product') {
+                                        value = productName;
+                                      } else if (details) {
+                                        if (column.key === 'manufacturer') value = details.manufacturer || '-';
+                                        if (column.key === 'product_family') value = details.product_family || '-';
+                                        if (column.key === 'description') value = details.product_description || '-';
+                                      }
+
+                                      return (
+                                        <TableCell 
+                                          key={column.key}
+                                          className={column.key === 'product' ? 'font-medium' : ''}
+                                          style={{ width: `${column.width}px` }}
+                                        >
+                                          {value}
+                                        </TableCell>
+                                      );
+                                    })}
+                                  </TableRow>
+                                  
+                                  {/* Alternative Products - Expandable */}
+                                  {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
+                                    const altDetails = getProductDetails(alt.alternative_product);
+                                    return (
+                                      <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/30">
+                                        <TableCell className="w-12 pl-8">
+                                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                        </TableCell>
+                                        {visibleProductColumns.map((column) => {
+                                          let value = '-';
+                                          if (column.key === 'product') {
+                                            return (
+                                              <TableCell 
+                                                key={column.key}
+                                                className="font-medium"
+                                                style={{ width: `${column.width}px` }}
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  <span>{alt.alternative_product}</span>
+                                                  {alt.similarity && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                      {alt.similarity}% ähnlich
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              </TableCell>
+                                            );
+                                          } else if (altDetails) {
+                                            if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                            if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                            if (column.key === 'description') value = altDetails.product_description || '-';
+                                          }
+
+                                          return (
+                                            <TableCell 
+                                              key={column.key}
+                                              style={{ width: `${column.width}px` }}
+                                            >
+                                              {value}
+                                            </TableCell>
+                                          );
+                                        })}
+                                      </TableRow>
+                                    );
+                                  })}
+                                </>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">Keine Produkte vorhanden</p>
@@ -407,14 +593,6 @@ export default function Projects() {
                           {projectCrossSells.map((cs: any, idx: number) => (
                             <div key={idx} className="p-3 bg-accent/50 rounded-lg">
                               <p className="font-medium text-sm">{cs.cross_sell_product}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Basis: {cs.base_product}
-                              </p>
-                              {cs.application && (
-                                <Badge variant="outline" className="mt-2 text-xs">
-                                  {cs.application}
-                                </Badge>
-                              )}
                             </div>
                           ))}
                         </div>
