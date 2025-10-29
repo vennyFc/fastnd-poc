@@ -838,13 +838,17 @@ export default function Projects() {
                       </Button>
                     </TableCell>
                     {visibleColumns.map((column) => {
-                      const value = column.key === 'applications' 
-                        ? (project.applications.length > 0 ? project.applications.join(', ') : '-')
-                        : column.key === 'products'
-                        ? (project.products.length > 0 ? project.products.join(', ') : '-')
-                        : column.key === 'created_at'
-                        ? (project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-')
-                        : project[column.key];
+                      let value;
+                      
+                      if (column.key === 'applications') {
+                        value = project.applications.length > 0 ? project.applications.join(', ') : '-';
+                      } else if (column.key === 'products') {
+                        value = null; // Will be handled separately
+                      } else if (column.key === 'created_at') {
+                        value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
+                      } else {
+                        value = project[column.key];
+                      }
                       
                       return (
                         <TableCell 
@@ -862,6 +866,28 @@ export default function Projects() {
                             <span className="text-primary hover:underline cursor-pointer">
                               {value}
                             </span>
+                          ) : column.key === 'products' ? (
+                            <div className="flex flex-wrap gap-1">
+                              {project.products.length > 0 ? (
+                                project.products.map((productName: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="text-primary hover:underline cursor-pointer text-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const details = getProductDetails(productName);
+                                      setSelectedProductForQuickView(details || { product: productName });
+                                      setProductQuickViewOpen(true);
+                                    }}
+                                  >
+                                    {productName}
+                                    {idx < project.products.length - 1 && ', '}
+                                  </span>
+                                ))
+                              ) : (
+                                '-'
+                              )}
+                            </div>
                           ) : (
                             value
                           )}
