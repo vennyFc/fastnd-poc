@@ -218,7 +218,7 @@ export default function DataHub() {
       {/* Upload Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {dataTypes.map((dataType) => (
-          <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow">
+          <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -230,7 +230,7 @@ export default function DataHub() {
                 {dataType.description}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-2 mt-auto">
               <Button
                 onClick={() => handleFileSelect(dataType)}
                 className="w-full"
