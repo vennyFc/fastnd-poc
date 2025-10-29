@@ -28,6 +28,13 @@ const dataTypes = [
     icon: FileSpreadsheet,
   },
   {
+    id: 'customers',
+    title: 'Kunden',
+    description: 'Kundenname, Branche, Land, Stadt, Kundenkategorie',
+    fields: ['customer_name', 'industry', 'country', 'city', 'customer_category'],
+    icon: FileSpreadsheet,
+  },
+  {
     id: 'applications',
     title: 'Applikationen',
     description: 'Applikation, zugehöriges_Produkt',

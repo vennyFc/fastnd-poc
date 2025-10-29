@@ -331,6 +331,42 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          customer_category: string | null
+          customer_name: string
+          id: string
+          industry: string | null
+          upload_id: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          customer_category?: string | null
+          customer_name: string
+          id?: string
+          industry?: string | null
+          upload_id?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          customer_category?: string | null
+          customer_name?: string
+          id?: string
+          industry?: string | null
+          upload_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_alternatives: {
         Row: {
           alternative_product: string
