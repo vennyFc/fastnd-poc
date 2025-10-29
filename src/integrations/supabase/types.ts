@@ -107,6 +107,7 @@ export type Database = {
           created_at: string
           id: string
           related_product: string
+          upload_id: string | null
           user_id: string
         }
         Insert: {
@@ -114,6 +115,7 @@ export type Database = {
           created_at?: string
           id?: string
           related_product: string
+          upload_id?: string | null
           user_id: string
         }
         Update: {
@@ -121,9 +123,17 @@ export type Database = {
           created_at?: string
           id?: string
           related_product?: string
+          upload_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_user_id_fkey"
             columns: ["user_id"]
@@ -235,6 +245,7 @@ export type Database = {
           created_at: string
           cross_sell_product: string
           id: string
+          upload_id: string | null
           user_id: string
         }
         Insert: {
@@ -243,6 +254,7 @@ export type Database = {
           created_at?: string
           cross_sell_product: string
           id?: string
+          upload_id?: string | null
           user_id: string
         }
         Update: {
@@ -251,9 +263,17 @@ export type Database = {
           created_at?: string
           cross_sell_product?: string
           id?: string
+          upload_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cross_sells_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cross_sells_user_id_fkey"
             columns: ["user_id"]
@@ -271,6 +291,7 @@ export type Database = {
           id: string
           product: string
           project_name: string
+          upload_id: string | null
           user_id: string
         }
         Insert: {
@@ -280,6 +301,7 @@ export type Database = {
           id?: string
           product: string
           project_name: string
+          upload_id?: string | null
           user_id: string
         }
         Update: {
@@ -289,9 +311,17 @@ export type Database = {
           id?: string
           product?: string
           project_name?: string
+          upload_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "customer_projects_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "customer_projects_user_id_fkey"
             columns: ["user_id"]
@@ -308,6 +338,7 @@ export type Database = {
           created_at: string
           id: string
           similarity: number | null
+          upload_id: string | null
           user_id: string
         }
         Insert: {
@@ -316,6 +347,7 @@ export type Database = {
           created_at?: string
           id?: string
           similarity?: number | null
+          upload_id?: string | null
           user_id: string
         }
         Update: {
@@ -324,9 +356,17 @@ export type Database = {
           created_at?: string
           id?: string
           similarity?: number | null
+          upload_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_alternatives_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_alternatives_user_id_fkey"
             columns: ["user_id"]
@@ -345,6 +385,7 @@ export type Database = {
           product: string
           product_description: string | null
           product_family: string | null
+          upload_id: string | null
           user_id: string
         }
         Insert: {
@@ -355,6 +396,7 @@ export type Database = {
           product: string
           product_description?: string | null
           product_family?: string | null
+          upload_id?: string | null
           user_id: string
         }
         Update: {
@@ -365,9 +407,17 @@ export type Database = {
           product?: string
           product_description?: string | null
           product_family?: string | null
+          upload_id?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_user_id_fkey"
             columns: ["user_id"]

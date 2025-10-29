@@ -45,9 +45,31 @@ export default function FileUploadDialog({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Nicht authentifiziert');
 
-      // Transform data according to mapping
+      // First, create upload history entry to get upload_id
+      // @ts-ignore - Supabase types not yet updated
+      const { data: uploadHistoryData, error: historyError } = await supabase
+        // @ts-ignore
+        .from('upload_history')
+        // @ts-ignore
+        .insert({
+          user_id: user.id,
+          filename: fileName,
+          data_type: dataType.title,
+          row_count: parsedData.length,
+          status: 'success',
+        })
+        .select()
+        .single();
+
+      if (historyError) throw historyError;
+      const uploadId = uploadHistoryData.id;
+
+      // Transform data according to mapping and add upload_id
       const transformedData = parsedData.map(row => {
-        const transformed: Record<string, any> = { user_id: user.id };
+        const transformed: Record<string, any> = { 
+          user_id: user.id,
+          upload_id: uploadId 
+        };
         dataType.fields.forEach(field => {
           const sourceColumn = columnMapping[field];
           if (sourceColumn) {
@@ -67,7 +89,7 @@ export default function FileUploadDialog({
         return transformed;
       });
 
-      // Insert data based on type
+      // Insert data based on type with upload_id
       // @ts-ignore - Supabase types not yet updated
       const { error } = await supabase
         // @ts-ignore
@@ -76,22 +98,6 @@ export default function FileUploadDialog({
         .insert(transformedData);
 
       if (error) throw error;
-
-      // Record upload history
-      // @ts-ignore - Supabase types not yet updated
-      const uploadHistoryData: any = {
-        user_id: user.id,
-        filename: fileName,
-        data_type: dataType.title,
-        row_count: parsedData.length,
-        status: 'success',
-      };
-      // @ts-ignore
-      await supabase
-        // @ts-ignore
-        .from('upload_history')
-        // @ts-ignore
-        .insert(uploadHistoryData);
 
       toast.success(`${parsedData.length} Einträge erfolgreich hochgeladen`);
       onOpenChange(false);
