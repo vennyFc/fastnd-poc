@@ -15,7 +15,7 @@ export function ProjectsWidget() {
   const { favorites: favoriteIds } = useFavorites('project');
 
   // Fetch all projects
-  const { data: allProjects = [] } = useQuery({
+  const { data: allProjectsRaw = [] } = useQuery({
     queryKey: ['customer_projects'],
     queryFn: async () => {
       const { data } = await supabase
@@ -25,6 +25,34 @@ export function ProjectsWidget() {
       return data || [];
     },
   });
+
+  // Group projects by customer and project_name
+  const allProjects = allProjectsRaw.reduce((acc: any[], project: any) => {
+    const existing = acc.find(
+      (p) => p.customer === project.customer && p.project_name === project.project_name
+    );
+
+    if (existing) {
+      // Add application and product if not already included
+      if (project.application && !existing.applications?.includes(project.application)) {
+        existing.applications = [...(existing.applications || []), project.application];
+      }
+      if (project.product && !existing.products?.includes(project.product)) {
+        existing.products = [...(existing.products || []), project.product];
+      }
+      // Keep the earliest created_at date
+      if (new Date(project.created_at) < new Date(existing.created_at)) {
+        existing.created_at = project.created_at;
+      }
+    } else {
+      acc.push({
+        ...project,
+        applications: project.application ? [project.application] : [],
+        products: project.product ? [project.product] : [],
+      });
+    }
+    return acc;
+  }, []);
 
   // Fetch user preferences for recent limit
   const { data: userPreferences } = useQuery({
@@ -79,7 +107,8 @@ export function ProjectsWidget() {
 
   // Get projects to review (missing application or product info)
   const projectsToReview = allProjects.filter((p: any) => 
-    !p.application || !p.product || p.application.trim() === '' || p.product.trim() === ''
+    !p.applications || p.applications.length === 0 || 
+    !p.products || p.products.length === 0
   );
 
   const renderProjectList = (projects: any[]) => {
@@ -120,8 +149,8 @@ export function ProjectsWidget() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                {project.application && (
-                  <span>App: {project.application}</span>
+                {project.applications && project.applications.length > 0 && (
+                  <span>App: {project.applications[0]}</span>
                 )}
                 {project.created_at && (
                   <span>{new Date(project.created_at).toLocaleDateString('de-DE')}</span>
