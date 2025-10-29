@@ -98,12 +98,30 @@ export function MainLayout({ children }: MainLayoutProps) {
       collections: [],
     };
 
-    results.projects = projects?.filter((p: any) =>
+    const filteredProjects = projects?.filter((p: any) =>
       p.project_name?.toLowerCase().includes(query) ||
       p.customer?.toLowerCase().includes(query) ||
       p.application?.toLowerCase().includes(query) ||
       p.product?.toLowerCase().includes(query)
-    ).slice(0, 3) || [];
+    ) || [];
+    
+    // Group projects by project_name and aggregate products
+    const projectMap = new Map();
+    filteredProjects.forEach((p: any) => {
+      if (projectMap.has(p.project_name)) {
+        const existing = projectMap.get(p.project_name);
+        if (p.product && !existing.products.includes(p.product)) {
+          existing.products.push(p.product);
+        }
+      } else {
+        projectMap.set(p.project_name, {
+          ...p,
+          products: p.product ? [p.product] : []
+        });
+      }
+    });
+    
+    results.projects = Array.from(projectMap.values()).slice(0, 3);
 
     results.products = products?.filter((p: any) =>
       p.product?.toLowerCase().includes(query) ||
@@ -219,6 +237,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                                   <div className="font-medium">{project.project_name}</div>
                                   <div className="text-xs text-muted-foreground">
                                     {project.customer}
+                                    {project.products.length > 0 && (
+                                      <span> • {project.products.join(', ')}</span>
+                                    )}
                                   </div>
                                 </Link>
                               ))}
