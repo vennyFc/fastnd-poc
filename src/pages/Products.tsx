@@ -31,7 +31,7 @@ export default function Products() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
-  const [selectedApplication, setSelectedApplication] = useState<string>('');
+  const [selectedApplication, setSelectedApplication] = useState<string>('all');
 
   const queryClient = useQueryClient();
 
@@ -234,7 +234,7 @@ export default function Products() {
     if (!matchesSearch) return false;
 
     // Application filter
-    if (selectedApplication) {
+    if (selectedApplication && selectedApplication !== 'all') {
       const productApplications = applications.filter(
         (app: any) => app.related_product === product.product
       );
@@ -336,7 +336,7 @@ export default function Products() {
                 <SelectValue placeholder="Nach Applikation filtern" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle Applikationen</SelectItem>
+                <SelectItem value="all">Alle Applikationen</SelectItem>
                 {uniqueApplications.map((app: string) => (
                   <SelectItem key={app} value={app}>
                     {app}
