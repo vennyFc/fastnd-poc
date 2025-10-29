@@ -170,18 +170,32 @@ export default function DataHub() {
 
     try {
       // @ts-ignore - Supabase types not yet updated
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         // @ts-ignore
         .from(tableToDelete)
         .delete()
         .neq('id', '00000000-0000-0000-0000-000000000000'); // Deletes all rows
 
-      if (error) {
-        toast.error(`Fehler beim Löschen der Tabelle: ${error.message}`);
+      if (deleteError) {
+        toast.error(`Fehler beim Löschen der Tabelle: ${deleteError.message}`);
         return;
       }
 
-      toast.success(`Alle Einträge aus "${dataTypes.find(dt => dt.id === tableToDelete)?.title}" wurden gelöscht`);
+      // Delete corresponding upload history entries
+      // @ts-ignore - Supabase types not yet updated
+      const { error: historyError } = await supabase
+        // @ts-ignore
+        .from('upload_history')
+        .delete()
+        .eq('data_type', tableToDelete);
+
+      if (historyError) {
+        console.error('Error deleting upload history:', historyError);
+        toast.warning('Tabelle geleert, aber Upload-Historie konnte nicht aktualisiert werden');
+      } else {
+        toast.success(`Alle Einträge und Upload-Historie aus "${dataTypes.find(dt => dt.id === tableToDelete)?.title}" wurden gelöscht`);
+      }
+
       loadUploadHistory();
     } catch (err) {
       toast.error('Ein unerwarteter Fehler ist aufgetreten');
