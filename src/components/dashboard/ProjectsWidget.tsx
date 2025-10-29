@@ -10,7 +10,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function ProjectsWidget() {
-  const [activeTab, setActiveTab] = useState('recent');
+  const [activeTab, setActiveTab] = useState('new');
   const { user } = useAuth();
   const { favorites: favoriteIds } = useFavorites('project');
 
