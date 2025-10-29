@@ -395,6 +395,15 @@ export default function Projects() {
     setSelectedCustomer(null);
   };
 
+  // Ensure URL has protocol
+  const ensureUrlProtocol = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  };
+
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
     const visibleProductColumns = productColumns.filter(col => col.visible);
@@ -728,7 +737,7 @@ export default function Projects() {
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller-Link</h3>
                     <a
-                      href={selectedProductForQuickView.manufacturer_link}
+                      href={ensureUrlProtocol(selectedProductForQuickView.manufacturer_link)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 text-primary hover:underline"
