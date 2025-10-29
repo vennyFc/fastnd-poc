@@ -357,7 +357,7 @@ export default function Projects() {
     if (!products || products.length === 0) return [];
     
     return crossSells.filter((cs: any) => 
-      products.includes(cs.base_product)
+      products.includes(cs.base_product) && !products.includes(cs.cross_sell_product)
     );
   };
 
