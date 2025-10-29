@@ -10,6 +10,7 @@ import DataHub from "./pages/DataHub";
 import Projects from "./pages/Projects";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
+import Applications from "./pages/Applications";
 import Collections from "./pages/Collections";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
@@ -69,6 +70,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <Customers />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/applications"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Applications />
                 </MainLayout>
               </ProtectedRoute>
             }
