@@ -101,6 +101,39 @@ export type Database = {
         }
         Relationships: []
       }
+      app_insights: {
+        Row: {
+          application: string
+          application_block_diagram: string | null
+          application_description: string | null
+          application_trends: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application: string
+          application_block_diagram?: string | null
+          application_description?: string | null
+          application_trends?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application?: string
+          application_block_diagram?: string | null
+          application_description?: string | null
+          application_trends?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           application: string
