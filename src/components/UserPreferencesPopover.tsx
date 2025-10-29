@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -196,142 +197,158 @@ export function UserPreferencesPopover() {
           <div>
             <h3 className="font-semibold text-sm mb-1">Benutzer Präferenzen</h3>
             <p className="text-xs text-muted-foreground">
-              Wählen Sie Applikationen und Produktfamilien aus, die in den Ergebnissen angezeigt werden sollen.
+              Passen Sie Ihre Inhalts- und Anzeigeeinstellungen an.
             </p>
           </div>
 
           <Separator />
 
-          {/* Applications */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Zielapplikationen</Label>
-              <div className="flex gap-2">
-                <button
-                  onClick={selectAllApplications}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Alle
-                </button>
-                <span className="text-xs text-muted-foreground">|</span>
-                <button
-                  onClick={deselectAllApplications}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Keine
-                </button>
-              </div>
-            </div>
-            <ScrollArea className="h-32 border rounded-md p-2">
-              <div className="space-y-2">
-                {applications?.map(app => (
-                  <div key={app} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`app-${app}`}
-                      checked={selectedApplications.includes(app)}
-                      onCheckedChange={() => toggleApplication(app)}
-                    />
-                    <label
-                      htmlFor={`app-${app}`}
-                      className="text-sm cursor-pointer flex-1"
-                    >
-                      {app}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+          <Tabs defaultValue="content" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="content">Inhalte</TabsTrigger>
+              <TabsTrigger value="view">Ansicht</TabsTrigger>
+            </TabsList>
 
-          {/* Product Families */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Produktfamilien</Label>
-              <div className="flex gap-2">
-                <button
-                  onClick={selectAllFamilies}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Alle
-                </button>
-                <span className="text-xs text-muted-foreground">|</span>
-                <button
-                  onClick={deselectAllFamilies}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Keine
-                </button>
-              </div>
-            </div>
-            <ScrollArea className="h-32 border rounded-md p-2">
-              <div className="space-y-2">
-                {productFamilies?.map(family => (
-                  <div key={family} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`family-${family}`}
-                      checked={selectedFamilies.includes(family)}
-                      onCheckedChange={() => toggleFamily(family)}
-                    />
-                    <label
-                      htmlFor={`family-${family}`}
-                      className="text-sm cursor-pointer flex-1"
+            <TabsContent value="content" className="space-y-4 mt-4">
+              {/* Applications */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Zielapplikationen</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={selectAllApplications}
+                      className="text-xs text-primary hover:underline"
                     >
-                      {family}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* Manufacturers */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-sm font-medium">Hersteller</Label>
-              <div className="flex gap-2">
-                <button
-                  onClick={selectAllManufacturers}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Alle
-                </button>
-                <span className="text-xs text-muted-foreground">|</span>
-                <button
-                  onClick={deselectAllManufacturers}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Keine
-                </button>
-              </div>
-            </div>
-            <ScrollArea className="h-32 border rounded-md p-2">
-              <div className="space-y-2">
-                {manufacturers?.map(manufacturer => (
-                  <div key={manufacturer} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`manufacturer-${manufacturer}`}
-                      checked={selectedManufacturers.includes(manufacturer)}
-                      onCheckedChange={() => toggleManufacturer(manufacturer)}
-                    />
-                    <label
-                      htmlFor={`manufacturer-${manufacturer}`}
-                      className="text-sm cursor-pointer flex-1"
+                      Alle
+                    </button>
+                    <span className="text-xs text-muted-foreground">|</span>
+                    <button
+                      onClick={deselectAllApplications}
+                      className="text-xs text-primary hover:underline"
                     >
-                      {manufacturer}
-                    </label>
+                      Keine
+                    </button>
                   </div>
-                ))}
+                </div>
+                <ScrollArea className="h-32 border rounded-md p-2">
+                  <div className="space-y-2">
+                    {applications?.map(app => (
+                      <div key={app} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`app-${app}`}
+                          checked={selectedApplications.includes(app)}
+                          onCheckedChange={() => toggleApplication(app)}
+                        />
+                        <label
+                          htmlFor={`app-${app}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {app}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
-          </div>
 
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
-          >
-            {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
-          </button>
+              {/* Product Families */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Produktfamilien</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={selectAllFamilies}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Alle
+                    </button>
+                    <span className="text-xs text-muted-foreground">|</span>
+                    <button
+                      onClick={deselectAllFamilies}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Keine
+                    </button>
+                  </div>
+                </div>
+                <ScrollArea className="h-32 border rounded-md p-2">
+                  <div className="space-y-2">
+                    {productFamilies?.map(family => (
+                      <div key={family} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`family-${family}`}
+                          checked={selectedFamilies.includes(family)}
+                          onCheckedChange={() => toggleFamily(family)}
+                        />
+                        <label
+                          htmlFor={`family-${family}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {family}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Manufacturers */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium">Hersteller</Label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={selectAllManufacturers}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Alle
+                    </button>
+                    <span className="text-xs text-muted-foreground">|</span>
+                    <button
+                      onClick={deselectAllManufacturers}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Keine
+                    </button>
+                  </div>
+                </div>
+                <ScrollArea className="h-32 border rounded-md p-2">
+                  <div className="space-y-2">
+                    {manufacturers?.map(manufacturer => (
+                      <div key={manufacturer} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`manufacturer-${manufacturer}`}
+                          checked={selectedManufacturers.includes(manufacturer)}
+                          onCheckedChange={() => toggleManufacturer(manufacturer)}
+                        />
+                        <label
+                          htmlFor={`manufacturer-${manufacturer}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {manufacturer}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
+              >
+                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+              </button>
+            </TabsContent>
+
+            <TabsContent value="view" className="space-y-4 mt-4">
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                <p>Ansichtseinstellungen werden hier angezeigt.</p>
+                <p className="text-xs mt-2">Weitere Optionen folgen in Kürze.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </PopoverContent>
     </Popover>
