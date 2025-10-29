@@ -135,14 +135,31 @@ export function MainLayout({ children }: MainLayoutProps) {
       c.country?.toLowerCase().includes(query)
     ).slice(0, 3) || [];
 
-    results.applications = applications?.filter((a: any) =>
+    const filteredApplications = applications?.filter((a: any) =>
       a.application?.toLowerCase().includes(query) ||
       a.related_product?.toLowerCase().includes(query)
-    ).slice(0, 3).map((a: any) => ({
-      ...a,
-      application: String(a.application || ''),
-      related_product: String(a.related_product || '')
-    })) || [];
+    ) || [];
+    
+    // Group applications by application name and aggregate related products
+    const applicationMap = new Map();
+    filteredApplications.forEach((a: any) => {
+      const appName = String(a.application || '');
+      if (applicationMap.has(appName)) {
+        const existing = applicationMap.get(appName);
+        const relatedProduct = String(a.related_product || '');
+        if (relatedProduct && !existing.related_products.includes(relatedProduct)) {
+          existing.related_products.push(relatedProduct);
+        }
+      } else {
+        applicationMap.set(appName, {
+          ...a,
+          application: appName,
+          related_products: a.related_product ? [String(a.related_product)] : []
+        });
+      }
+    });
+    
+    results.applications = Array.from(applicationMap.values()).slice(0, 3);
 
     results.collections = collections?.filter((c: any) =>
       c.name?.toLowerCase().includes(query) ||
@@ -334,7 +351,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 >
                                   <div className="font-medium">{application.application || '-'}</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {application.related_product || '-'}
+                                    {application.related_products.length > 0 ? (
+                                      application.related_products.join(', ')
+                                    ) : '-'}
                                   </div>
                                 </Link>
                               ))}
