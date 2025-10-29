@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -83,6 +83,24 @@ export default function Products() {
       return data;
     },
   });
+
+  // Fetch product alternatives
+  const { data: productAlternatives = [] } = useQuery({
+    queryKey: ['product_alternatives'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('product_alternatives')
+        .select('base_product, alternative_product');
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Create a Set of products that have alternatives
+  const productsWithAlternatives = new Set(
+    productAlternatives.map((alt: any) => alt.base_product)
+  );
 
   // Fetch collections for adding products
   const { data: collections = [] } = useQuery({
@@ -331,10 +349,21 @@ export default function Products() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         ) : '-';
+                      } else if (column.key === 'product') {
+                        const hasAlternative = productsWithAlternatives.has(product.product);
+                        value = (
+                          <div className="flex items-center gap-2">
+                            <span>{product[column.key] || '-'}</span>
+                            {hasAlternative && (
+                              <Replace className="h-4 w-4 text-primary" aria-label="Alternative verfügbar" />
+                            )}
+                          </div>
+                        );
                       } else {
                         value = product[column.key] || '-';
                       }
