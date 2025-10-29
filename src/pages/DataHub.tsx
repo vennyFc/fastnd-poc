@@ -41,8 +41,8 @@ const dataTypes = [
   {
     id: 'product_alternatives',
     title: 'Produktalternativen',
-    description: 'Basis_Produkt, Alternatives_Produkt',
-    fields: ['base_product', 'alternative_product'],
+    description: 'Basis_Produkt, Alternatives_Produkt, Similarity',
+    fields: ['base_product', 'alternative_product', 'similarity'],
     icon: FileSpreadsheet,
   },
 ];

@@ -91,7 +91,7 @@ export default function Products() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_alternatives')
-        .select('base_product, alternative_product');
+        .select('base_product, alternative_product, similarity');
 
       if (error) throw error;
       return data || [];
@@ -106,10 +106,12 @@ export default function Products() {
   // Function to get alternative products for a given product
   const getAlternativeProducts = (productName: string) => {
     const alternatives = productAlternatives
-      .filter((alt: any) => alt.base_product === productName)
-      .map((alt: any) => alt.alternative_product);
+      .filter((alt: any) => alt.base_product === productName);
     
-    return products?.filter((p: any) => alternatives.includes(p.product)) || [];
+    return alternatives.map((alt: any) => {
+      const product = products?.find((p: any) => p.product === alt.alternative_product);
+      return product ? { ...product, similarity: alt.similarity } : null;
+    }).filter(Boolean);
   };
 
   // Toggle expanded state
@@ -443,6 +445,11 @@ export default function Products() {
                                 <div className="flex items-center gap-2 pl-6">
                                   <span className="text-muted-foreground text-sm">↳</span>
                                   <span>{altProduct[column.key] || '-'}</span>
+                                  {altProduct.similarity !== null && altProduct.similarity !== undefined && (
+                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                      {altProduct.similarity}% Ähnlichkeit
+                                    </span>
+                                  )}
                                 </div>
                               );
                             } else {
