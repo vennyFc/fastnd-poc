@@ -82,6 +82,19 @@ export function ProjectsWidget() {
             key={project.id}
             to={`/projects?search=${encodeURIComponent(project.project_name)}`}
             className="block p-3 rounded-lg hover:bg-muted transition-colors"
+            onClick={() => {
+              if (user) {
+                supabase
+                  .from('user_project_history')
+                  .upsert([
+                    {
+                      user_id: user.id,
+                      project_id: project.id,
+                      viewed_at: new Date().toISOString(),
+                    },
+                  ], { onConflict: 'user_id,project_id' });
+              }
+            }}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">

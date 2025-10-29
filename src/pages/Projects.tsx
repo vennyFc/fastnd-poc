@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { useFavorites } from '@/hooks/useFavorites';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -31,7 +32,9 @@ export default function Projects() {
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
 
-  const queryClient = useQueryClient();
+  const { isFavorite, toggleFavorite } = useFavorites('project');
+
+  
 
   // Initialize filter from URL params
   useEffect(() => {
@@ -107,57 +110,7 @@ export default function Projects() {
     },
   });
 
-  // Fetch favorites
-  const { data: favorites = [] } = useQuery({
-    queryKey: ['project_favorites'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('project_favorites')
-        .select('*');
-      
-      if (error) throw error;
-      return data as any[];
-    },
-  });
-
-  // Toggle favorite mutation
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: async ({ customer, project_name, isFavorite }: { customer: string; project_name: string; isFavorite: boolean }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      if (isFavorite) {
-        // Remove from favorites
-        const { error } = await supabase
-          .from('project_favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('customer', customer)
-          .eq('project_name', project_name);
-        if (error) throw error;
-      } else {
-        // Add to favorites
-        const { error } = await supabase
-          .from('project_favorites')
-          .insert({
-            user_id: user.id,
-            customer,
-            project_name,
-          });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['project_favorites'] });
-      toast.success('Favorit aktualisiert');
-    },
-    onError: (error: Error) => {
-      toast.error('Fehler: ' + error.message);
-    },
-  });
 
   // Fetch user preferences
   const { data: userPreferences } = useQuery({
@@ -207,15 +160,10 @@ export default function Projects() {
     return acc;
   }, []);
 
-  const isFavorite = (customer: string, project_name: string) => {
-    return favorites.some(
-      (fav: any) => fav.customer === customer && fav.project_name === project_name
-    );
-  };
 
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
-    if (quickFilter === 'favorites' && !isFavorite(project.customer, project.project_name)) {
+    if (quickFilter === 'favorites' && !isFavorite(project.id)) {
       return false;
     }
     
@@ -410,16 +358,12 @@ export default function Projects() {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavoriteMutation.mutate({
-                        customer: project.customer,
-                        project_name: project.project_name,
-                        isFavorite: isFavorite(project.customer, project.project_name),
-                      });
+                      toggleFavorite(project.id);
                     }}
                   >
                     <Star
                       className={`h-5 w-5 ${
-                        isFavorite(project.customer, project.project_name)
+                        isFavorite(project.id)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-muted-foreground'
                       }`}
@@ -605,16 +549,12 @@ export default function Projects() {
                         className="h-8 w-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavoriteMutation.mutate({
-                            customer: project.customer,
-                            project_name: project.project_name,
-                            isFavorite: isFavorite(project.customer, project.project_name),
-                          });
+                          toggleFavorite(project.id);
                         }}
                       >
                         <Star
                           className={`h-4 w-4 ${
-                            isFavorite(project.customer, project.project_name)
+                            isFavorite(project.id)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-muted-foreground'
                           }`}
