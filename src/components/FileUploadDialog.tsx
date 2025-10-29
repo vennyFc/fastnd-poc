@@ -49,6 +49,12 @@ export default function FileUploadDialog({
     setIsUploading(true);
 
     try {
+      // Verify session before upload
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Keine aktive Sitzung. Bitte melden Sie sich erneut an.');
+      }
+
       // First, create upload history entry to get upload_id
       // @ts-ignore - Supabase types not yet updated
       const { data: uploadHistoryData, error: historyError } = await supabase
@@ -56,7 +62,7 @@ export default function FileUploadDialog({
         .from('upload_history')
         // @ts-ignore
         .insert({
-          user_id: user.id,
+          user_id: session.user.id,
           filename: fileName,
           data_type: dataType.title,
           row_count: parsedData.length,
@@ -65,13 +71,16 @@ export default function FileUploadDialog({
         .select()
         .single();
 
-      if (historyError) throw historyError;
+      if (historyError) {
+        console.error('History error:', historyError);
+        throw historyError;
+      }
       const uploadId = uploadHistoryData.id;
 
       // Transform data according to mapping and add upload_id
       const transformedData = parsedData.map(row => {
         const transformed: Record<string, any> = { 
-          user_id: user.id,
+          user_id: session.user.id,
           upload_id: uploadId 
         };
         dataType.fields.forEach(field => {
