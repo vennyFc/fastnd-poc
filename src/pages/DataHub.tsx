@@ -248,8 +248,8 @@ export default function DataHub() {
               </Button>
               <Button
                 onClick={() => openDeleteTableDialog(dataType.id)}
-                className="w-full"
-                variant="destructive"
+                className="w-full transition-colors hover:bg-destructive hover:text-destructive-foreground"
+                variant="outline"
               >
                 <Database className="mr-2 h-4 w-4" />
                 Tabelle leeren
