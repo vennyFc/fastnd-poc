@@ -65,7 +65,7 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
+                        isActive ? 'bg-primary/10 text-primary' : ''
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         className={({ isActive }) =>
-                          isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : ''
+                          isActive ? 'bg-primary/10 text-primary' : ''
                         }
                       >
                         <item.icon className="h-4 w-4" />
