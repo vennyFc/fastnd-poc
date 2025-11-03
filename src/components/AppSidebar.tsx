@@ -1,5 +1,5 @@
 import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import fastndLogo from '@/assets/fastnd-logo.png';
@@ -32,6 +32,7 @@ const adminMenuItems = [
 export function AppSidebar() {
   const { signOut, isAdmin } = useAuth();
   const { t } = useLanguage();
+  const location = useLocation();
   
   const menuItems = [
     { title: t('nav.cockpit'), url: '/', icon: LayoutDashboard },
@@ -61,13 +62,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={location.pathname === item.url || (item.url !== '/' && location.pathname.startsWith(item.url))} className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground">
                     <NavLink
                       to={item.url}
                       end={item.url === '/'}
-                      className={({ isActive }) =>
-                        isActive ? 'bg-primary/10 text-primary' : ''
-                      }
                     >
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
@@ -86,13 +84,10 @@ export function AppSidebar() {
               <SidebarMenu>
                 {adminMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={location.pathname === item.url || (item.url !== '/' && location.pathname.startsWith(item.url))} className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground">
                       <NavLink
                         to={item.url}
                         end={item.url === '/'}
-                        className={({ isActive }) =>
-                          isActive ? 'bg-primary/10 text-primary' : ''
-                        }
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
