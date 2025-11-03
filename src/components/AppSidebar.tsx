@@ -2,7 +2,7 @@ import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, 
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import fastndLogo from '@/assets/fastnd-logo.png';
+import fastndLogo from '@/assets/fastnd-logo-blue-black.png';
 import {
   Sidebar,
   SidebarContent,
