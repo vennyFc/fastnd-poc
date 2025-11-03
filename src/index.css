@@ -9,8 +9,8 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Modern Teal/Petrol Color System - Based on FASTND Design */
-    --background: 210 18% 98%;
-    --foreground: 215 25% 15%;
+    --background: 204 39% 43%;
+    --foreground: 0 0% 100%;
 
     --card: 210 12% 96%;
     --card-foreground: 215 25% 15%;
