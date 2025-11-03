@@ -64,6 +64,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
+                      end={item.url === '/'}
                       className={({ isActive }) =>
                         isActive ? 'bg-primary/10 text-primary' : ''
                       }
@@ -88,6 +89,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
+                        end={item.url === '/'}
                         className={({ isActive }) =>
                           isActive ? 'bg-primary/10 text-primary' : ''
                         }
