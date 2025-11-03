@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, Clock, Heart, FileText, CheckCircle, MoreVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -15,6 +15,7 @@ import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
@@ -31,7 +32,7 @@ export default function Projects() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
-  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
+  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent' | 'new' | 'review'>('all');
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
   const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
@@ -225,6 +226,21 @@ export default function Projects() {
   }, []);
 
 
+  // Helper to get project status
+  const getProjectStatus = (project: any) => {
+    // Simple random status for demo - you can replace with real logic
+    const statuses = ['Prüfung', 'Abgeschlossen', 'Neu', 'Offen', 'Validierung'];
+    const hash = (project.id || '').split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
+    return statuses[hash % statuses.length];
+  };
+
+  // Helper to get opportunity score
+  const getOpportunityScore = (project: any) => {
+    // Simple calculation for demo - you can replace with real logic
+    const hash = (project.id || '').split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
+    return 30 + (hash % 60); // Random score between 30-90
+  };
+
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
     if (quickFilter === 'favorites' && !isFavorite(project.id)) {
@@ -234,6 +250,16 @@ export default function Projects() {
     if (quickFilter === 'recent') {
       const recentlyViewed = getRecentlyViewed();
       if (!recentlyViewed.includes(project.id)) return false;
+    }
+
+    if (quickFilter === 'new') {
+      const status = getProjectStatus(project);
+      if (status !== 'Neu') return false;
+    }
+
+    if (quickFilter === 'review') {
+      const status = getProjectStatus(project);
+      if (status !== 'Prüfung') return false;
     }
 
     // Search filter
@@ -761,205 +787,209 @@ export default function Projects() {
     );
   }
 
+  // Helper to get status badge color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Abgeschlossen':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'Prüfung':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'Neu':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'Offen':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'Validierung':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
+  // Helper to get score color
+  const getScoreColor = (score: number) => {
+    if (score >= 75) return 'text-green-600';
+    if (score >= 50) return 'text-yellow-600';
+    if (score >= 35) return 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  // Helper to get score stroke color
+  const getScoreStrokeColor = (score: number) => {
+    if (score >= 75) return '#16a34a';
+    if (score >= 50) return '#ca8a04';
+    if (score >= 35) return '#ea580c';
+    return '#dc2626';
+  };
+
+  // Count projects by filter type
+  const recentCount = groupedProjects?.filter((p: any) => getRecentlyViewed().includes(p.id)).length || 0;
+  const favoriteCount = groupedProjects?.filter((p: any) => isFavorite(p.id)).length || 0;
+  const newCount = groupedProjects?.filter((p: any) => getProjectStatus(p) === 'Neu').length || 0;
+  const reviewCount = groupedProjects?.filter((p: any) => getProjectStatus(p) === 'Prüfung').length || 0;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Projekte</h1>
-          <p className="text-muted-foreground">
-            Übersicht aller Kundenprojekte mit Opportunity-Scores
-          </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Hinzufügen
+        <Button variant="ghost" size="icon">
+          <MoreVertical className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Search and Filter Bar */}
+      {/* Filter Tabs */}
       <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Projektname, Kunde, Applikation oder Produkt suchen..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
-          </div>
-        </CardContent>
+        <Tabs value={quickFilter} onValueChange={(value) => setQuickFilter(value as any)} className="w-full">
+          <TabsList className="w-full grid grid-cols-4 h-auto p-0 bg-transparent">
+            <TabsTrigger 
+              value="all" 
+              className="flex items-center gap-2 py-4 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+            >
+              <Clock className="h-4 w-4" />
+              <span>Zuletzt</span>
+              <Badge variant="secondary" className="ml-1">{sortedProjects?.length || 0}</Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="favorites"
+              className="flex items-center gap-2 py-4 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+            >
+              <Star className="h-4 w-4" />
+              <span>Favoriten</span>
+              <Badge variant="secondary" className="ml-1">{favoriteCount}</Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="new"
+              className="flex items-center gap-2 py-4 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Neu</span>
+              <Badge variant="secondary" className="ml-1">{newCount}</Badge>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="review"
+              className="flex items-center gap-2 py-4 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+            >
+              <CheckCircle className="h-4 w-4" />
+              <span>Prüfen</span>
+              <Badge variant="secondary" className="ml-1">{reviewCount}</Badge>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </Card>
 
-      {/* Quick Filter Chips */}
-      <div className="flex gap-2">
-        <Badge
-          variant={quickFilter === 'favorites' ? 'default' : 'outline'}
-          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
-        >
-          <Star className={`mr-1.5 h-3.5 w-3.5 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
-          Favoriten
-        </Badge>
-        <Badge
-          variant={quickFilter === 'recent' ? 'default' : 'outline'}
-          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
-        >
-          Zuletzt angesehen
-        </Badge>
-      </div>
+      {/* Projects Cards */}
+      {isLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      ) : sortedProjects && sortedProjects.length > 0 ? (
+        <div className="space-y-4">
+          {sortedProjects.map((project: any) => {
+            const status = getProjectStatus(project);
+            const score = getOpportunityScore(project);
+            const circumference = 2 * Math.PI * 38;
+            const strokeDashoffset = circumference - (score / 100) * circumference;
 
-      {/* Projects Table */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Alle Projekte</CardTitle>
-          <CardDescription>
-            {filteredProjects?.length || 0} Kundenprojekte
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : sortedProjects && sortedProjects.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <th className="w-12"></th>
-                  {visibleColumns.map((column, index) => (
-                    <ResizableTableHeader
-                      key={column.key}
-                      label={column.label}
-                      width={column.width}
-                      onResize={(width) => updateColumnWidth(column.key, width)}
-                      sortable={true}
-                      sortDirection={sortField === column.key ? sortDirection : null}
-                      onSort={() => handleSort(column.key as SortField)}
-                      draggable={true}
-                      onDragStart={() => setDraggedIndex(index)}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        if (draggedIndex !== null && draggedIndex !== index) {
-                          reorderColumns(draggedIndex, index);
-                        }
-                        setDraggedIndex(null);
-                      }}
-                      onDragEnd={() => setDraggedIndex(null)}
-                    />
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedProjects.map((project: any) => (
-                  <TableRow 
-                    key={project.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleRowClick(project)}
-                  >
-                    <TableCell className="w-12">
+            return (
+              <Card 
+                key={project.id} 
+                className="shadow-card hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleRowClick(project)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-foreground mb-4">{project.project_name}</h3>
+                      <div className="grid grid-cols-3 gap-6">
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Kunde</p>
+                          <p className="text-base font-medium">{project.customer || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Umsatzpotenzial</p>
+                          <p className="text-base font-medium">-</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-1">Applikation</p>
+                          <p className="text-base font-medium">
+                            {project.applications.length > 0 ? project.applications[0] : '-'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 ml-6">
+                      <Badge 
+                        variant="outline" 
+                        className={`px-3 py-1 ${getStatusColor(status)}`}
+                      >
+                        {status}
+                      </Badge>
+                      
+                      <div className="relative flex items-center justify-center">
+                        <svg className="w-24 h-24 transform -rotate-90">
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="38"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            className="text-muted/20"
+                          />
+                          <circle
+                            cx="48"
+                            cy="48"
+                            r="38"
+                            stroke={getScoreStrokeColor(score)}
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap="round"
+                            className="transition-all duration-500"
+                          />
+                        </svg>
+                        <span className={`absolute text-2xl font-bold ${getScoreColor(score)}`}>
+                          {score}
+                        </span>
+                      </div>
+
                       <Button
                         variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
+                        size="icon"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(project.id);
                         }}
                       >
                         <Star
-                          className={`h-4 w-4 ${
+                          className={`h-5 w-5 ${
                             isFavorite(project.id)
-                              ? 'fill-yellow-400 text-yellow-400'
+                              ? 'fill-current text-foreground'
                               : 'text-muted-foreground'
                           }`}
                         />
                       </Button>
-                    </TableCell>
-                    {visibleColumns.map((column) => {
-                      let value;
-                      
-                      if (column.key === 'applications') {
-                        value = project.applications.length > 0 ? project.applications.join(', ') : '-';
-                      } else if (column.key === 'products') {
-                        value = null; // Will be handled separately
-                      } else if (column.key === 'created_at') {
-                        value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
-                      } else {
-                        value = project[column.key];
-                      }
-                      
-                      return (
-                        <TableCell 
-                          key={column.key}
-                          className={column.key === 'project_name' ? 'font-medium' : ''}
-                          style={{ width: `${column.width}px` }}
-                          onClick={(e) => {
-                            if (column.key === 'customer') {
-                              e.stopPropagation();
-                              handleCustomerClick(project.customer);
-                            }
-                          }}
-                        >
-                          {column.key === 'customer' ? (
-                            <span className="text-primary hover:underline cursor-pointer">
-                              {value}
-                            </span>
-                          ) : column.key === 'products' ? (
-                            <div className="flex flex-wrap gap-1">
-                              {project.products.length > 0 ? (
-                                project.products.map((productName: string, idx: number) => (
-                                  <span
-                                    key={idx}
-                                    className="text-primary hover:underline cursor-pointer text-sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const details = getProductDetails(productName);
-                                      setSelectedProductForQuickView(details || { product: productName });
-                                      setProductQuickViewOpen(true);
-                                    }}
-                                  >
-                                    {productName}
-                                    {idx < project.products.length - 1 && ', '}
-                                  </span>
-                                ))
-                              ) : (
-                                '-'
-                              )}
-                            </div>
-                          ) : (
-                            value
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="p-8 text-center text-muted-foreground">
-              {searchQuery.length >= 2
-                ? 'Keine Projekte gefunden.'
-                : 'Keine Projekte vorhanden. Laden Sie Projektdaten im Datenhub hoch.'}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="shadow-card">
+          <CardContent className="p-8 text-center text-muted-foreground">
+            {searchQuery.length >= 2
+              ? 'Keine Projekte gefunden.'
+              : 'Keine Projekte vorhanden. Laden Sie Projektdaten im Datenhub hoch.'}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Project Details Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
