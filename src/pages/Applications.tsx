@@ -174,7 +174,8 @@ export default function Applications() {
                     sortedApplications?.map((app: any) => (
                       <TableRow key={app.id}>
                         {visibleColumns.map((column) => {
-                          const value = app[column.key] || '-';
+                          const rawValue = app[column.key];
+                          const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
                           return (
                             <TableCell 
                               key={column.key}
