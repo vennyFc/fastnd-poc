@@ -139,10 +139,11 @@ export function MainLayout({ children }: MainLayoutProps) {
       c.country?.toLowerCase().includes(query)
     ).slice(0, 3) || [];
 
-    const filteredApplications = applications?.filter((a: any) =>
-      a.application?.toLowerCase().includes(query) ||
-      a.related_product?.toLowerCase().includes(query)
-    ) || [];
+    const filteredApplications = applications?.filter((a: any) => {
+      const appName = String(a?.application ?? '').toLowerCase();
+      const related = String(a?.related_product ?? '').toLowerCase();
+      return appName.includes(query) || related.includes(query);
+    }) || [];
     
     // Group applications by application name and aggregate related products
     const applicationMap = new Map();
@@ -355,8 +356,8 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 >
                                   <div className="font-medium">{application.application || '-'}</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {application.related_products.length > 0 ? (
-                                      application.related_products.join(', ')
+                                    {Array.isArray(application.related_products) && application.related_products.length > 0 ? (
+                                      application.related_products.map((p: any) => String(p)).join(', ')
                                     ) : '-'}
                                   </div>
                                 </Link>
