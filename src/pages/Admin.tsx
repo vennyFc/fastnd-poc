@@ -434,7 +434,7 @@ export default function Admin() {
                             size="sm"
                             onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
                             disabled={toggleAdminMutation.isPending}
-                            className="whitespace-nowrap"
+                            className="whitespace-nowrap min-w-[160px]"
                           >
                             <Shield className="h-4 w-4 mr-1" />
                             {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
