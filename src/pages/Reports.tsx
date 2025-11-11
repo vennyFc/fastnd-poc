@@ -12,6 +12,8 @@ import { de } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X } from 'lucide-react';
 
 type ReportView = 'overview' | 'rejected-cross-sells' | 'added-products';
 
@@ -27,6 +29,10 @@ export default function Reports() {
   const { t } = useLanguage();
   const [currentView, setCurrentView] = useState<ReportView>('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [customerFilter, setCustomerFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [productTypeFilter, setProductTypeFilter] = useState<string>('all');
+  const [validationStatusFilter, setValidationStatusFilter] = useState<string>('all');
   const queryClient = useQueryClient();
 
   const reportCards = [
@@ -180,18 +186,52 @@ export default function Reports() {
     return products;
   }).flat();
 
+  // Get unique values for filters
+  const uniqueCustomers = ['all', ...Array.from(new Set(enrichedAddedProducts.map((p: any) => p.customer).filter(Boolean)))];
+  const uniqueStatuses = ['all', ...Array.from(new Set(enrichedAddedProducts.map((p: any) => p.optimization_status).filter(Boolean)))];
+  const uniqueProductTypes = ['all', 'Cross-Sell', 'Alternative'];
+  const uniqueValidationStatuses = ['all', ...Array.from(new Set(enrichedAddedProducts.map((p: any) => p.validation_status).filter(Boolean)))];
+
   const filteredAddedProducts = enrichedAddedProducts.filter((item: any) => {
-    if (!searchQuery || searchQuery.length < 2) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      item.customer?.toLowerCase().includes(query) ||
-      item.application?.toLowerCase().includes(query) ||
-      item.project_name?.toLowerCase().includes(query) ||
-      item.product_name?.toLowerCase().includes(query) ||
-      item.optimization_status?.toLowerCase().includes(query) ||
-      item.validation_status?.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (searchQuery && searchQuery.length >= 2) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        item.customer?.toLowerCase().includes(query) ||
+        item.application?.toLowerCase().includes(query) ||
+        item.project_name?.toLowerCase().includes(query) ||
+        item.product_name?.toLowerCase().includes(query) ||
+        item.optimization_status?.toLowerCase().includes(query) ||
+        item.validation_status?.toLowerCase().includes(query)
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Customer filter
+    if (customerFilter !== 'all' && item.customer !== customerFilter) return false;
+
+    // Status filter
+    if (statusFilter !== 'all' && item.optimization_status !== statusFilter) return false;
+
+    // Product type filter
+    if (productTypeFilter !== 'all' && item.product_type !== productTypeFilter) return false;
+
+    // Validation status filter
+    if (validationStatusFilter !== 'all' && item.validation_status !== validationStatusFilter) return false;
+
+    return true;
   });
+
+  const hasActiveFilters = customerFilter !== 'all' || statusFilter !== 'all' || 
+                          productTypeFilter !== 'all' || validationStatusFilter !== 'all' || searchQuery.length >= 2;
+
+  const clearAllFilters = () => {
+    setCustomerFilter('all');
+    setStatusFilter('all');
+    setProductTypeFilter('all');
+    setValidationStatusFilter('all');
+    setSearchQuery('');
+  };
 
   const renderRejectedCrossSellsReport = () => (
     <Card>
@@ -318,7 +358,7 @@ export default function Reports() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
+        <div className="mb-4 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -328,6 +368,73 @@ export default function Reports() {
               className="pl-10"
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Select value={customerFilter} onValueChange={setCustomerFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Kunde" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Kunden</SelectItem>
+                {uniqueCustomers.slice(1).map((customer) => (
+                  <SelectItem key={customer} value={customer}>
+                    {customer}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Projekt-Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Status</SelectItem>
+                {uniqueStatuses.slice(1).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Produkttyp" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Typen</SelectItem>
+                <SelectItem value="Cross-Sell">Cross-Sell</SelectItem>
+                <SelectItem value="Alternative">Alternative</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={validationStatusFilter} onValueChange={setValidationStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Validierungsstatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Validierungen</SelectItem>
+                {uniqueValidationStatuses.slice(1).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Filter zurücksetzen
+            </Button>
+          )}
         </div>
 
         {isLoadingAdded ? (
