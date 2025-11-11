@@ -418,7 +418,7 @@ export default function Admin() {
                         {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-[auto_auto_auto] gap-2 items-center">
                           <Button
                             variant="outline"
                             size="sm"
