@@ -367,7 +367,7 @@ export default function Admin() {
                   <TableHead>Name</TableHead>
                   <TableHead>Rolle</TableHead>
                   <TableHead>Registriert</TableHead>
-                  <TableHead>Aktionen</TableHead>
+                  <TableHead className="w-[450px]">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -394,29 +394,32 @@ export default function Admin() {
                         {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleResendInvite(user.email)}
                             disabled={resendInviteMutation.isPending}
+                            className="whitespace-nowrap"
                           >
                             <Mail className="h-4 w-4 mr-1" />
-                            Einladung erneut senden
+                            Einladung
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
                             disabled={toggleAdminMutation.isPending}
+                            className="whitespace-nowrap"
                           >
-                            {isUserAdmin ? 'Admin entfernen' : 'Als Admin setzen'}
+                            {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteClick(user.id, user.email)}
                             disabled={deleteUserMutation.isPending}
+                            title="Benutzer löschen"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
