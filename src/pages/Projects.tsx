@@ -408,6 +408,21 @@ export default function Projects() {
     return productAlternatives.filter((pa: any) => pa.base_product === productName);
   };
 
+  const hasAddedAlternatives = (customer: string, projectName: string, productName: string) => {
+    const alternatives = getProductAlternatives(productName);
+    if (alternatives.length === 0) return false;
+    
+    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    if (groupNumbers.length === 0) return false;
+    
+    // Check if any alternative has been added to optimization records
+    return optimizationRecords.some((rec: any) =>
+      groupNumbers.includes(rec.project_number) &&
+      rec.alternative_product_name &&
+      alternatives.some((alt: any) => alt.alternative_product === rec.alternative_product_name)
+    );
+  };
+
   const toggleAlternatives = (productName: string) => {
     setExpandedAlternatives(prev => ({
       ...prev,
@@ -836,6 +851,7 @@ export default function Projects() {
                               const details = getProductDetails(productName);
                               const alternatives = getProductAlternatives(productName);
                               const hasAlternatives = alternatives.length > 0;
+                              const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, productName);
                               const isExpanded = expandedAlternatives[productName];
                               const productStatus = getOptimizationStatus(project.customer, project.project_name, productName, 'cross_sell');
 
@@ -860,7 +876,7 @@ export default function Projects() {
                                          value = (
                                            <div className="flex items-center gap-2">
                                              <span>{productName}</span>
-                                             {hasAlternatives && (
+                                             {showAlternativesBadge && (
                                                <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
                                                  A
                                                </Badge>
