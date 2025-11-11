@@ -409,6 +409,71 @@ export type Database = {
         }
         Relationships: []
       }
+      opps_optimization: {
+        Row: {
+          alternative_date_added: string | null
+          alternative_product_name: string | null
+          alternative_status:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          created_at: string
+          cross_sell_date_added: string | null
+          cross_sell_product_name: string | null
+          cross_sell_status:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          id: string
+          optimization_status: Database["public"]["Enums"]["optimization_status"]
+          project_number: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alternative_date_added?: string | null
+          alternative_product_name?: string | null
+          alternative_status?:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          created_at?: string
+          cross_sell_date_added?: string | null
+          cross_sell_product_name?: string | null
+          cross_sell_status?:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          id?: string
+          optimization_status?: Database["public"]["Enums"]["optimization_status"]
+          project_number: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alternative_date_added?: string | null
+          alternative_product_name?: string | null
+          alternative_status?:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          created_at?: string
+          cross_sell_date_added?: string | null
+          cross_sell_product_name?: string | null
+          cross_sell_status?:
+            | Database["public"]["Enums"]["product_optimization_status"]
+            | null
+          id?: string
+          optimization_status?: Database["public"]["Enums"]["optimization_status"]
+          project_number?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_project_number"
+            columns: ["project_number"]
+            isOneToOne: false
+            referencedRelation: "customer_projects"
+            referencedColumns: ["project_number"]
+          },
+        ]
+      }
       product_alternatives: {
         Row: {
           alternative_product: string
@@ -750,6 +815,17 @@ export type Database = {
       action_item_status: "open" | "in_progress" | "completed"
       app_role: "admin" | "user"
       collection_visibility: "private" | "selected" | "organization"
+      optimization_status:
+        | "Neu"
+        | "Offen"
+        | "Prüfung"
+        | "Validierung"
+        | "Abgeschlossen"
+      product_optimization_status:
+        | "Identifiziert"
+        | "Vorgeschlagen"
+        | "Akzeptiert"
+        | "Registriert"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -881,6 +957,19 @@ export const Constants = {
       action_item_status: ["open", "in_progress", "completed"],
       app_role: ["admin", "user"],
       collection_visibility: ["private", "selected", "organization"],
+      optimization_status: [
+        "Neu",
+        "Offen",
+        "Prüfung",
+        "Validierung",
+        "Abgeschlossen",
+      ],
+      product_optimization_status: [
+        "Identifiziert",
+        "Vorgeschlagen",
+        "Akzeptiert",
+        "Registriert",
+      ],
     },
   },
 } as const
