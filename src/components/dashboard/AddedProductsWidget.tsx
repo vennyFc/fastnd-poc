@@ -212,12 +212,13 @@ export function AddedProductsWidget() {
                 {chartData.map((item) => (
                   <div 
                     key={item.status} 
-                    className="p-3 rounded-lg border bg-card"
+                    className="p-3 rounded-lg border"
+                    style={{ backgroundColor: `${item.fill}10` }}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div 
                         className="h-3 w-3 rounded-full" 
-                        style={{ backgroundColor: item.fill }}
+                        style={{ backgroundColor: statusColors[item.status] || item.fill }}
                       />
                       <p className="text-sm font-medium">{item.status}</p>
                     </div>
