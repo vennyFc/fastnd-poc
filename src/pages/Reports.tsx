@@ -53,27 +53,6 @@ export default function Reports() {
       icon: BarChart3,
       color: 'text-blue-500',
     },
-    {
-      id: 'overview' as ReportView,
-      title: 'Produkt-Analyse',
-      description: 'Produktverteilung und Cross-Sell Möglichkeiten',
-      icon: PieChart,
-      color: 'text-green-500',
-    },
-    {
-      id: 'overview' as ReportView,
-      title: 'Umsatz-Trends',
-      description: 'Umsatzentwicklung und Forecasts',
-      icon: TrendingUp,
-      color: 'text-purple-500',
-    },
-    {
-      id: 'overview' as ReportView,
-      title: 'Kunden-Berichte',
-      description: 'Kundenaktivitäten und Engagement',
-      icon: FileText,
-      color: 'text-orange-500',
-    },
   ];
 
   // Fetch removed cross-sells
