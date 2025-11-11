@@ -478,8 +478,12 @@ export default function Projects() {
 
       if (error) throw error;
 
-      // Invalidate queries to refresh data
-      await queryClient.invalidateQueries({ queryKey: ['optimization-records'] });
+      // Invalidate all related queries to refresh data immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['optimization-records'] }),
+        queryClient.invalidateQueries({ queryKey: ['customer-projects'] }),
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+      ]);
       
       toast.success('Status aktualisiert');
     } catch (error) {
