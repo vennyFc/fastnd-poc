@@ -79,10 +79,47 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // First, check if user already exists
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (!listError && existingUsers) {
+      const existingUser = existingUsers.users.find(u => u.email === email)
+      
+      if (existingUser) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Benutzer mit dieser E-Mail ist bereits registriert',
+            userExists: true,
+            userId: existingUser.id
+          }),
+          { 
+            status: 422, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+    }
+
     // Invite the user using admin client
     const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email)
 
     if (error) {
+      console.error('Error inviting user:', error)
+      
+      // Handle specific error cases
+      if (error.message.includes('already been registered')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Benutzer mit dieser E-Mail ist bereits registriert',
+            userExists: true
+          }),
+          { 
+            status: 422, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+      
       return new Response(
         JSON.stringify({ error: error.message }),
         { 
@@ -92,8 +129,13 @@ Deno.serve(async (req) => {
       )
     }
 
+    console.log('User invited successfully:', email)
+
     return new Response(
-      JSON.stringify({ data }),
+      JSON.stringify({ 
+        data,
+        message: 'Einladung erfolgreich versendet'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }

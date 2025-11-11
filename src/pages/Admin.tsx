@@ -61,7 +61,13 @@ export default function Admin() {
         body: { email },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        // Check if it's a "user already exists" error
+        if (response.data?.userExists || response.error.message?.includes('bereits registriert')) {
+          throw new Error('Benutzer mit dieser E-Mail ist bereits registriert');
+        }
+        throw response.error;
+      }
       return response.data;
     },
     onSuccess: () => {
@@ -71,7 +77,9 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (error: any) => {
-      toast.error(`Einladung fehlgeschlagen: ${error.message}`);
+      console.error('Invite error:', error);
+      const errorMessage = error.message || 'Einladung fehlgeschlagen';
+      toast.error(errorMessage);
     },
   });
 
