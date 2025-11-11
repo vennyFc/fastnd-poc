@@ -772,31 +772,31 @@ export default function Projects() {
                     {/* Optimization Status Progress Bar */}
                     <div className="mt-4 flex items-center gap-4">
                       <div className="flex-1 flex items-center gap-1">
-                        {/* Step: Identifiziert */}
+                        {/* Step: Neu */}
                         <div className="flex-1 flex items-center">
                           <div className="flex items-center justify-center px-3 py-1.5 rounded-l-lg border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
-                            ✓ IDENTIFIZIERT
+                            ✓ NEU
                           </div>
                         </div>
                         
-                        {/* Step: Vorgeschlagen */}
+                        {/* Step: Offen */}
                         <div className="flex-1 flex items-center">
                           <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
-                            ✓ VORGESCHLAGEN
+                            ✓ OFFEN
                           </div>
                         </div>
                         
-                        {/* Step: Akzeptiert */}
+                        {/* Step: Prüfung */}
                         <div className="flex-1 flex items-center">
                           <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
-                            AKZEPTIERT
+                            PRÜFUNG
                           </div>
                         </div>
                         
-                        {/* Step: Registriert */}
+                        {/* Step: Validierung */}
                         <div className="flex-1 flex items-center">
                           <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
-                            REGISTRIERT
+                            VALIDIERUNG
                           </div>
                         </div>
                         
@@ -809,15 +809,15 @@ export default function Projects() {
                       </div>
                       
                       {/* Status Dropdown */}
-                      <Select defaultValue="vorgeschlagen">
+                      <Select defaultValue="offen">
                         <SelectTrigger className="w-[180px] bg-background">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="identifiziert">Identifiziert</SelectItem>
-                          <SelectItem value="vorgeschlagen">Vorgeschlagen</SelectItem>
-                          <SelectItem value="akzeptiert">Akzeptiert</SelectItem>
-                          <SelectItem value="registriert">Registriert</SelectItem>
+                          <SelectItem value="neu">Neu</SelectItem>
+                          <SelectItem value="offen">Offen</SelectItem>
+                          <SelectItem value="prüfung">Prüfung</SelectItem>
+                          <SelectItem value="validierung">Validierung</SelectItem>
                           <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
                         </SelectContent>
                       </Select>
