@@ -8,6 +8,7 @@ import { StatisticsWidget } from '@/components/dashboard/StatisticsWidget';
 import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidget';
 import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
 import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
+import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationStatusWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -163,6 +164,21 @@ export default function Dashboard() {
               products={products || []}
               crossSells={crossSells || []}
             />
+          </WidgetContainer>
+        );
+      case 'optimization-status':
+        return (
+          <WidgetContainer
+            key="optimization-status"
+            id="optimization-status"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <OptimizationStatusWidget />
           </WidgetContainer>
         );
       case 'getting-started':
