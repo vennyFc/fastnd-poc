@@ -1058,85 +1058,213 @@ export default function Projects() {
                       return projectCrossSells.length > 0 ? (
                         <div className="rounded-lg border">
                           <Table>
-                            <TableHeader>
-                              <TableRow>
-                                {visibleCrossSellColumns.map((column, index) => (
-                                  <ResizableTableHeader
-                                    key={column.key}
-                                    label={column.label}
-                                    width={column.width}
-                                    onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
-                                    sortable={false}
-                                    draggable={true}
-                                    onDragStart={() => setDraggedCrossSellIndex(index)}
-                                    onDragOver={(e) => {
-                                      e.preventDefault();
-                                      e.dataTransfer.dropEffect = 'move';
-                                    }}
-                                    onDrop={(e) => {
-                                      e.preventDefault();
-                                      if (draggedCrossSellIndex !== null && draggedCrossSellIndex !== index) {
-                                        reorderCrossSellColumns(draggedCrossSellIndex, index);
-                                      }
-                                      setDraggedCrossSellIndex(null);
-                                    }}
-                                    onDragEnd={() => setDraggedCrossSellIndex(null)}
-                                  />
-                                ))}
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {projectCrossSells.map((cs: any, idx: number) => {
-                                const details = getProductDetails(cs.cross_sell_product);
-                                
-                                return (
-                                  <TableRow key={idx}>
-                                     {visibleCrossSellColumns.map((column) => {
-                                       let value: any = '-';
-                                       const isProductColumn = column.key === 'product';
-                                      if (column.key === 'product') {
-                                        value = cs.cross_sell_product;
-                                      } else if (column.key === 'action') {
-                                        value = (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleAddCrossSell(project, cs.cross_sell_product);
-                                            }}
-                                          >
-                                            <Plus className="h-3.5 w-3.5 mr-1" />
-                                            Hinzufügen
-                                          </Button>
-                                        );
-                                      } else if (details) {
-                                        if (column.key === 'manufacturer') value = details.manufacturer || '-';
-                                        if (column.key === 'product_family') value = details.product_family || '-';
-                                        if (column.key === 'description') value = details.product_description || '-';
-                                      }
+                             <TableHeader>
+                               <TableRow>
+                                 <th className="w-12"></th>
+                                 {visibleCrossSellColumns.map((column, index) => (
+                                   <ResizableTableHeader
+                                     key={column.key}
+                                     label={column.label}
+                                     width={column.width}
+                                     onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
+                                     sortable={false}
+                                     draggable={true}
+                                     onDragStart={() => setDraggedCrossSellIndex(index)}
+                                     onDragOver={(e) => {
+                                       e.preventDefault();
+                                       e.dataTransfer.dropEffect = 'move';
+                                     }}
+                                     onDrop={(e) => {
+                                       e.preventDefault();
+                                       if (draggedCrossSellIndex !== null && draggedCrossSellIndex !== index) {
+                                         reorderCrossSellColumns(draggedCrossSellIndex, index);
+                                       }
+                                       setDraggedCrossSellIndex(null);
+                                     }}
+                                     onDragEnd={() => setDraggedCrossSellIndex(null)}
+                                   />
+                                 ))}
+                               </TableRow>
+                             </TableHeader>
+                             <TableBody>
+                               {projectCrossSells.map((cs: any, idx: number) => {
+                                 const details = getProductDetails(cs.cross_sell_product);
+                                 const alternatives = getProductAlternatives(cs.cross_sell_product);
+                                 const hasAlternatives = alternatives.length > 0;
+                                 const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
+                                 const isExpanded = expandedAlternatives[cs.cross_sell_product];
+                                 
+                                 return (
+                                   <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
+                                     <TableRow key={idx}>
+                                       <TableCell className="w-12">
+                                         {hasAlternatives && (
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             className="h-8 w-8 p-0"
+                                             onClick={() => toggleAlternatives(cs.cross_sell_product)}
+                                           >
+                                             <GitBranch className="h-4 w-4 text-primary" />
+                                           </Button>
+                                         )}
+                                       </TableCell>
+                                       {visibleCrossSellColumns.map((column) => {
+                                         let value: any = '-';
+                                         const isProductColumn = column.key === 'product';
+                                         if (column.key === 'product') {
+                                           value = (
+                                             <div className="flex items-center gap-2">
+                                               <span>{cs.cross_sell_product}</span>
+                                               {showAlternativesBadge && (
+                                                 <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                   A
+                                                 </Badge>
+                                               )}
+                                             </div>
+                                           );
+                                         } else if (column.key === 'action') {
+                                           value = (
+                                             <Button
+                                               size="sm"
+                                               variant="outline"
+                                               onClick={(e) => {
+                                                 e.stopPropagation();
+                                                 handleAddCrossSell(project, cs.cross_sell_product);
+                                               }}
+                                             >
+                                               <Plus className="h-3.5 w-3.5 mr-1" />
+                                               Hinzufügen
+                                             </Button>
+                                           );
+                                         } else if (details) {
+                                           if (column.key === 'manufacturer') value = details.manufacturer || '-';
+                                           if (column.key === 'product_family') value = details.product_family || '-';
+                                           if (column.key === 'description') value = details.product_description || '-';
+                                         }
 
+                                         return (
+                                           <TableCell 
+                                             key={column.key}
+                                             className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                                             style={{ width: `${column.width}px` }}
+                                             onClick={(e) => {
+                                               if (isProductColumn) {
+                                                 e.stopPropagation();
+                                                 setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                 setProductQuickViewOpen(true);
+                                               }
+                                             }}
+                                           >
+                                             {value}
+                                           </TableCell>
+                                         );
+                                       })}
+                                     </TableRow>
+                                     
+                                     {/* Alternative Products for Cross-Sells - Expandable */}
+                                     {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
+                                       const altDetails = getProductDetails(alt.alternative_product);
+                                       const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
+                                       const isAlreadyInProject = project.products.includes(alt.alternative_product);
+                                       
                                        return (
-                                         <TableCell 
-                                           key={column.key}
-                                           className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
-                                           style={{ width: `${column.width}px` }}
-                                           onClick={(e) => {
-                                             if (isProductColumn) {
-                                               e.stopPropagation();
-                                               setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                               setProductQuickViewOpen(true);
+                                         <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                           <TableCell className="w-12 pl-8">
+                                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                           </TableCell>
+                                           {visibleCrossSellColumns.map((column) => {
+                                             if (column.key === 'product') {
+                                               return (
+                                                 <TableCell 
+                                                   key={column.key}
+                                                   className="font-medium cursor-pointer text-primary hover:underline"
+                                                   style={{ width: `${column.width}px` }}
+                                                   onClick={(e) => {
+                                                     e.stopPropagation();
+                                                     setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
+                                                     setProductQuickViewOpen(true);
+                                                   }}
+                                                 >
+                                                   <div className="flex items-center gap-2">
+                                                     <span>{alt.alternative_product}</span>
+                                                     {alt.similarity && (
+                                                       <Badge variant="secondary" className="text-xs">
+                                                         {alt.similarity}% ähnlich
+                                                       </Badge>
+                                                     )}
+                                                   </div>
+                                                 </TableCell>
+                                               );
+                                             } else if (column.key === 'action') {
+                                               return (
+                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                   {altStatus ? (
+                                                     <Select
+                                                       value={altStatus}
+                                                       disabled={altStatus === 'Registriert'}
+                                                       onValueChange={(newStatus) => 
+                                                         handleUpdateCrossSellStatus(
+                                                           project.customer, 
+                                                           project.project_name, 
+                                                           alt.alternative_product, 
+                                                           newStatus,
+                                                           'alternative'
+                                                         )
+                                                       }
+                                                     >
+                                                       <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
+                                                         <SelectValue />
+                                                       </SelectTrigger>
+                                                       <SelectContent>
+                                                         <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                         <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                         <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                         <SelectItem value="Registriert">Registriert</SelectItem>
+                                                       </SelectContent>
+                                                     </Select>
+                                                   ) : (
+                                                     !isAlreadyInProject && (
+                                                       <Button
+                                                         size="sm"
+                                                         variant="default"
+                                                         onClick={(e) => {
+                                                           e.stopPropagation();
+                                                           handleAddAlternative(project, alt.alternative_product);
+                                                         }}
+                                                       >
+                                                         <Plus className="h-4 w-4 mr-1" />
+                                                         Hinzufügen
+                                                       </Button>
+                                                     )
+                                                   )}
+                                                 </TableCell>
+                                               );
+                                             } else {
+                                               let value = '-';
+                                               if (altDetails) {
+                                                 if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                                 if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                                 if (column.key === 'description') value = altDetails.product_description || '-';
+                                               }
+
+                                               return (
+                                                 <TableCell 
+                                                   key={column.key}
+                                                   style={{ width: `${column.width}px` }}
+                                                 >
+                                                   {value}
+                                                 </TableCell>
+                                               );
                                              }
-                                           }}
-                                         >
-                                           {value}
-                                         </TableCell>
+                                           })}
+                                         </TableRow>
                                        );
-                                    })}
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
+                                     })}
+                                   </React.Fragment>
+                                 );
+                               })}
+                             </TableBody>
                           </Table>
                         </div>
                       ) : (
