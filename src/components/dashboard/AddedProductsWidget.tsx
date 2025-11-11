@@ -255,10 +255,6 @@ export function AddedProductsWidget() {
                 ))}
               </div>
             </div>
-
-            <p className="text-xs text-muted-foreground text-right mt-4">
-              Zeitraum: {timeRangeLabels[timeRange]}
-            </p>
           </>
         )}
       </CardContent>
