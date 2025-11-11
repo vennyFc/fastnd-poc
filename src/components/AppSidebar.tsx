@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target, BarChart3 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -40,6 +40,7 @@ export function AppSidebar() {
     { title: t('nav.products'), url: '/products', icon: Package },
     { title: t('nav.customers'), url: '/customers', icon: Users },
     { title: t('nav.collections'), url: '/collections', icon: Layers },
+    { title: t('nav.reports'), url: '/reports', icon: BarChart3 },
   ];
 
   const adminMenuItems = [

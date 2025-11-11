@@ -13,6 +13,7 @@ import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Applications from "./pages/Applications";
 import Collections from "./pages/Collections";
+import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -92,6 +93,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <Collections />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Reports />
                 </MainLayout>
               </ProtectedRoute>
             }
