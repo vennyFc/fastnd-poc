@@ -9,7 +9,7 @@ interface StatisticsWidgetProps {
 
 export function StatisticsWidget({ projects, products, crossSells }: StatisticsWidgetProps) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -17,13 +17,13 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
               <CardHeader className="h-[72px]">
                 <CardTitle className="text-lg">Projekte</CardTitle>
               </CardHeader>
-              <CardContent className="pt-8">
+              <CardContent className="!pt-12">
                 <p className="text-3xl font-bold text-primary">{projects?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">In der Datenbank</p>
               </CardContent>
             </Card>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom">
             <p className="font-semibold">Projektübersicht</p>
             <p className="text-sm">Alle aktiven Kundenprojekte in der Datenbank</p>
           </TooltipContent>
@@ -35,13 +35,13 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
               <CardHeader className="h-[72px]">
                 <CardTitle className="text-lg">Produkte</CardTitle>
               </CardHeader>
-              <CardContent className="pt-8">
+              <CardContent className="!pt-12">
                 <p className="text-3xl font-bold text-primary">{products?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">Verfügbar</p>
               </CardContent>
             </Card>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom">
             <p className="font-semibold">Produktkatalog</p>
             <p className="text-sm">Alle verfügbaren Produkte für Optimierungen</p>
           </TooltipContent>
@@ -53,13 +53,13 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
               <CardHeader className="h-[72px]">
                 <CardTitle className="text-lg">Cross-Selling</CardTitle>
               </CardHeader>
-              <CardContent className="pt-8">
+              <CardContent className="!pt-12">
                 <p className="text-3xl font-bold text-primary">{crossSells?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">Möglichkeiten</p>
               </CardContent>
             </Card>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent side="bottom">
             <p className="font-semibold">Cross-Selling Potenzial</p>
             <p className="text-sm">Identifizierte Verkaufschancen für zusätzliche Produkte</p>
           </TooltipContent>
