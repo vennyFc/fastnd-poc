@@ -26,6 +26,8 @@ const widgetLabels: Record<string, string> = {
   'projects': 'Projekte',
   'action-items': 'Action Items',
   'statistics': 'Statistiken',
+  'optimization-status': 'Optimierungsstatus',
+  'added-products': 'Ergänzte Produkte',
   'getting-started': 'Erste Schritte',
 };
 
