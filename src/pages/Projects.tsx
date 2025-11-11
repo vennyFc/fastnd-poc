@@ -425,12 +425,31 @@ export default function Projects() {
     return Array.from(new Set(nums));
   };
 
+  // Check if product is already registered in customer_projects
+  const isProductRegistered = (
+    customer: string,
+    projectName: string,
+    productName: string
+  ): boolean => {
+    if (!projects) return false;
+    return projects.some((p: any) => 
+      p.customer === customer && 
+      p.project_name === projectName && 
+      p.product === productName
+    );
+  };
+
   const getOptimizationStatus = (
     customer: string,
     projectName: string,
     productName: string,
     type: 'cross_sell' | 'alternative'
   ) => {
+    // If product is already in customer_projects, it's registered
+    if (isProductRegistered(customer, projectName, productName)) {
+      return 'Registriert';
+    }
+
     const groupNumbers = getProjectNumbersForGroup(customer, projectName);
     if (groupNumbers.length === 0) return null;
     const record = optimizationRecords.find((rec: any) =>
@@ -744,30 +763,32 @@ export default function Projects() {
                                        if (column.key === 'product') {
                                          value = productName;
                                        } else if (column.key === 'status') {
-                                         value = productStatus ? (
-                                           <Select
-                                             value={productStatus}
-                                             onValueChange={(newStatus) => 
-                                               handleUpdateCrossSellStatus(
-                                                 project.customer, 
-                                                 project.project_name, 
-                                                 productName, 
-                                                 newStatus,
-                                                 'cross_sell'
-                                               )
-                                             }
-                                           >
-                                             <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
-                                               <SelectValue />
-                                             </SelectTrigger>
-                                             <SelectContent>
-                                               <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                               <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                               <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                               <SelectItem value="Registriert">Registriert</SelectItem>
-                                             </SelectContent>
-                                           </Select>
-                                         ) : '-';
+                                          const isRegistered = isProductRegistered(project.customer, project.project_name, productName);
+                                          value = productStatus ? (
+                                            <Select
+                                              value={productStatus}
+                                              disabled={isRegistered}
+                                              onValueChange={(newStatus) => 
+                                                handleUpdateCrossSellStatus(
+                                                  project.customer, 
+                                                  project.project_name, 
+                                                  productName, 
+                                                  newStatus,
+                                                  'cross_sell'
+                                                )
+                                              }
+                                            >
+                                              <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                <SelectItem value="Registriert">Registriert</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                          ) : '-';
                                        } else if (details) {
                                          if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                          if (column.key === 'product_family') value = details.product_family || '-';
