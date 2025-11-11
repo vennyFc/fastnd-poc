@@ -14,10 +14,10 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <Tooltip>
           <TooltipTrigger asChild>
             <Card className="shadow-card cursor-help">
-              <CardHeader className="h-[72px]">
+              <CardHeader className="h-[72px] text-center">
                 <CardTitle className="text-lg">Projekte</CardTitle>
               </CardHeader>
-              <CardContent className="!pt-12">
+              <CardContent className="!pt-12 text-center">
                 <p className="text-3xl font-bold text-primary">{projects?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">In der Datenbank</p>
               </CardContent>
@@ -32,10 +32,10 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <Tooltip>
           <TooltipTrigger asChild>
             <Card className="shadow-card cursor-help">
-              <CardHeader className="h-[72px]">
+              <CardHeader className="h-[72px] text-center">
                 <CardTitle className="text-lg">Produkte</CardTitle>
               </CardHeader>
-              <CardContent className="!pt-12">
+              <CardContent className="!pt-12 text-center">
                 <p className="text-3xl font-bold text-primary">{products?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">Verfügbar</p>
               </CardContent>
@@ -50,10 +50,10 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <Tooltip>
           <TooltipTrigger asChild>
             <Card className="shadow-card cursor-help">
-              <CardHeader className="h-[72px]">
+              <CardHeader className="h-[72px] text-center">
                 <CardTitle className="text-lg">Cross-Selling</CardTitle>
               </CardHeader>
-              <CardContent className="!pt-12">
+              <CardContent className="!pt-12 text-center">
                 <p className="text-3xl font-bold text-primary">{crossSells?.length || 0}</p>
                 <p className="text-sm text-muted-foreground mt-1">Möglichkeiten</p>
               </CardContent>
