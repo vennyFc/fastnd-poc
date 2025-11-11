@@ -330,6 +330,7 @@ export type Database = {
           id: string
           product: string
           project_name: string
+          project_number: string
           upload_id: string | null
           user_id: string
         }
@@ -340,6 +341,7 @@ export type Database = {
           id?: string
           product: string
           project_name: string
+          project_number: string
           upload_id?: string | null
           user_id: string
         }
@@ -350,6 +352,7 @@ export type Database = {
           id?: string
           product?: string
           project_name?: string
+          project_number?: string
           upload_id?: string | null
           user_id?: string
         }
