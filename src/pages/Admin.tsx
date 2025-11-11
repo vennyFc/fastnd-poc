@@ -76,8 +76,12 @@ export default function Admin() {
       
       return response.data;
     },
-    onSuccess: () => {
-      toast.success('Einladung erfolgreich versendet');
+    onSuccess: (data: any) => {
+      if (data?.userExists) {
+        toast.info(data.message || 'Benutzer ist bereits registriert');
+      } else {
+        toast.success(data?.message || 'Einladung erfolgreich versendet');
+      }
       setInviteEmail('');
       setInviteDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });

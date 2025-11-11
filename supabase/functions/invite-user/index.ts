@@ -89,12 +89,12 @@ Deno.serve(async (req) => {
       if (existingUser) {
         return new Response(
           JSON.stringify({ 
-            error: 'Benutzer mit dieser E-Mail ist bereits registriert',
+            message: 'Benutzer mit dieser E-Mail ist bereits registriert',
             userExists: true,
             userId: existingUser.id
           }),
           { 
-            status: 422, 
+            status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         )
@@ -111,11 +111,11 @@ Deno.serve(async (req) => {
       if (error.message.includes('already been registered')) {
         return new Response(
           JSON.stringify({ 
-            error: 'Benutzer mit dieser E-Mail ist bereits registriert',
+            message: 'Benutzer mit dieser E-Mail ist bereits registriert',
             userExists: true
           }),
           { 
-            status: 422, 
+            status: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         )
