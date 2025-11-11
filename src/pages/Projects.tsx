@@ -692,6 +692,7 @@ export default function Projects() {
       if (error) throw error;
 
       // Store removed ID for undo
+      console.log('Setting undo modal visible with ID:', inserted.id);
       setLastRemovedId(inserted.id);
       setLastRemovedProduct(crossSellProduct);
 
@@ -706,6 +707,7 @@ export default function Projects() {
 
       // Show undo modal for 4 seconds
       setUndoModalOpen(true);
+      console.log('Undo modal should now be visible');
       setTimeout(() => {
         setUndoModalOpen(false);
         setLastRemovedId(null);
@@ -1992,14 +1994,17 @@ export default function Projects() {
 
       {/* Undo Modal - 4 seconds */}
       {undoModalOpen && (
-        <div className="fixed bottom-6 right-6 z-[10001] animate-fade-in">
-          <div className="bg-background border rounded-lg shadow-xl p-4 min-w-[320px]">
+        <div 
+          className="fixed bottom-6 right-6 z-[99999] animate-fade-in"
+          style={{ position: 'fixed', bottom: '24px', right: '24px' }}
+        >
+          <div className="bg-primary text-primary-foreground border-2 border-primary-foreground rounded-lg shadow-2xl p-4 min-w-[320px]">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
-                <p className="font-medium text-sm">"{lastRemovedProduct}" entfernt</p>
-                <p className="text-xs text-muted-foreground mt-1">Wird in 4 Sekunden ausgeblendet</p>
+                <p className="font-bold text-sm">"{lastRemovedProduct}" entfernt</p>
+                <p className="text-xs opacity-90 mt-1">Wird in 4 Sekunden ausgeblendet</p>
               </div>
-              <Button size="sm" variant="default" onClick={handleUndoRemoval}>
+              <Button size="sm" variant="secondary" onClick={handleUndoRemoval}>
                 Rückgängig
               </Button>
             </div>
