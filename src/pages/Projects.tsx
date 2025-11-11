@@ -691,6 +691,117 @@ export default function Projects() {
     }
   };
 
+  // Calculate automatic project status based on business rules
+  const calculateProjectStatus = (project: any): string => {
+    const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
+    if (groupNumbers.length === 0) return 'neu';
+    
+    // Check if user has manually set status to "Abgeschlossen"
+    const projectOptRecords = optimizationRecords.filter((rec: any) => 
+      groupNumbers.includes(rec.project_number)
+    );
+    
+    // If any record has "Abgeschlossen" optimization_status, respect that
+    const hasAbgeschlossen = projectOptRecords.some((rec: any) => 
+      rec.optimization_status === 'Abgeschlossen'
+    );
+    if (hasAbgeschlossen) return 'Abgeschlossen';
+    
+    // Check if products were added to project (from optimization)
+    const hasAddedProducts = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_product_name || rec.alternative_product_name
+    );
+    if (hasAddedProducts) return 'Validierung';
+    
+    // Check if project was viewed (from history)
+    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
+    if (!wasViewed) return 'Offen';
+    
+    // Check if opportunity was added within last week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const newestRecord = projectOptRecords
+      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
+        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
+        return dateB.getTime() - dateA.getTime();
+      })[0];
+    
+    if (newestRecord) {
+      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
+      if (addedDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    // Default: Prüfung
+    return 'Prüfung';
+  };
+
+  const handleProjectStatusChange = async (project: any, newStatus: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Nicht authentifiziert');
+        return;
+      }
+
+      const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
+      if (groupNumbers.length === 0) return;
+
+      // Map German status to database enum value
+      const statusMap: Record<string, 'Neu' | 'Offen' | 'Prüfung' | 'Validierung' | 'Abgeschlossen'> = {
+        'neu': 'Neu',
+        'offen': 'Offen',
+        'prüfung': 'Prüfung',
+        'validierung': 'Validierung',
+        'abgeschlossen': 'Abgeschlossen'
+      };
+      
+      const dbStatus = statusMap[newStatus.toLowerCase()] || 'Neu';
+
+      // Update optimization records with new status
+      for (const projectNumber of groupNumbers) {
+        // Check if record exists
+        const { data: existing } = await supabase
+          .from('opps_optimization')
+          .select('id')
+          .eq('project_number', projectNumber)
+          .maybeSingle();
+
+        if (existing) {
+          // Update existing record
+          const { error } = await supabase
+            .from('opps_optimization')
+            .update({ 
+              optimization_status: dbStatus
+            })
+            .eq('id', existing.id);
+
+          if (error) throw error;
+        } else {
+          // Insert new record - need to get user_id separately due to type constraints
+          const { error } = await supabase
+            .from('opps_optimization')
+            .insert([{
+              project_number: projectNumber,
+              optimization_status: dbStatus
+            }] as any);
+
+          if (error) throw error;
+        }
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      toast.success(`Projekt-Status auf "${newStatus}" gesetzt`);
+    } catch (error) {
+      console.error('Error updating project status:', error);
+      toast.error('Fehler beim Aktualisieren des Projekt-Status');
+    }
+  };
+
   const handleRowClick = (project: any) => {
     addToHistory(project.id);
     setSelectedProject(project);
@@ -771,46 +882,68 @@ export default function Projects() {
                     
                     {/* Optimization Status Progress Bar */}
                     <div className="mt-4 flex items-center gap-4">
-                      <div className="flex-1 grid grid-cols-5 gap-0">
-                        {/* Step: Neu */}
-                        <div className="flex items-center justify-center px-2 py-1.5 rounded-l-lg border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
-                          ✓ NEU
-                        </div>
+                      {(() => {
+                        const currentStatus = calculateProjectStatus(project);
+                        const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
                         
-                        {/* Step: Offen */}
-                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
-                          ✓ OFFEN
-                        </div>
-                        
-                        {/* Step: Prüfung */}
-                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium">
-                          PRÜFUNG
-                        </div>
-                        
-                        {/* Step: Validierung */}
-                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium">
-                          VALIDIERUNG
-                        </div>
-                        
-                        {/* Step: Abgeschlossen */}
-                        <div className="flex items-center justify-center px-2 py-1.5 rounded-r-lg border bg-muted text-muted-foreground text-xs font-medium">
-                          ABGESCHLOSSEN
-                        </div>
-                      </div>
-                      
-                      {/* Status Dropdown */}
-                      <Select defaultValue="offen">
-                        <SelectTrigger className="w-[180px] bg-background">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="neu">Neu</SelectItem>
-                          <SelectItem value="offen">Offen</SelectItem>
-                          <SelectItem value="prüfung">Prüfung</SelectItem>
-                          <SelectItem value="validierung">Validierung</SelectItem>
-                          <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        return (
+                          <>
+                            <div className="flex-1 grid grid-cols-5 gap-0">
+                              {/* Step: Neu */}
+                              <div className={`flex items-center justify-center px-2 py-1.5 rounded-l-lg border border-r-0 text-xs font-medium ${
+                                statusIndex >= 0 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {statusIndex >= 0 && '✓ '}NEU
+                              </div>
+                              
+                              {/* Step: Offen */}
+                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${
+                                statusIndex >= 1 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {statusIndex >= 1 && '✓ '}OFFEN
+                              </div>
+                              
+                              {/* Step: Prüfung */}
+                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${
+                                statusIndex >= 2 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {statusIndex >= 2 && '✓ '}PRÜFUNG
+                              </div>
+                              
+                              {/* Step: Validierung */}
+                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${
+                                statusIndex >= 3 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {statusIndex >= 3 && '✓ '}VALIDIERUNG
+                              </div>
+                              
+                              {/* Step: Abgeschlossen */}
+                              <div className={`flex items-center justify-center px-2 py-1.5 rounded-r-lg border text-xs font-medium ${
+                                statusIndex >= 4 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'
+                              }`}>
+                                {statusIndex >= 4 && '✓ '}ABGESCHLOSSEN
+                              </div>
+                            </div>
+                            
+                            {/* Status Dropdown */}
+                            <Select 
+                              value={currentStatus.toLowerCase()} 
+                              onValueChange={(value) => handleProjectStatusChange(project, value)}
+                            >
+                              <SelectTrigger className="w-[180px] bg-background">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="neu">Neu</SelectItem>
+                                <SelectItem value="offen">Offen</SelectItem>
+                                <SelectItem value="prüfung">Prüfung</SelectItem>
+                                <SelectItem value="validierung">Validierung</SelectItem>
+                                <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                   <Button
