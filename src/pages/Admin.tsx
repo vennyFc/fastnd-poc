@@ -418,15 +418,15 @@ export default function Admin() {
                         {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-2 min-w-[180px]">
+                        <div className="grid grid-cols-[auto_auto_auto] gap-2 items-center">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleResendInvite(user.email)}
                             disabled={resendInviteMutation.isPending}
-                            className="w-full justify-start"
+                            className="whitespace-nowrap"
                           >
-                            <Mail className="h-4 w-4 mr-2" />
+                            <Mail className="h-4 w-4 mr-1" />
                             Einladung
                           </Button>
                           <Button
@@ -434,9 +434,9 @@ export default function Admin() {
                             size="sm"
                             onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
                             disabled={toggleAdminMutation.isPending}
-                            className="w-full justify-start"
+                            className="whitespace-nowrap"
                           >
-                            <Shield className="h-4 w-4 mr-2" />
+                            <Shield className="h-4 w-4 mr-1" />
                             {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
                           </Button>
                           <Button
@@ -444,10 +444,9 @@ export default function Admin() {
                             size="sm"
                             onClick={() => handleDeleteClick(user.id, user.email)}
                             disabled={deleteUserMutation.isPending}
-                            className="w-full justify-start"
+                            title="Benutzer löschen"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Löschen
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
