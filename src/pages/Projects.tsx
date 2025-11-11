@@ -515,9 +515,8 @@ export default function Projects() {
 
       // Invalidate all related queries to refresh data immediately
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['optimization-records'] }),
-        queryClient.invalidateQueries({ queryKey: ['customer-projects'] }),
-        queryClient.invalidateQueries({ queryKey: ['projects'] })
+        queryClient.invalidateQueries({ queryKey: ['opps_optimization'] }),
+        queryClient.invalidateQueries({ queryKey: ['customer_projects'] })
       ]);
       
       toast.success('Status aktualisiert');
