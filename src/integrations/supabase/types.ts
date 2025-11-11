@@ -464,15 +464,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_project_number"
-            columns: ["project_number"]
-            isOneToOne: false
-            referencedRelation: "customer_projects"
-            referencedColumns: ["project_number"]
-          },
-        ]
+        Relationships: []
       }
       product_alternatives: {
         Row: {
