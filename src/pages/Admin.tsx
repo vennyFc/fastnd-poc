@@ -155,7 +155,7 @@ export default function Admin() {
               Benutzer einladen
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Neuen Benutzer einladen</DialogTitle>
               <DialogDescription>
@@ -174,6 +174,35 @@ export default function Admin() {
                   onKeyDown={(e) => e.key === 'Enter' && handleInviteUser()}
                 />
               </div>
+
+              {/* Show existing users */}
+              {users && users.length > 0 && (
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <h4 className="text-sm font-medium">Bereits registrierte Benutzer ({users.length})</h4>
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto space-y-1">
+                    {users.map((user: any) => (
+                      <div 
+                        key={user.id} 
+                        className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-background"
+                      >
+                        <span className="text-foreground">{user.email}</span>
+                        {user.roles.some((r: any) => r.role === 'admin') && (
+                          <Badge variant="default" className="h-5 text-xs">
+                            <Shield className="h-3 w-3 mr-1" />
+                            Admin
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    💡 Diese E-Mail-Adressen sind bereits registriert
+                  </p>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>

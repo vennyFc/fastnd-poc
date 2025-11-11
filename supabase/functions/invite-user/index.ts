@@ -49,9 +49,10 @@ Deno.serve(async (req) => {
       .select('role')
       .eq('user_id', user.id)
       .eq('role', 'admin')
-      .single()
+      .maybeSingle()
 
     if (rolesError || !roles) {
+      console.error('Role check error:', rolesError)
       return new Response(
         JSON.stringify({ error: 'Forbidden: Admin access required' }),
         { 
