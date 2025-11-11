@@ -912,7 +912,7 @@ export default function Projects() {
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
     const visibleProductColumns = productColumns.filter(col => col.visible);
-    const visibleCrossSellColumns = crossSellColumns.filter(col => col.visible);
+    const visibleCrossSellColumns = crossSellColumns.filter(col => col.visible || col.key === 'remove');
     
     return (
       <div className="p-6 space-y-6">
