@@ -374,12 +374,26 @@ export default function Projects() {
     return [];
   };
 
-  const getCrossSells = (products: string[]) => {
+  const getCrossSells = (products: string[], projectNumber: string | null) => {
     if (!products || products.length === 0) return [];
     
-    return crossSells.filter((cs: any) => 
+    // Filter out products that are already in the project
+    const availableCrossSells = crossSells.filter((cs: any) => 
       products.includes(cs.base_product) && !products.includes(cs.cross_sell_product)
     );
+
+    // Further filter out products that have been added via optimization (if project_number exists)
+    if (projectNumber) {
+      const addedProducts = optimizationRecords
+        .filter((rec: any) => rec.project_number === projectNumber && rec.cross_sell_product_name)
+        .map((rec: any) => rec.cross_sell_product_name);
+      
+      return availableCrossSells.filter((cs: any) => 
+        !addedProducts.includes(cs.cross_sell_product)
+      );
+    }
+    
+    return availableCrossSells;
   };
 
   const getProductDetails = (productName: string) => {
@@ -413,10 +427,10 @@ export default function Projects() {
         return;
       }
 
-      // Get project_number from customer_projects
+      // Get project_number and application from customer_projects
       const { data: projectData, error: projectError } = await supabase
         .from('customer_projects')
-        .select('project_number')
+        .select('project_number, application')
         .eq('customer', project.customer)
         .eq('project_name', project.project_name)
         .limit(1)
@@ -427,6 +441,20 @@ export default function Projects() {
         toast.error('Projekt nicht gefunden');
         return;
       }
+
+      // Insert into customer_projects to add product to project
+      const { error: projectInsertError } = await supabase
+        .from('customer_projects')
+        .insert({
+          user_id: user.id,
+          customer: project.customer,
+          project_name: project.project_name,
+          application: projectData.application,
+          product: crossSellProduct,
+          project_number: projectData.project_number
+        });
+
+      if (projectInsertError) throw projectInsertError;
 
       // Insert into opps_optimization
       const { error: insertError } = await supabase
@@ -442,7 +470,10 @@ export default function Projects() {
       if (insertError) throw insertError;
 
       await refetchOptimization();
-      toast.success(`${crossSellProduct} als Cross-Sell hinzugefügt`);
+      toast.success(`${crossSellProduct} zum Projekt hinzugefügt`);
+      
+      // Trigger page refresh to update both lists
+      window.location.reload();
     } catch (error: any) {
       console.error('Error adding cross-sell:', error);
       toast.error('Fehler beim Hinzufügen des Cross-Sell Produkts');
@@ -712,7 +743,7 @@ export default function Projects() {
                     </div>
                     <Separator className="mb-4" />
                     {(() => {
-                      const projectCrossSells = getCrossSells(project.products);
+                      const projectCrossSells = getCrossSells(project.products, project.project_number);
                       return projectCrossSells.length > 0 ? (
                         <div className="rounded-lg border">
                           <Table>
