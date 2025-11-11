@@ -116,7 +116,7 @@ export default function Projects() {
       { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
       { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
       { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
-      { key: 'remove', label: '', visible: true, width: 60, order: 4 },
+      { key: 'remove', label: 'Entfernen', visible: true, width: 80, order: 4 },
       { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 5 },
     ]
   );
