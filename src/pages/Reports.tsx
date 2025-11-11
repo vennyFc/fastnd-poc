@@ -758,25 +758,49 @@ export default function Reports() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {reportCards.map((report) => (
-          <Card
-            key={report.title}
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => setCurrentView(report.id)}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-muted ${report.color}`}>
-                  <report.icon className="h-6 w-6" />
+        {reportCards.map((report) => {
+          const getReportCount = () => {
+            if (report.id === 'rejected-cross-sells') {
+              return removedCrossSells.length;
+            } else if (report.id === 'added-products') {
+              return enrichedAddedProducts.length;
+            }
+            return 0;
+          };
+
+          const count = getReportCount();
+          const currentLoading = report.id === 'rejected-cross-sells' ? isLoading : isLoadingAdded;
+
+          return (
+            <Card
+              key={report.title}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView(report.id)}
+            >
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg bg-muted ${report.color}`}>
+                    <report.icon className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="text-lg">{report.title}</CardTitle>
                 </div>
-                <CardTitle className="text-lg">{report.title}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>{report.description}</CardDescription>
-            </CardContent>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="mb-3">{report.description}</CardDescription>
+                {currentLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="mt-2">
+                    <p className="text-3xl font-bold text-primary">{count}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {report.id === 'rejected-cross-sells' ? 'Abgelehnte Produkte' : 'Ergänzte Einträge'}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Card>
