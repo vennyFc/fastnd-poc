@@ -666,8 +666,8 @@ export default function Projects() {
         return;
       }
 
-      // Insert into removed_cross_sells
-      const { error } = await supabase
+      // Insert into removed_cross_sells and get inserted row
+      const { data: inserted, error } = await supabase
         .from('removed_cross_sells')
         .insert([{
           user_id: user.id,
@@ -675,9 +675,17 @@ export default function Projects() {
           application: application,
           cross_sell_product: crossSellProduct,
           removal_reason: reason as any
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Optimistisch in Cache aufnehmen, damit die Liste sofort filtert
+      queryClient.setQueryData(['removed_cross_sells'], (old: any) => {
+        const prev = Array.isArray(old) ? old : [];
+        return inserted ? [...prev, inserted] : prev;
+      });
 
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['removed_cross_sells'] });
