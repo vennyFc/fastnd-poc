@@ -431,26 +431,33 @@ export default function Projects() {
     productName: string,
     type: 'cross_sell' | 'alternative'
   ) => {
-    // Check if product exists in customer_projects table
+    // First check if product exists in optimization records
+    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    if (groupNumbers.length > 0) {
+      const record = optimizationRecords.find((rec: any) =>
+        groupNumbers.includes(rec.project_number) &&
+        (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
+      );
+      
+      // If found in optimization records, return that status
+      if (record) {
+        return type === 'cross_sell' ? record.cross_sell_status : record.alternative_status;
+      }
+    }
+    
+    // If not in optimization records, check if it's an original project product
     const isInProjects = projects?.some((p: any) => 
       p.customer === customer && 
       p.project_name === projectName && 
       p.product === productName
     );
     
-    // If product is already in projects, return "Registriert"
+    // Original project products without optimization record are "Registriert"
     if (isInProjects) {
       return 'Registriert';
     }
     
-    // Otherwise check optimization records
-    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
-    if (groupNumbers.length === 0) return null;
-    const record = optimizationRecords.find((rec: any) =>
-      groupNumbers.includes(rec.project_number) &&
-      (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
-    );
-    return record ? (type === 'cross_sell' ? record.cross_sell_status : record.alternative_status) : null;
+    return null;
   };
 
   const getOptimizationRecordId = (
