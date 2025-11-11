@@ -17,35 +17,18 @@ export function ProjectsWidget() {
     favorites: favoriteIds
   } = useFavorites('project');
 
-  // Fetch all projects with optimization status
+  // Fetch all projects
   const {
     data: allProjectsRaw = []
   } = useQuery({
     queryKey: ['customer_projects'],
     queryFn: async () => {
       const {
-        data: projects
+        data
       } = await supabase.from('customer_projects').select('*').order('created_at', {
         ascending: false
       });
-      
-      if (!projects) return [];
-      
-      // Fetch optimization statuses
-      const {
-        data: optimizations
-      } = await supabase.from('opps_optimization').select('project_number, optimization_status');
-      
-      // Map optimization status to projects
-      const projectsWithStatus = projects.map(project => {
-        const optimization = optimizations?.find(opt => opt.project_number === project.project_number);
-        return {
-          ...project,
-          optimization_status: optimization?.optimization_status || null
-        };
-      });
-      
-      return projectsWithStatus;
+      return data || [];
     }
   });
 
@@ -63,10 +46,6 @@ export function ProjectsWidget() {
       // Keep the earliest created_at date
       if (new Date(project.created_at) < new Date(existing.created_at)) {
         existing.created_at = project.created_at;
-      }
-      // Keep optimization status (prefer non-null values)
-      if (!existing.optimization_status && project.optimization_status) {
-        existing.optimization_status = project.optimization_status;
       }
     } else {
       acc.push({
@@ -152,16 +131,6 @@ export function ProjectsWidget() {
                 <div className="text-sm text-muted-foreground truncate">
                   {project.customer}
                 </div>
-                {project.optimization_status && (
-                  <Badge variant={
-                    project.optimization_status === 'Neu' ? 'secondary' :
-                    project.optimization_status === 'In Bearbeitung' ? 'default' :
-                    project.optimization_status === 'Abgeschlossen' ? 'outline' :
-                    'secondary'
-                  } className="mt-1 text-xs">
-                    {project.optimization_status}
-                  </Badge>
-                )}
               </div>
               <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground whitespace-nowrap">
                 {project.applications && project.applications.length > 0 && (
