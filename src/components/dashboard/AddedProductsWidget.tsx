@@ -148,13 +148,13 @@ export function AddedProductsWidget() {
                 <p className="text-xs text-muted-foreground">Gesamt</p>
                 <p className="text-2xl font-bold text-foreground">{totalProducts}</p>
               </div>
-              <div className="text-center p-3 rounded-lg bg-blue-500/10">
+              <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
                 <p className="text-xs text-muted-foreground">Cross-Sells</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalCrossSells}</p>
+                <p className="text-2xl font-bold" style={{ color: '#3b82f6' }}>{totalCrossSells}</p>
               </div>
-              <div className="text-center p-3 rounded-lg bg-purple-500/10">
+              <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
                 <p className="text-xs text-muted-foreground">Alternativen</p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalAlternatives}</p>
+                <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>{totalAlternatives}</p>
               </div>
             </div>
             
