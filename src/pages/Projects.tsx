@@ -77,18 +77,28 @@ export default function Projects() {
     return recentHistory.map(rh => rh.project_id);
   };
 
+  const defaultProjectColumns = React.useMemo(() => ([
+    { key: 'project_name', label: 'Projektname', visible: true, width: 200, order: 0 },
+    { key: 'customer', label: 'Kunde', visible: true, width: 180, order: 1 },
+    { key: 'applications', label: 'Applikation', visible: true, width: 200, order: 2 },
+    { key: 'products', label: 'Produkt', visible: true, width: 200, order: 3 },
+    { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 4 },
+  ]), []);
+
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'projects-columns',
-    [
-      { key: 'project_name', label: 'Projektname', visible: true, width: 200, order: 0 },
-      { key: 'customer', label: 'Kunde', visible: true, width: 180, order: 1 },
-      { key: 'applications', label: 'Applikation', visible: true, width: 200, order: 2 },
-      { key: 'products', label: 'Produkt', visible: true, width: 200, order: 3 },
-      { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 4 },
-    ]
+    defaultProjectColumns
   );
 
   // Product columns for detail view
+  const defaultProductColumns = React.useMemo(() => ([
+    { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
+    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
+    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
+    { key: 'status', label: 'Status', visible: true, width: 150, order: 3 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
+  ]), []);
+
   const { 
     columns: productColumns, 
     toggleColumn: toggleProductColumn, 
@@ -97,16 +107,18 @@ export default function Projects() {
     resetColumns: resetProductColumns 
   } = useTableColumns(
     'project-detail-product-columns',
-    [
-      { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
-      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
-      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
-      { key: 'status', label: 'Status', visible: true, width: 150, order: 3 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
-    ]
+    defaultProductColumns
   );
 
   // Cross-sell columns for detail view
+  const defaultCrossSellColumns = React.useMemo(() => ([
+    { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
+    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
+    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
+    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
+  ]), []);
+
   const { 
     columns: crossSellColumns, 
     toggleColumn: toggleCrossSellColumn, 
@@ -115,13 +127,7 @@ export default function Projects() {
     resetColumns: resetCrossSellColumns 
   } = useTableColumns(
     'project-detail-crosssell-columns',
-    [
-      { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
-      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
-      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
-      { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
-    ]
+    defaultCrossSellColumns
   );
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
