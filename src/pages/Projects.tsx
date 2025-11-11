@@ -124,7 +124,7 @@ export default function Projects() {
     }
   }, [searchParams]);
 
-  const { data: projects, isLoading } = useQuery({
+  const { data: projects, isLoading, refetch: refetchProjects } = useQuery({
     queryKey: ['customer_projects'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -436,14 +436,25 @@ export default function Projects() {
         .limit(1)
         .maybeSingle();
 
-      if (projectError) throw projectError;
+      if (projectError) {
+        console.error('Project lookup error:', projectError);
+        throw projectError;
+      }
+      
       if (!projectData) {
         toast.error('Projekt nicht gefunden');
         return;
       }
 
+      console.log('Adding product to project:', {
+        customer: project.customer,
+        project_name: project.project_name,
+        product: crossSellProduct,
+        project_number: projectData.project_number
+      });
+
       // Insert into customer_projects to add product to project
-      const { error: projectInsertError } = await supabase
+      const { data: insertedProject, error: projectInsertError } = await supabase
         .from('customer_projects')
         .insert({
           user_id: user.id,
@@ -452,12 +463,18 @@ export default function Projects() {
           application: projectData.application,
           product: crossSellProduct,
           project_number: projectData.project_number
-        });
+        })
+        .select();
 
-      if (projectInsertError) throw projectInsertError;
+      if (projectInsertError) {
+        console.error('Project insert error:', projectInsertError);
+        throw projectInsertError;
+      }
+
+      console.log('Product added to project:', insertedProject);
 
       // Insert into opps_optimization
-      const { error: insertError } = await supabase
+      const { data: insertedOpp, error: insertError } = await supabase
         .from('opps_optimization')
         .insert({
           user_id: user.id,
@@ -465,18 +482,26 @@ export default function Projects() {
           cross_sell_product_name: crossSellProduct,
           cross_sell_date_added: new Date().toISOString(),
           cross_sell_status: 'Identifiziert'
-        });
+        })
+        .select();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Optimization insert error:', insertError);
+        throw insertError;
+      }
 
-      await refetchOptimization();
+      console.log('Optimization record created:', insertedOpp);
+
+      // Refetch data instead of reloading page
+      await Promise.all([
+        refetchProjects(),
+        refetchOptimization()
+      ]);
+
       toast.success(`${crossSellProduct} zum Projekt hinzugefügt`);
-      
-      // Trigger page refresh to update both lists
-      window.location.reload();
     } catch (error: any) {
       console.error('Error adding cross-sell:', error);
-      toast.error('Fehler beim Hinzufügen des Cross-Sell Produkts');
+      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
     }
   };
 
