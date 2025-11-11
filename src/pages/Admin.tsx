@@ -418,15 +418,15 @@ export default function Admin() {
                         {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <div className="grid grid-cols-[auto_auto_auto] gap-2 items-center">
+                        <div className="flex flex-col gap-2 min-w-[180px]">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleResendInvite(user.email)}
                             disabled={resendInviteMutation.isPending}
-                            className="whitespace-nowrap"
+                            className="w-full justify-start"
                           >
-                            <Mail className="h-4 w-4 mr-1" />
+                            <Mail className="h-4 w-4 mr-2" />
                             Einladung
                           </Button>
                           <Button
@@ -434,9 +434,9 @@ export default function Admin() {
                             size="sm"
                             onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
                             disabled={toggleAdminMutation.isPending}
-                            className="whitespace-nowrap"
+                            className="w-full justify-start"
                           >
-                            <Shield className="h-4 w-4 mr-1" />
+                            <Shield className="h-4 w-4 mr-2" />
                             {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
                           </Button>
                           <Button
@@ -444,9 +444,10 @@ export default function Admin() {
                             size="sm"
                             onClick={() => handleDeleteClick(user.id, user.email)}
                             disabled={deleteUserMutation.isPending}
-                            title="Benutzer löschen"
+                            className="w-full justify-start"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Löschen
                           </Button>
                         </div>
                       </TableCell>
