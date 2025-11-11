@@ -758,11 +758,9 @@ export default function Projects() {
                                              </SelectTrigger>
                                              <SelectContent>
                                                <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                               <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
-                                               <SelectItem value="Angebot erstellt">Angebot erstellt</SelectItem>
-                                               <SelectItem value="Gewonnen">Gewonnen</SelectItem>
-                                               <SelectItem value="Verloren">Verloren</SelectItem>
-                                               <SelectItem value="Zurückgestellt">Zurückgestellt</SelectItem>
+                                               <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                               <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                               <SelectItem value="Registriert">Registriert</SelectItem>
                                              </SelectContent>
                                            </Select>
                                          ) : '-';
