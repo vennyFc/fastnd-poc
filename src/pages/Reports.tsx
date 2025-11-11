@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BarChart3, PieChart, TrendingUp, FileText, ThumbsDown, RotateCcw, Search } from 'lucide-react';
+import { BarChart3, PieChart, TrendingUp, FileText, ThumbsDown, RotateCcw, Search, Download } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
@@ -233,6 +234,47 @@ export default function Reports() {
     setSearchQuery('');
   };
 
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredAddedProducts.map((item: any) => ({
+      'Kunde': item.customer,
+      'Projekt': item.project_name,
+      'Projekt-Nummer': item.project_number,
+      'Applikation': item.application,
+      'Projekt-Status': item.optimization_status,
+      'Produkt': item.product_name,
+      'Produkttyp': item.product_type,
+      'Validierungsstatus': item.validation_status,
+      'Hinzugefügt': item.date_added ? format(new Date(item.date_added), 'dd.MM.yyyy', { locale: de }) : '-',
+    }));
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ergänzte Produkte');
+
+    // Auto-size columns
+    const maxWidth = 50;
+    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
+      wch: Math.min(
+        Math.max(
+          key.length,
+          ...exportData.map(row => String(row[key as keyof typeof row] || '').length)
+        ),
+        maxWidth
+      )
+    }));
+    ws['!cols'] = colWidths;
+
+    // Generate filename with timestamp
+    const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm');
+    const filename = `Ergänzte_Produkte_${timestamp}.xlsx`;
+
+    // Download file
+    XLSX.writeFile(wb, filename);
+    toast.success(`Report wurde als ${filename} heruntergeladen`);
+  };
+
   const renderRejectedCrossSellsReport = () => (
     <Card>
       <CardHeader>
@@ -352,9 +394,21 @@ export default function Reports() {
               Alle zu Projekten hinzugefügten Cross-Sells und Alternativen mit Validierungsstatus
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
-            Zurück zur Übersicht
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={exportToExcel}
+              disabled={filteredAddedProducts.length === 0}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Excel exportieren
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
+              Zurück zur Übersicht
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
