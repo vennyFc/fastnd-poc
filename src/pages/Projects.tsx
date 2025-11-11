@@ -782,13 +782,14 @@ export default function Projects() {
 
           if (error) throw error;
         } else {
-          // Insert new record - need to get user_id separately due to type constraints
+          // Insert new record with user_id
           const { error } = await supabase
             .from('opps_optimization')
-            .insert([{
+            .insert({
+              user_id: user.id,
               project_number: projectNumber,
               optimization_status: dbStatus
-            }] as any);
+            });
 
           if (error) throw error;
         }
