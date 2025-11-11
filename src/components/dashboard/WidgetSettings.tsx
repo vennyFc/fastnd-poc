@@ -83,7 +83,7 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSi
                       onValueChange={(value) => onSetWidgetSize(widget.id, value as WidgetSize)}
                     >
                       <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
+                        <SelectValue placeholder={sizeLabels[widget.size]} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="medium">{sizeLabels.medium}</SelectItem>
