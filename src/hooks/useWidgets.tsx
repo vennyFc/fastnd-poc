@@ -18,7 +18,8 @@ export const defaultWidgets: WidgetConfig[] = [
   { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'medium' },
   { id: 'statistics', type: 'statistics', visible: true, order: 2, size: 'full' },
   { id: 'optimization-status', type: 'optimization-status', visible: true, order: 3, size: 'full' },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 4, size: 'medium' },
+  { id: 'added-products', type: 'added-products', visible: true, order: 4, size: 'full' },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 5, size: 'medium' },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {

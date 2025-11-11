@@ -9,6 +9,7 @@ import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidge
 import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
 import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
 import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationStatusWidget';
+import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -179,6 +180,21 @@ export default function Dashboard() {
             size={widget.size}
           >
             <OptimizationStatusWidget />
+          </WidgetContainer>
+        );
+      case 'added-products':
+        return (
+          <WidgetContainer
+            key="added-products"
+            id="added-products"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <AddedProductsWidget />
           </WidgetContainer>
         );
       case 'getting-started':
