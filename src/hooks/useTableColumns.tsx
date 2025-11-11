@@ -38,13 +38,29 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
   // Update local state when database settings are loaded
   useEffect(() => {
     if (dbSettings?.settings) {
-      const parsed = dbSettings.settings as any[];
-      setColumns(parsed.map((col: any, idx: number) => ({
-        ...col,
-        order: col.order !== undefined ? col.order : idx
-      })));
+      const saved = (dbSettings.settings as any[]) || [];
+      // Merge defaults with saved settings by key so new columns appear automatically
+      const savedMap = new Map(saved.map((c) => [c.key, c]));
+      const merged: ColumnConfig[] = defaultColumns.map((def, idx) => {
+        const s = savedMap.get(def.key);
+        return {
+          ...def,
+          ...(s || {}),
+          order: s?.order !== undefined ? s.order : def.order ?? idx,
+        } as ColumnConfig;
+      });
+      // Keep any saved columns that are no longer in defaults (append at end)
+      const extras = saved.filter((c) => !defaultColumns.some((d) => d.key === c.key));
+      const mergedWithExtras = [...merged, ...extras.map((c, i) => ({
+        ...c,
+        order: (merged.length + i),
+      }))];
+      setColumns(mergedWithExtras);
+    } else {
+      // No saved settings: ensure defaults are set
+      setColumns(defaultColumns);
     }
-  }, [dbSettings]);
+  }, [dbSettings, defaultColumns]);
 
   // Mutation to save settings to database
   const saveSettings = useMutation({
