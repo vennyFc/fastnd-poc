@@ -157,6 +157,12 @@ export default function Reports() {
       item.project_number?.toLowerCase().includes(query) ||
       removalReasonLabels[item.removal_reason]?.toLowerCase().includes(query)
     );
+  }).map((item: any) => {
+    const productInfo = products.find((p: any) => p.product === item.cross_sell_product);
+    return {
+      ...item,
+      product_family: productInfo?.product_family || '-',
+    };
   });
 
   // Prepare added products data with customer/project info
@@ -293,6 +299,44 @@ export default function Reports() {
     toast.success(`Report wurde als ${filename} heruntergeladen`);
   };
 
+  const exportRejectedToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredRemovedCrossSells.map((item: any) => ({
+      'Produkt': item.cross_sell_product,
+      'Produktfamilie': item.product_family,
+      'Applikation': item.application,
+      'Projekt-Nr.': item.project_number,
+      'Ablehnungsgrund': removalReasonLabels[item.removal_reason] || item.removal_reason,
+      'Datum': format(new Date(item.removed_at), 'dd.MM.yyyy HH:mm', { locale: de }),
+    }));
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Abgelehnte Cross-Sells');
+
+    // Auto-size columns
+    const maxWidth = 50;
+    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
+      wch: Math.min(
+        Math.max(
+          key.length,
+          ...exportData.map(row => String(row[key as keyof typeof row] || '').length)
+        ),
+        maxWidth
+      )
+    }));
+    ws['!cols'] = colWidths;
+
+    // Generate filename with timestamp
+    const timestamp = format(new Date(), 'yyyy-MM-dd_HH-mm');
+    const filename = `Abgelehnte_Cross-Sells_${timestamp}.xlsx`;
+
+    // Download file
+    XLSX.writeFile(wb, filename);
+    toast.success(`Report wurde als ${filename} heruntergeladen`);
+  };
+
   const renderRejectedCrossSellsReport = () => (
     <Card>
       <CardHeader>
@@ -306,9 +350,21 @@ export default function Reports() {
               Alle abgelehnten Cross-Sells mit der Möglichkeit zur Wiederherstellung
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
-            Zurück zur Übersicht
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={exportRejectedToExcel}
+              disabled={filteredRemovedCrossSells.length === 0}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Excel exportieren
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
+              Zurück zur Übersicht
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -348,6 +404,7 @@ export default function Reports() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Produkt</TableHead>
+                  <TableHead>Produktfamilie</TableHead>
                   <TableHead>Applikation</TableHead>
                   <TableHead>Projekt-Nr.</TableHead>
                   <TableHead>Ablehnungsgrund</TableHead>
@@ -359,6 +416,7 @@ export default function Reports() {
                 {filteredRemovedCrossSells.map((item: any) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.cross_sell_product}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.product_family}</TableCell>
                     <TableCell>
                       <Badge variant="outline">{item.application}</Badge>
                     </TableCell>
