@@ -10,7 +10,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="shadow-card">
-        <CardHeader>
+        <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Projekte</CardTitle>
         </CardHeader>
         <CardContent>
@@ -20,7 +20,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
       </Card>
 
       <Card className="shadow-card">
-        <CardHeader>
+        <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Produkte</CardTitle>
         </CardHeader>
         <CardContent>
@@ -30,7 +30,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
       </Card>
 
       <Card className="shadow-card">
-        <CardHeader>
+        <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Cross-Selling</CardTitle>
         </CardHeader>
         <CardContent>
