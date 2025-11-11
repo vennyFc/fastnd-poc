@@ -13,7 +13,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Projekte</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8">
           <p className="text-3xl font-bold text-primary">{projects?.length || 0}</p>
           <p className="text-sm text-muted-foreground mt-1">In der Datenbank</p>
         </CardContent>
@@ -23,7 +23,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Produkte</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8">
           <p className="text-3xl font-bold text-primary">{products?.length || 0}</p>
           <p className="text-sm text-muted-foreground mt-1">Verfügbar</p>
         </CardContent>
@@ -33,7 +33,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
         <CardHeader className="h-[72px]">
           <CardTitle className="text-lg">Cross-Selling</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-8">
           <p className="text-3xl font-bold text-primary">{crossSells?.length || 0}</p>
           <p className="text-sm text-muted-foreground mt-1">Möglichkeiten</p>
         </CardContent>
