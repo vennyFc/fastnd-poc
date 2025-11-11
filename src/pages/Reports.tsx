@@ -34,6 +34,8 @@ export default function Reports() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [productTypeFilter, setProductTypeFilter] = useState<string>('all');
   const [validationStatusFilter, setValidationStatusFilter] = useState<string>('all');
+  const [productFamilyFilterRejected, setProductFamilyFilterRejected] = useState<string>('all');
+  const [removalReasonFilter, setRemovalReasonFilter] = useState<string>('all');
   const queryClient = useQueryClient();
 
   const reportCards = [
@@ -148,22 +150,48 @@ export default function Reports() {
     }
   };
 
-  const filteredRemovedCrossSells = removedCrossSells.filter((item: any) => {
-    if (!searchQuery || searchQuery.length < 2) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      item.cross_sell_product?.toLowerCase().includes(query) ||
-      item.application?.toLowerCase().includes(query) ||
-      item.project_number?.toLowerCase().includes(query) ||
-      removalReasonLabels[item.removal_reason]?.toLowerCase().includes(query)
-    );
-  }).map((item: any) => {
+  const enrichedRemovedCrossSells = removedCrossSells.map((item: any) => {
     const productInfo = products.find((p: any) => p.product === item.cross_sell_product);
     return {
       ...item,
       product_family: productInfo?.product_family || '-',
     };
   });
+
+  // Get unique values for rejected filters
+  const uniqueProductFamiliesRejected = ['all', ...Array.from(new Set(enrichedRemovedCrossSells.map((p: any) => p.product_family).filter(Boolean)))];
+  const uniqueRemovalReasons = ['all', ...Object.keys(removalReasonLabels)];
+
+  const filteredRemovedCrossSells = enrichedRemovedCrossSells.filter((item: any) => {
+    // Search filter
+    if (searchQuery && searchQuery.length >= 2) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        item.cross_sell_product?.toLowerCase().includes(query) ||
+        item.application?.toLowerCase().includes(query) ||
+        item.project_number?.toLowerCase().includes(query) ||
+        removalReasonLabels[item.removal_reason]?.toLowerCase().includes(query) ||
+        item.product_family?.toLowerCase().includes(query)
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Product family filter
+    if (productFamilyFilterRejected !== 'all' && item.product_family !== productFamilyFilterRejected) return false;
+
+    // Removal reason filter
+    if (removalReasonFilter !== 'all' && item.removal_reason !== removalReasonFilter) return false;
+
+    return true;
+  });
+
+  const hasActiveRejectedFilters = productFamilyFilterRejected !== 'all' || removalReasonFilter !== 'all' || searchQuery.length >= 2;
+
+  const clearRejectedFilters = () => {
+    setProductFamilyFilterRejected('all');
+    setRemovalReasonFilter('all');
+    setSearchQuery('');
+  };
 
   // Prepare added products data with customer/project info
   const enrichedAddedProducts = addedProducts.map((opt: any) => {
@@ -368,7 +396,7 @@ export default function Reports() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
+        <div className="mb-4 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -378,6 +406,48 @@ export default function Reports() {
               className="pl-10"
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Select value={productFamilyFilterRejected} onValueChange={setProductFamilyFilterRejected}>
+              <SelectTrigger>
+                <SelectValue placeholder="Produktfamilie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Produktfamilien</SelectItem>
+                {uniqueProductFamiliesRejected.slice(1).map((family) => (
+                  <SelectItem key={family} value={family}>
+                    {family}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={removalReasonFilter} onValueChange={setRemovalReasonFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Ablehnungsgrund" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Alle Ablehnungsgründe</SelectItem>
+                {uniqueRemovalReasons.slice(1).map((reason) => (
+                  <SelectItem key={reason} value={reason}>
+                    {removalReasonLabels[reason]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {hasActiveRejectedFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearRejectedFilters}
+              className="gap-2"
+            >
+              <X className="h-4 w-4" />
+              Filter zurücksetzen
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -449,8 +519,8 @@ export default function Reports() {
 
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <p>
-            {filteredRemovedCrossSells.length} von {removedCrossSells.length} Einträge{' '}
-            {searchQuery && 'gefunden'}
+            {filteredRemovedCrossSells.length} von {enrichedRemovedCrossSells.length} Einträge{' '}
+            {hasActiveRejectedFilters && 'gefunden'}
           </p>
         </div>
       </CardContent>
