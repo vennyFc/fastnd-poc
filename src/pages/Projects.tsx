@@ -713,6 +713,15 @@ export default function Projects() {
       setLastRemovedId(inserted.id);
       setLastRemovedProduct(crossSellProduct);
 
+      // Sofort Toast mit Undo-Action anzeigen (Fallback zum Modal)
+      toast.success(`"${crossSellProduct}" entfernt`, {
+        action: {
+          label: 'Rückgängig',
+          onClick: () => handleUndoRemovalById(inserted.id),
+        },
+        duration: 4000,
+      });
+
       // Optimistisch in Cache aufnehmen, damit die Liste sofort filtert
       queryClient.setQueryData(['removed_cross_sells'], (old: any) => {
         const prev = Array.isArray(old) ? old : [];
@@ -739,14 +748,12 @@ export default function Projects() {
     }
   };
 
-  const handleUndoRemoval = async () => {
-    if (!lastRemovedId) return;
-
+  async function handleUndoRemovalById(id: string) {
     try {
       const { error } = await supabase
         .from('removed_cross_sells')
         .delete()
-        .eq('id', lastRemovedId);
+        .eq('id', id);
 
       if (error) throw error;
 
@@ -761,6 +768,11 @@ export default function Projects() {
       console.error('Error undoing removal:', error);
       toast.error('Fehler beim Rückgängigmachen');
     }
+  }
+
+  const handleUndoRemoval = async () => {
+    if (!lastRemovedId) return;
+    await handleUndoRemovalById(lastRemovedId);
   };
 
   const handleAddAlternative = async (project: any, alternativeProduct: string) => {
