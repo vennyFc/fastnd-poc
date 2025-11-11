@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -439,6 +440,54 @@ export default function Projects() {
     return record ? (type === 'cross_sell' ? record.cross_sell_status : record.alternative_status) : null;
   };
 
+  const getOptimizationRecordId = (
+    customer: string,
+    projectName: string,
+    productName: string,
+    type: 'cross_sell' | 'alternative'
+  ) => {
+    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    if (groupNumbers.length === 0) return null;
+    const record = optimizationRecords.find((rec: any) =>
+      groupNumbers.includes(rec.project_number) &&
+      (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
+    );
+    return record?.id || null;
+  };
+
+  const handleUpdateCrossSellStatus = async (
+    customer: string,
+    projectName: string,
+    productName: string,
+    newStatus: string,
+    type: 'cross_sell' | 'alternative' = 'cross_sell'
+  ) => {
+    try {
+      const recordId = getOptimizationRecordId(customer, projectName, productName, type);
+      if (!recordId) {
+        toast.error('Optimierungsdatensatz nicht gefunden');
+        return;
+      }
+
+      const updateField = type === 'cross_sell' ? 'cross_sell_status' : 'alternative_status';
+      
+      const { error } = await supabase
+        .from('opps_optimization')
+        .update({ [updateField]: newStatus })
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['optimization-records'] });
+      
+      toast.success('Status aktualisiert');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Fehler beim Aktualisieren des Status');
+    }
+  };
+
   const handleAddCrossSell = async (project: any, crossSellProduct: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -692,7 +741,30 @@ export default function Projects() {
                                          value = productName;
                                        } else if (column.key === 'status') {
                                          value = productStatus ? (
-                                           <Badge variant="secondary">{productStatus}</Badge>
+                                           <Select
+                                             value={productStatus}
+                                             onValueChange={(newStatus) => 
+                                               handleUpdateCrossSellStatus(
+                                                 project.customer, 
+                                                 project.project_name, 
+                                                 productName, 
+                                                 newStatus,
+                                                 'cross_sell'
+                                               )
+                                             }
+                                           >
+                                             <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
+                                               <SelectValue />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                               <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                               <SelectItem value="In Bearbeitung">In Bearbeitung</SelectItem>
+                                               <SelectItem value="Angebot erstellt">Angebot erstellt</SelectItem>
+                                               <SelectItem value="Gewonnen">Gewonnen</SelectItem>
+                                               <SelectItem value="Verloren">Verloren</SelectItem>
+                                               <SelectItem value="Zurückgestellt">Zurückgestellt</SelectItem>
+                                             </SelectContent>
+                                           </Select>
                                          ) : '-';
                                        } else if (details) {
                                          if (column.key === 'manufacturer') value = details.manufacturer || '-';
