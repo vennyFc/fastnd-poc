@@ -760,7 +760,7 @@ export default function Projects() {
             <Card key={project.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div>
+                  <div className="flex-1">
                     <CardTitle className="text-xl">{project.project_name}</CardTitle>
                     <CardDescription className="mt-1">
                       <span className="font-medium">{project.customer}</span>
@@ -768,6 +768,60 @@ export default function Projects() {
                         <span className="ml-2">• {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}</span>
                       )}
                     </CardDescription>
+                    
+                    {/* Optimization Status Progress Bar */}
+                    <div className="mt-4 flex items-center gap-4">
+                      <div className="flex-1 flex items-center gap-1">
+                        {/* Step: Identifiziert */}
+                        <div className="flex-1 flex items-center">
+                          <div className="flex items-center justify-center px-3 py-1.5 rounded-l-lg border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
+                            ✓ IDENTIFIZIERT
+                          </div>
+                        </div>
+                        
+                        {/* Step: Vorgeschlagen */}
+                        <div className="flex-1 flex items-center">
+                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
+                            ✓ VORGESCHLAGEN
+                          </div>
+                        </div>
+                        
+                        {/* Step: Akzeptiert */}
+                        <div className="flex-1 flex items-center">
+                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
+                            AKZEPTIERT
+                          </div>
+                        </div>
+                        
+                        {/* Step: Registriert */}
+                        <div className="flex-1 flex items-center">
+                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
+                            REGISTRIERT
+                          </div>
+                        </div>
+                        
+                        {/* Step: Abgeschlossen */}
+                        <div className="flex-1 flex items-center">
+                          <div className="flex items-center justify-center px-3 py-1.5 rounded-r-lg border bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
+                            ABGESCHLOSSEN
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Status Dropdown */}
+                      <Select defaultValue="vorgeschlagen">
+                        <SelectTrigger className="w-[180px] bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="identifiziert">Identifiziert</SelectItem>
+                          <SelectItem value="vorgeschlagen">Vorgeschlagen</SelectItem>
+                          <SelectItem value="akzeptiert">Akzeptiert</SelectItem>
+                          <SelectItem value="registriert">Registriert</SelectItem>
+                          <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
