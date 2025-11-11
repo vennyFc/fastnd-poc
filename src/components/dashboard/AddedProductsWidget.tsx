@@ -19,8 +19,10 @@ const timeRangeLabels: Record<TimeRange, string> = {
 
 const statusColors: Record<string, string> = {
   'Neu': '#3b82f6',
+  'Identifiziert': '#06b6d4',
+  'Vorgeschlagen': '#8b5cf6',
   'In Bearbeitung': '#f59e0b',
-  'Angeboten': '#8b5cf6',
+  'Angeboten': '#a855f7',
   'Gewonnen': '#10b981',
   'Verloren': '#ef4444',
 };
