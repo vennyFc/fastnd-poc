@@ -431,6 +431,19 @@ export default function Projects() {
     productName: string,
     type: 'cross_sell' | 'alternative'
   ) => {
+    // Check if product exists in customer_projects table
+    const isInProjects = projects?.some((p: any) => 
+      p.customer === customer && 
+      p.project_name === projectName && 
+      p.product === productName
+    );
+    
+    // If product is already in projects, return "Registriert"
+    if (isInProjects) {
+      return 'Registriert';
+    }
+    
+    // Otherwise check optimization records
     const groupNumbers = getProjectNumbersForGroup(customer, projectName);
     if (groupNumbers.length === 0) return null;
     const record = optimizationRecords.find((rec: any) =>
@@ -744,9 +757,11 @@ export default function Projects() {
                                        if (column.key === 'product') {
                                          value = productName;
                                        } else if (column.key === 'status') {
+                                         const isRegistered = productStatus === 'Registriert';
                                          value = productStatus ? (
                                            <Select
                                              value={productStatus}
+                                             disabled={isRegistered}
                                              onValueChange={(newStatus) => 
                                                handleUpdateCrossSellStatus(
                                                  project.customer, 
