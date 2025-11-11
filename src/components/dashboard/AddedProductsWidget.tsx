@@ -149,16 +149,16 @@ export function AddedProductsWidget() {
           </div>
         ) : (
           <>
-            <div className="mb-4 grid grid-cols-3 gap-4">
-              <div className="text-center p-3 rounded-lg bg-muted/50">
+            <div className="mb-4 grid grid-cols-3 gap-4 min-h-[88px]">
+              <div className="text-center p-2 rounded-lg bg-muted/50 flex flex-col justify-center">
                 <p className="text-xs text-muted-foreground">Gesamt</p>
                 <p className="text-2xl font-bold text-foreground">{totalProducts}</p>
               </div>
-              <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
+              <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
                 <p className="text-xs text-muted-foreground">Cross-Sells</p>
                 <p className="text-2xl font-bold" style={{ color: '#3b82f6' }}>{totalCrossSells}</p>
               </div>
-              <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
+              <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
                 <p className="text-xs text-muted-foreground">Alternativen</p>
                 <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>{totalAlternatives}</p>
               </div>

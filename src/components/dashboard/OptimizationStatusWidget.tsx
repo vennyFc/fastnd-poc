@@ -132,13 +132,12 @@ export function OptimizationStatusWidget() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Gesamt: <span className="font-bold text-foreground">{totalProjects}</span> Projekte
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Zeitraum: {timeRangeLabels[timeRange]}
-              </p>
+            <div className="mb-4 flex items-center justify-center min-h-[88px]">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-1">Gesamt</p>
+                <p className="text-3xl font-bold text-foreground">{totalProjects}</p>
+                <p className="text-xs text-muted-foreground mt-1">Projekte</p>
+              </div>
             </div>
             
             <ResponsiveContainer width="100%" height={300}>
