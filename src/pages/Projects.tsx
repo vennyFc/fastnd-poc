@@ -41,6 +41,9 @@ export default function Projects() {
   const [selectedProductForQuickView, setSelectedProductForQuickView] = useState<any>(null);
   const [removalDialogOpen, setRemovalDialogOpen] = useState(false);
   const [selectedCrossSellForRemoval, setSelectedCrossSellForRemoval] = useState<any>(null);
+  const [undoModalOpen, setUndoModalOpen] = useState(false);
+  const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
+  const [lastRemovedProduct, setLastRemovedProduct] = useState<string | null>(null);
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
@@ -683,6 +686,10 @@ export default function Projects() {
 
       if (error) throw error;
 
+      // Store removed ID for undo
+      setLastRemovedId(inserted.id);
+      setLastRemovedProduct(crossSellProduct);
+
       // Optimistisch in Cache aufnehmen, damit die Liste sofort filtert
       queryClient.setQueryData(['removed_cross_sells'], (old: any) => {
         const prev = Array.isArray(old) ? old : [];
@@ -692,12 +699,43 @@ export default function Projects() {
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ['removed_cross_sells'] });
 
-      toast.success('Cross-Sell Opportunity entfernt');
+      // Show undo modal for 4 seconds
+      setUndoModalOpen(true);
+      setTimeout(() => {
+        setUndoModalOpen(false);
+        setLastRemovedId(null);
+        setLastRemovedProduct(null);
+      }, 4000);
+
       setRemovalDialogOpen(false);
       setSelectedCrossSellForRemoval(null);
     } catch (error) {
       console.error('Error removing cross-sell:', error);
       toast.error('Fehler beim Entfernen des Cross-Sells');
+    }
+  };
+
+  const handleUndoRemoval = async () => {
+    if (!lastRemovedId) return;
+
+    try {
+      const { error } = await supabase
+        .from('removed_cross_sells')
+        .delete()
+        .eq('id', lastRemovedId);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['removed_cross_sells'] });
+
+      toast.success('Entfernung rückgängig gemacht');
+      setUndoModalOpen(false);
+      setLastRemovedId(null);
+      setLastRemovedProduct(null);
+    } catch (error) {
+      console.error('Error undoing removal:', error);
+      toast.error('Fehler beim Rückgängigmachen');
     }
   };
 
@@ -1942,6 +1980,23 @@ export default function Projects() {
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>Abbrechen</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Modal - 4 seconds */}
+      {undoModalOpen && (
+        <div className="fixed bottom-6 right-6 z-[10001] animate-fade-in">
+          <div className="bg-background border rounded-lg shadow-xl p-4 min-w-[320px]">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="font-medium text-sm">"{lastRemovedProduct}" entfernt</p>
+                <p className="text-xs text-muted-foreground mt-1">Wird in 4 Sekunden ausgeblendet</p>
+              </div>
+              <Button size="sm" variant="default" onClick={handleUndoRemoval}>
+                Rückgängig
+              </Button>
             </div>
           </div>
         </div>
