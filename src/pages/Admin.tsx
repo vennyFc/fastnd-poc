@@ -127,6 +127,30 @@ export default function Admin() {
     },
   });
 
+  // Resend invitation mutation
+  const resendInviteMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('invite-user', {
+        body: { email },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Fehler beim erneuten Senden');
+      }
+      
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Einladung erfolgreich erneut versendet');
+    },
+    onError: (error: any) => {
+      toast.error(`Fehler beim erneuten Senden: ${error.message}`);
+    },
+  });
+
   const handleInviteUser = () => {
     if (!inviteEmail || !inviteEmail.includes('@')) {
       toast.error('Bitte geben Sie eine gültige E-Mail-Adresse ein');
@@ -141,6 +165,10 @@ export default function Admin() {
       return;
     }
     toggleAdminMutation.mutate({ userId, isCurrentlyAdmin });
+  };
+
+  const handleResendInvite = (email: string) => {
+    resendInviteMutation.mutate(email);
   };
 
   // Redirect if not admin (using useEffect to avoid hook ordering issues)
@@ -321,14 +349,25 @@ export default function Admin() {
                         {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
-                          disabled={toggleAdminMutation.isPending}
-                        >
-                          {isUserAdmin ? 'Admin entfernen' : 'Als Admin setzen'}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleResendInvite(user.email)}
+                            disabled={resendInviteMutation.isPending}
+                          >
+                            <Mail className="h-4 w-4 mr-1" />
+                            Einladung erneut senden
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
+                            disabled={toggleAdminMutation.isPending}
+                          >
+                            {isUserAdmin ? 'Admin entfernen' : 'Als Admin setzen'}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
