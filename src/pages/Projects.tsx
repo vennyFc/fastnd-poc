@@ -600,6 +600,83 @@ export default function Projects() {
     }
   };
 
+  const handleAddAlternative = async (project: any, alternativeProduct: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Nicht authentifiziert');
+        return;
+      }
+
+      // Get project_number and application from customer_projects
+      const { data: projectData, error: projectError } = await supabase
+        .from('customer_projects')
+        .select('project_number, application')
+        .eq('customer', project.customer)
+        .eq('project_name', project.project_name)
+        .limit(1)
+        .maybeSingle();
+
+      if (projectError) {
+        console.error('Project lookup error:', projectError);
+        throw projectError;
+      }
+      
+      if (!projectData) {
+        toast.error('Projekt nicht gefunden');
+        return;
+      }
+
+      // Insert into customer_projects to add product to project
+      const { data: insertedProject, error: projectInsertError } = await supabase
+        .from('customer_projects')
+        .insert({
+          user_id: user.id,
+          customer: project.customer,
+          project_name: project.project_name,
+          application: projectData.application,
+          product: alternativeProduct,
+          project_number: projectData.project_number
+        })
+        .select();
+
+      if (projectInsertError) {
+        console.error('Project insert error:', projectInsertError);
+        throw projectInsertError;
+      }
+
+      // Insert into opps_optimization
+      const { data: insertedOpp, error: insertError } = await supabase
+        .from('opps_optimization')
+        .insert({
+          user_id: user.id,
+          project_number: projectData.project_number,
+          alternative_product_name: alternativeProduct,
+          alternative_date_added: new Date().toISOString(),
+          alternative_status: 'Identifiziert'
+        })
+        .select();
+
+      if (insertError) {
+        console.error('Optimization insert error:', insertError);
+        throw insertError;
+      }
+
+      // Invalidate and refetch data
+      await queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
+      await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      await Promise.all([
+        refetchProjects(),
+        refetchOptimization()
+      ]);
+
+      toast.success(`${alternativeProduct} als Alternative zum Projekt hinzugefügt`);
+    } catch (error: any) {
+      console.error('Error adding alternative:', error);
+      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+    }
+  };
+
   const handleRowClick = (project: any) => {
     addToHistory(project.id);
     setSelectedProject(project);
@@ -780,7 +857,16 @@ export default function Projects() {
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
                                        if (column.key === 'product') {
-                                         value = productName;
+                                         value = (
+                                           <div className="flex items-center gap-2">
+                                             <span>{productName}</span>
+                                             {hasAlternatives && (
+                                               <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                 A
+                                               </Badge>
+                                             )}
+                                           </div>
+                                         );
                                        } else if (column.key === 'status') {
                                          const isRegistered = productStatus === 'Registriert';
                                          value = productStatus ? (
@@ -833,56 +919,106 @@ export default function Projects() {
                                      })}
                                   </TableRow>
                                   
-                                   {/* Alternative Products - Expandable */}
-                                   {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
-                                     const altDetails = getProductDetails(alt.alternative_product);
-                                     return (
-                                       <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
-                                        <TableCell className="w-12 pl-8">
-                                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                        </TableCell>
-                                         {visibleProductColumns.map((column) => {
-                                           let value = '-';
-                                           if (column.key === 'product') {
-                                             return (
-                                               <TableCell 
-                                                 key={column.key}
-                                                 className="font-medium cursor-pointer text-primary hover:underline"
-                                                 style={{ width: `${column.width}px` }}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
-                                                   setProductQuickViewOpen(true);
-                                                 }}
-                                               >
-                                                 <div className="flex items-center gap-2">
-                                                   <span>{alt.alternative_product}</span>
-                                                   {alt.similarity && (
-                                                     <Badge variant="secondary" className="text-xs">
-                                                       {alt.similarity}% ähnlich
-                                                     </Badge>
-                                                   )}
-                                                 </div>
-                                               </TableCell>
-                                             );
-                                           } else if (altDetails) {
-                                             if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                             if (column.key === 'product_family') value = altDetails.product_family || '-';
-                                             if (column.key === 'description') value = altDetails.product_description || '-';
-                                           }
+                                    {/* Alternative Products - Expandable */}
+                                    {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
+                                      const altDetails = getProductDetails(alt.alternative_product);
+                                      const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
+                                      const isAlreadyInProject = project.products.includes(alt.alternative_product);
+                                      
+                                      return (
+                                        <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                         <TableCell className="w-12 pl-8">
+                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                         </TableCell>
+                                          {visibleProductColumns.map((column) => {
+                                            if (column.key === 'product') {
+                                              return (
+                                                <TableCell 
+                                                  key={column.key}
+                                                  className="font-medium cursor-pointer text-primary hover:underline"
+                                                  style={{ width: `${column.width}px` }}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
+                                                    setProductQuickViewOpen(true);
+                                                  }}
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <span>{alt.alternative_product}</span>
+                                                    {alt.similarity && (
+                                                      <Badge variant="secondary" className="text-xs">
+                                                        {alt.similarity}% ähnlich
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                </TableCell>
+                                              );
+                                            } else if (column.key === 'status') {
+                                              const isRegistered = altStatus === 'Registriert';
+                                              return (
+                                                <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                  {altStatus ? (
+                                                    <Select
+                                                      value={altStatus}
+                                                      disabled={isRegistered}
+                                                      onValueChange={(newStatus) => 
+                                                        handleUpdateCrossSellStatus(
+                                                          project.customer, 
+                                                          project.project_name, 
+                                                          alt.alternative_product, 
+                                                          newStatus,
+                                                          'alternative'
+                                                        )
+                                                      }
+                                                    >
+                                                      <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                        <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                        <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                        <SelectItem value="Registriert">Registriert</SelectItem>
+                                                      </SelectContent>
+                                                    </Select>
+                                                  ) : (
+                                                    !isAlreadyInProject && (
+                                                      <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleAddAlternative(project, alt.alternative_product);
+                                                        }}
+                                                      >
+                                                        <Plus className="h-4 w-4 mr-1" />
+                                                        Hinzufügen
+                                                      </Button>
+                                                    )
+                                                  )}
+                                                </TableCell>
+                                              );
+                                            } else {
+                                              let value = '-';
+                                              if (altDetails) {
+                                                if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                                if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                                if (column.key === 'description') value = altDetails.product_description || '-';
+                                              }
 
-                                           return (
-                                             <TableCell 
-                                               key={column.key}
-                                               style={{ width: `${column.width}px` }}
-                                             >
-                                               {value}
-                                             </TableCell>
-                                           );
-                                         })}
-                                      </TableRow>
-                                    );
-                                  })}
+                                              return (
+                                                <TableCell 
+                                                  key={column.key}
+                                                  style={{ width: `${column.width}px` }}
+                                                >
+                                                  {value}
+                                                </TableCell>
+                                              );
+                                            }
+                                          })}
+                                       </TableRow>
+                                     );
+                                   })}
                                 </React.Fragment>
                               );
                             })}
