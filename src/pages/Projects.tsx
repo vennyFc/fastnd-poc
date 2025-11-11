@@ -638,6 +638,8 @@ export default function Projects() {
   };
 
   const handleRemoveCrossSell = (project: any, crossSellProduct: string, application: string) => {
+    console.log('Open removal dialog for', { project, crossSellProduct, application });
+    toast.message('Bitte Grund auswählen', { description: `${crossSellProduct} entfernen` });
     setSelectedCrossSellForRemoval({ project, crossSellProduct, application });
     setRemovalDialogOpen(true);
   };
