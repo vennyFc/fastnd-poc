@@ -116,8 +116,7 @@ export default function Projects() {
       { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
       { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
       { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
-      { key: 'remove', label: 'Entfernen', visible: true, width: 80, order: 4 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 5 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
     ]
   );
 
@@ -912,7 +911,7 @@ export default function Projects() {
   if (viewMode === 'detail') {
     const detailProjects = getDetailProjects();
     const visibleProductColumns = productColumns.filter(col => col.visible);
-    const visibleCrossSellColumns = crossSellColumns.filter(col => col.visible || col.key === 'remove');
+    const visibleCrossSellColumns = crossSellColumns.filter(col => col.visible);
     
     return (
       <div className="p-6 space-y-6">
@@ -1313,34 +1312,35 @@ export default function Projects() {
                       return projectCrossSells.length > 0 ? (
                         <div className="rounded-lg border">
                           <Table>
-                             <TableHeader>
-                               <TableRow>
-                                 <th className="w-12"></th>
-                                 {visibleCrossSellColumns.map((column, index) => (
-                                   <ResizableTableHeader
-                                     key={column.key}
-                                     label={column.label}
-                                     width={column.width}
-                                     onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
-                                     sortable={false}
-                                     draggable={true}
-                                     onDragStart={() => setDraggedCrossSellIndex(index)}
-                                     onDragOver={(e) => {
-                                       e.preventDefault();
-                                       e.dataTransfer.dropEffect = 'move';
-                                     }}
-                                     onDrop={(e) => {
-                                       e.preventDefault();
-                                       if (draggedCrossSellIndex !== null && draggedCrossSellIndex !== index) {
-                                         reorderCrossSellColumns(draggedCrossSellIndex, index);
-                                       }
-                                       setDraggedCrossSellIndex(null);
-                                     }}
-                                     onDragEnd={() => setDraggedCrossSellIndex(null)}
-                                   />
-                                 ))}
-                               </TableRow>
-                             </TableHeader>
+                              <TableHeader>
+                                <TableRow>
+                                  <th className="w-12"></th>
+                                  {visibleCrossSellColumns.map((column, index) => (
+                                    <ResizableTableHeader
+                                      key={column.key}
+                                      label={column.label}
+                                      width={column.width}
+                                      onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
+                                      sortable={false}
+                                      draggable={true}
+                                      onDragStart={() => setDraggedCrossSellIndex(index)}
+                                      onDragOver={(e) => {
+                                        e.preventDefault();
+                                        e.dataTransfer.dropEffect = 'move';
+                                      }}
+                                      onDrop={(e) => {
+                                        e.preventDefault();
+                                        if (draggedCrossSellIndex !== null && draggedCrossSellIndex !== index) {
+                                          reorderCrossSellColumns(draggedCrossSellIndex, index);
+                                        }
+                                        setDraggedCrossSellIndex(null);
+                                      }}
+                                      onDragEnd={() => setDraggedCrossSellIndex(null)}
+                                    />
+                                  ))}
+                                  <th className="w-16 text-right pr-4">Entfernen</th>
+                                </TableRow>
+                              </TableHeader>
                              <TableBody>
                                {projectCrossSells.map((cs: any, idx: number) => {
                                  const details = getProductDetails(cs.cross_sell_product);
@@ -1363,8 +1363,8 @@ export default function Projects() {
                                              <GitBranch className="h-4 w-4 text-primary" />
                                            </Button>
                                          )}
-                                       </TableCell>
-                                        {visibleCrossSellColumns.map((column) => {
+                                        </TableCell>
+                                         {visibleCrossSellColumns.map((column) => {
                                           let value: any = '-';
                                           const isProductColumn = column.key === 'product';
                                           if (column.key === 'product') {
@@ -1392,20 +1392,6 @@ export default function Projects() {
                                                 Hinzufügen
                                               </Button>
                                             );
-                                          } else if (column.key === 'remove') {
-                                            value = (
-                                              <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-8 w-8 p-0"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleRemoveCrossSell(project, cs.cross_sell_product, cs.application);
-                                                }}
-                                              >
-                                                <ThumbsDown className="h-4 w-4 text-destructive" />
-                                              </Button>
-                                            );
                                           } else if (details) {
                                             if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                             if (column.key === 'product_family') value = details.product_family || '-';
@@ -1429,6 +1415,19 @@ export default function Projects() {
                                             </TableCell>
                                           );
                                         })}
+                                        <TableCell className="text-right w-16 pr-4">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-8 w-8 p-0"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRemoveCrossSell(project, cs.cross_sell_product, cs.application);
+                                            }}
+                                          >
+                                            <ThumbsDown className="h-4 w-4 text-destructive" />
+                                          </Button>
+                                        </TableCell>
                                      </TableRow>
                                      
                                      {/* Alternative Products for Cross-Sells - Expandable */}
