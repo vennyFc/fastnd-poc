@@ -638,6 +638,7 @@ export default function Projects() {
   };
 
   const handleRemoveCrossSell = (project: any, crossSellProduct: string, application: string) => {
+    console.log('Remove clicked', { project, crossSellProduct, application });
     setSelectedCrossSellForRemoval({ project, crossSellProduct, application });
     setRemovalDialogOpen(true);
   };
@@ -1905,7 +1906,7 @@ export default function Projects() {
 
       {/* Removal Reason Modal (custom fallback to ensure visibility) */}
       {removalDialogOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
             <div className="mb-4">
               <h2 className="text-lg font-semibold">Cross-Sell Opportunity entfernen</h2>
