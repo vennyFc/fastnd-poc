@@ -420,17 +420,28 @@ export default function Projects() {
       .map((rc: any) => rc.cross_sell_product);
 
     // Further filter out products that have been added via optimization for ANY row in this project group
+    let filteredCrossSells;
     if (groupNumbers.length > 0) {
       const addedProducts = optimizationRecords
         .filter((rec: any) => groupNumbers.includes(rec.project_number) && rec.cross_sell_product_name)
         .map((rec: any) => rec.cross_sell_product_name);
       
-      return availableCrossSells.filter((cs: any) => 
+      filteredCrossSells = availableCrossSells.filter((cs: any) => 
         !addedProducts.includes(cs.cross_sell_product) && !removedProducts.includes(cs.cross_sell_product)
       );
+    } else {
+      filteredCrossSells = availableCrossSells.filter((cs: any) => !removedProducts.includes(cs.cross_sell_product));
     }
     
-    return availableCrossSells.filter((cs: any) => !removedProducts.includes(cs.cross_sell_product));
+    // Remove duplicates: keep only one entry per unique cross_sell_product
+    const uniqueCrossSells = new Map<string, any>();
+    filteredCrossSells.forEach((cs: any) => {
+      if (!uniqueCrossSells.has(cs.cross_sell_product)) {
+        uniqueCrossSells.set(cs.cross_sell_product, cs);
+      }
+    });
+    
+    return Array.from(uniqueCrossSells.values());
   };
 
   const getProductDetails = (productName: string) => {
