@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp } from 'lucide-react';
 import { subMonths } from 'date-fns';
@@ -192,28 +192,15 @@ export function AddedProductsWidget() {
                 <Bar 
                   dataKey="crossSells" 
                   name="Cross-Sells"
+                  fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cross-${index}`} 
-                      fill={statusColors[entry.status] || entry.fill || '#3b82f6'} 
-                    />
-                  ))}
-                </Bar>
+                />
                 <Bar 
                   dataKey="alternativen" 
                   name="Alternativen"
+                  fill="#8b5cf6"
                   radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`alt-${index}`} 
-                      fill={statusColors[entry.status] || entry.fill || '#8b5cf6'}
-                      opacity={0.7} 
-                    />
-                  ))}
-                </Bar>
+                />
               </BarChart>
             </ResponsiveContainer>
 
