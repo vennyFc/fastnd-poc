@@ -771,40 +771,30 @@ export default function Projects() {
                     
                     {/* Optimization Status Progress Bar */}
                     <div className="mt-4 flex items-center gap-4">
-                      <div className="flex-1 flex items-center gap-1">
+                      <div className="flex-1 grid grid-cols-5 gap-0">
                         {/* Step: Neu */}
-                        <div className="flex-1 flex items-center">
-                          <div className="flex items-center justify-center px-3 py-1.5 rounded-l-lg border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
-                            ✓ NEU
-                          </div>
+                        <div className="flex items-center justify-center px-2 py-1.5 rounded-l-lg border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                          ✓ NEU
                         </div>
                         
                         {/* Step: Offen */}
-                        <div className="flex-1 flex items-center">
-                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium whitespace-nowrap">
-                            ✓ OFFEN
-                          </div>
+                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                          ✓ OFFEN
                         </div>
                         
                         {/* Step: Prüfung */}
-                        <div className="flex-1 flex items-center">
-                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
-                            PRÜFUNG
-                          </div>
+                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium">
+                          PRÜFUNG
                         </div>
                         
                         {/* Step: Validierung */}
-                        <div className="flex-1 flex items-center">
-                          <div className="flex items-center justify-center px-3 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
-                            VALIDIERUNG
-                          </div>
+                        <div className="flex items-center justify-center px-2 py-1.5 border border-r-0 bg-muted text-muted-foreground text-xs font-medium">
+                          VALIDIERUNG
                         </div>
                         
                         {/* Step: Abgeschlossen */}
-                        <div className="flex-1 flex items-center">
-                          <div className="flex items-center justify-center px-3 py-1.5 rounded-r-lg border bg-muted text-muted-foreground text-xs font-medium whitespace-nowrap">
-                            ABGESCHLOSSEN
-                          </div>
+                        <div className="flex items-center justify-center px-2 py-1.5 rounded-r-lg border bg-muted text-muted-foreground text-xs font-medium">
+                          ABGESCHLOSSEN
                         </div>
                       </div>
                       
