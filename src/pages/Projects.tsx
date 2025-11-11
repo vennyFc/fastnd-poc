@@ -737,7 +737,25 @@ export default function Projects() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                             {project.products.map((productName: string, idx: number) => {
+                             {project.products
+                              .sort((a: string, b: string) => {
+                                // Define status priority (lower number = higher priority)
+                                const statusPriority: Record<string, number> = {
+                                  'Registriert': 1,
+                                  'Akzeptiert': 2,
+                                  'Vorgeschlagen': 3,
+                                  'Identifiziert': 4
+                                };
+                                
+                                const statusA = getOptimizationStatus(project.customer, project.project_name, a, 'cross_sell') || '';
+                                const statusB = getOptimizationStatus(project.customer, project.project_name, b, 'cross_sell') || '';
+                                
+                                const priorityA = statusPriority[statusA] || 999;
+                                const priorityB = statusPriority[statusB] || 999;
+                                
+                                return priorityA - priorityB;
+                              })
+                              .map((productName: string, idx: number) => {
                               const details = getProductDetails(productName);
                               const alternatives = getProductAlternatives(productName);
                               const hasAlternatives = alternatives.length > 0;
