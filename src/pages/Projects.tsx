@@ -376,7 +376,7 @@ export default function Projects() {
     return [];
   };
 
-  const getCrossSells = (products: string[], projectNumber: string | null) => {
+  const getCrossSells = (products: string[], customer: string, projectName: string) => {
     if (!products || products.length === 0) return [];
     
     // Filter out products that are already in the project
@@ -384,10 +384,11 @@ export default function Projects() {
       products.includes(cs.base_product) && !products.includes(cs.cross_sell_product)
     );
 
-    // Further filter out products that have been added via optimization (if project_number exists)
-    if (projectNumber) {
+    // Further filter out products that have been added via optimization for ANY row in this project group
+    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    if (groupNumbers.length > 0) {
       const addedProducts = optimizationRecords
-        .filter((rec: any) => rec.project_number === projectNumber && rec.cross_sell_product_name)
+        .filter((rec: any) => groupNumbers.includes(rec.project_number) && rec.cross_sell_product_name)
         .map((rec: any) => rec.cross_sell_product_name);
       
       return availableCrossSells.filter((cs: any) => 
@@ -413,9 +414,26 @@ export default function Projects() {
     }));
   };
 
-  const getOptimizationStatus = (projectNumber: string, productName: string, type: 'cross_sell' | 'alternative') => {
-    const record = optimizationRecords.find((rec: any) => 
-      rec.project_number === projectNumber && 
+  // Collect all project_numbers that belong to the logical group (customer + project_name)
+  const getProjectNumbersForGroup = (customer: string, projectName: string): string[] => {
+    if (!projects) return [];
+    const nums = projects
+      .filter((p: any) => p.customer === customer && p.project_name === projectName)
+      .map((p: any) => p.project_number)
+      .filter(Boolean);
+    return Array.from(new Set(nums));
+  };
+
+  const getOptimizationStatus = (
+    customer: string,
+    projectName: string,
+    productName: string,
+    type: 'cross_sell' | 'alternative'
+  ) => {
+    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    if (groupNumbers.length === 0) return null;
+    const record = optimizationRecords.find((rec: any) =>
+      groupNumbers.includes(rec.project_number) &&
       (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
     );
     return record ? (type === 'cross_sell' ? record.cross_sell_status : record.alternative_status) : null;
@@ -651,9 +669,7 @@ export default function Projects() {
                               const alternatives = getProductAlternatives(productName);
                               const hasAlternatives = alternatives.length > 0;
                               const isExpanded = expandedAlternatives[productName];
-                              const productStatus = project.project_number 
-                                ? getOptimizationStatus(project.project_number, productName, 'cross_sell')
-                                : null;
+                              const productStatus = getOptimizationStatus(project.customer, project.project_name, productName, 'cross_sell');
 
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
@@ -772,7 +788,7 @@ export default function Projects() {
                     </div>
                     <Separator className="mb-4" />
                     {(() => {
-                      const projectCrossSells = getCrossSells(project.products, project.project_number);
+                      const projectCrossSells = getCrossSells(project.products, project.customer, project.project_name);
                       return projectCrossSells.length > 0 ? (
                         <div className="rounded-lg border">
                           <Table>
