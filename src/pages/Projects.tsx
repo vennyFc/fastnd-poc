@@ -1240,12 +1240,13 @@ export default function Projects() {
                                              <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
                                                <SelectValue />
                                              </SelectTrigger>
-                                             <SelectContent>
-                                               <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                               <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                               <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                               <SelectItem value="Registriert">Registriert</SelectItem>
-                                             </SelectContent>
+                                              <SelectContent>
+                                                <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                <SelectItem value="Registriert">Registriert</SelectItem>
+                                                <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                              </SelectContent>
                                            </Select>
                                          ) : '-';
                                        } else if (details) {
@@ -1328,12 +1329,13 @@ export default function Projects() {
                                                       <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
                                                         <SelectValue />
                                                       </SelectTrigger>
-                                                      <SelectContent>
-                                                        <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                        <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                        <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                        <SelectItem value="Registriert">Registriert</SelectItem>
-                                                      </SelectContent>
+                                                       <SelectContent>
+                                                         <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                         <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                         <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                         <SelectItem value="Registriert">Registriert</SelectItem>
+                                                         <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                                       </SelectContent>
                                                     </Select>
                                                   ) : (
                                                     !isAlreadyInProject && (
@@ -1576,12 +1578,13 @@ export default function Projects() {
                                                        <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
                                                          <SelectValue />
                                                        </SelectTrigger>
-                                                       <SelectContent>
-                                                         <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                         <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                         <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                         <SelectItem value="Registriert">Registriert</SelectItem>
-                                                       </SelectContent>
+                                                        <SelectContent>
+                                                          <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                          <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                          <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                          <SelectItem value="Registriert">Registriert</SelectItem>
+                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                                        </SelectContent>
                                                      </Select>
                                                    ) : (
                                                      !isAlreadyInProject && (
