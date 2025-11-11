@@ -82,17 +82,23 @@ export function AddedProductsWidget() {
     ]);
 
     // Convert to chart format
-    return Array.from(allStatuses).map((status) => ({
-      status,
-      crossSells: crossSellCounts[status] || 0,
-      alternativen: alternativeCounts[status] || 0,
-      fill: statusColors[status] || '#94a3b8',
-    })).sort((a, b) => {
+    const data = Array.from(allStatuses).map((status) => {
+      const color = statusColors[status] || '#94a3b8';
+      return {
+        status,
+        crossSells: crossSellCounts[status] || 0,
+        alternativen: alternativeCounts[status] || 0,
+        fill: color,
+      };
+    }).sort((a, b) => {
       // Sort by total (descending)
       const totalA = a.crossSells + a.alternativen;
       const totalB = b.crossSells + b.alternativen;
       return totalB - totalA;
     });
+
+    console.log('Chart Data:', data); // Debug log
+    return data;
   };
 
   const chartData = getChartData();
@@ -189,7 +195,10 @@ export function AddedProductsWidget() {
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`cross-${index}`} fill={entry.fill} />
+                    <Cell 
+                      key={`cross-${index}`} 
+                      fill={statusColors[entry.status] || entry.fill || '#3b82f6'} 
+                    />
                   ))}
                 </Bar>
                 <Bar 
@@ -198,7 +207,11 @@ export function AddedProductsWidget() {
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((entry, index) => (
-                    <Cell key={`alt-${index}`} fill={entry.fill} opacity={0.7} />
+                    <Cell 
+                      key={`alt-${index}`} 
+                      fill={statusColors[entry.status] || entry.fill || '#8b5cf6'}
+                      opacity={0.7} 
+                    />
                   ))}
                 </Bar>
               </BarChart>
