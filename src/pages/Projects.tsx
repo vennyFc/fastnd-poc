@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -653,10 +654,10 @@ export default function Projects() {
 
       const { project, crossSellProduct, application } = selectedCrossSellForRemoval;
 
-      // Get project_number
+      // Get project_number and application
       const { data: projectData } = await supabase
         .from('customer_projects')
-        .select('project_number')
+        .select('project_number, application')
         .eq('customer', project.customer)
         .eq('project_name', project.project_name)
         .limit(1)
@@ -1424,18 +1425,26 @@ export default function Projects() {
                                             </TableCell>
                                           );
                                         })}
-                                        <TableCell className="text-right w-16 pr-4">
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-8 w-8 p-0"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleRemoveCrossSell(project, cs.cross_sell_product, cs.application);
-                                            }}
-                                          >
-                                            <ThumbsDown className="h-4 w-4 text-destructive" />
-                                          </Button>
+                                        <TableCell className="text-right w-16 pr-4" onClick={(e) => e.stopPropagation()}>
+                                          <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => setSelectedCrossSellForRemoval({ project, crossSellProduct: cs.cross_sell_product })}
+                                              >
+                                                <ThumbsDown className="h-4 w-4 text-destructive" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent side="left" align="end" sideOffset={6} onClick={(e) => e.stopPropagation()}>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit')}>Technischer Fit</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit')}>Commercial Fit</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant')}>Anderer Lieferant</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf')}>Kein Bedarf</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige')}>Sonstige</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                          </DropdownMenu>
                                         </TableCell>
                                      </TableRow>
                                      
