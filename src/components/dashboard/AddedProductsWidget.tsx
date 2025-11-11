@@ -166,15 +166,15 @@ export function AddedProductsWidget() {
             
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
                   dataKey="status" 
-                  className="text-sm"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  stroke="hsl(var(--border))"
                 />
                 <YAxis 
-                  className="text-sm"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  stroke="hsl(var(--border))"
                   allowDecimals={false}
                 />
                 <Tooltip 
@@ -185,19 +185,24 @@ export function AddedProductsWidget() {
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                 />
-                {/* Serienfarben fixieren: Cross-Sells Blau, Alternativen Violett */}
                 <Bar 
                   dataKey="crossSells" 
                   name="Cross-Sells"
-                  fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                />
+                >
+                  {chartData.map((_, index) => (
+                    <Cell key={`cross-${index}`} fill="#3b82f6" />
+                  ))}
+                </Bar>
                 <Bar 
                   dataKey="alternativen" 
                   name="Alternativen"
-                  fill="#8b5cf6"
                   radius={[4, 4, 0, 0]}
-                />
+                >
+                  {chartData.map((_, index) => (
+                    <Cell key={`alt-${index}`} fill="#8b5cf6" />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
 
