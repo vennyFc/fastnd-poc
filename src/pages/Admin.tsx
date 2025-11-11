@@ -61,13 +61,19 @@ export default function Admin() {
         body: { email },
       });
 
+      // Check for errors - the error object contains the actual error response
       if (response.error) {
-        // Check if it's a "user already exists" error
-        if (response.data?.userExists || response.error.message?.includes('bereits registriert')) {
-          throw new Error('Benutzer mit dieser E-Mail ist bereits registriert');
+        // Try to get the error message from the response data first
+        const errorData = response.data;
+        if (errorData?.error) {
+          const error = new Error(errorData.error);
+          (error as any).userExists = errorData.userExists;
+          throw error;
         }
-        throw response.error;
+        // Fallback to the error message
+        throw new Error(response.error.message || 'Einladung fehlgeschlagen');
       }
+      
       return response.data;
     },
     onSuccess: () => {
