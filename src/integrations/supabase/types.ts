@@ -586,6 +586,39 @@ export type Database = {
         }
         Relationships: []
       }
+      removed_cross_sells: {
+        Row: {
+          application: string
+          created_at: string
+          cross_sell_product: string
+          id: string
+          project_number: string
+          removal_reason: Database["public"]["Enums"]["removal_reason"]
+          removed_at: string
+          user_id: string
+        }
+        Insert: {
+          application: string
+          created_at?: string
+          cross_sell_product: string
+          id?: string
+          project_number: string
+          removal_reason: Database["public"]["Enums"]["removal_reason"]
+          removed_at?: string
+          user_id: string
+        }
+        Update: {
+          application?: string
+          created_at?: string
+          cross_sell_product?: string
+          id?: string
+          project_number?: string
+          removal_reason?: Database["public"]["Enums"]["removal_reason"]
+          removed_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       upload_history: {
         Row: {
           data_type: string
@@ -818,6 +851,12 @@ export type Database = {
         | "Vorgeschlagen"
         | "Akzeptiert"
         | "Registriert"
+      removal_reason:
+        | "technischer_fit"
+        | "commercial_fit"
+        | "anderer_lieferant"
+        | "kein_bedarf"
+        | "sonstige"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -961,6 +1000,13 @@ export const Constants = {
         "Vorgeschlagen",
         "Akzeptiert",
         "Registriert",
+      ],
+      removal_reason: [
+        "technischer_fit",
+        "commercial_fit",
+        "anderer_lieferant",
+        "kein_bedarf",
+        "sonstige",
       ],
     },
   },

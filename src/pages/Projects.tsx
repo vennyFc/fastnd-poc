@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -37,6 +38,8 @@ export default function Projects() {
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
   const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
   const [selectedProductForQuickView, setSelectedProductForQuickView] = useState<any>(null);
+  const [removalDialogOpen, setRemovalDialogOpen] = useState(false);
+  const [selectedCrossSellForRemoval, setSelectedCrossSellForRemoval] = useState<any>(null);
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
@@ -113,7 +116,8 @@ export default function Projects() {
       { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
       { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
       { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
+      { key: 'remove', label: '', visible: true, width: 60, order: 4 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 5 },
     ]
   );
 
@@ -185,6 +189,19 @@ export default function Projects() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('opps_optimization')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch removed cross-sells
+  const { data: removedCrossSells = [] } = useQuery({
+    queryKey: ['removed_cross_sells'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('removed_cross_sells')
         .select('*');
       
       if (error) throw error;
@@ -385,19 +402,26 @@ export default function Projects() {
       products.includes(cs.base_product) && !products.includes(cs.cross_sell_product)
     );
 
-    // Further filter out products that have been added via optimization for ANY row in this project group
+    // Get project numbers for this group
     const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+    
+    // Filter out products that have been removed
+    const removedProducts = removedCrossSells
+      .filter((rc: any) => groupNumbers.includes(rc.project_number))
+      .map((rc: any) => rc.cross_sell_product);
+
+    // Further filter out products that have been added via optimization for ANY row in this project group
     if (groupNumbers.length > 0) {
       const addedProducts = optimizationRecords
         .filter((rec: any) => groupNumbers.includes(rec.project_number) && rec.cross_sell_product_name)
         .map((rec: any) => rec.cross_sell_product_name);
       
       return availableCrossSells.filter((cs: any) => 
-        !addedProducts.includes(cs.cross_sell_product)
+        !addedProducts.includes(cs.cross_sell_product) && !removedProducts.includes(cs.cross_sell_product)
       );
     }
     
-    return availableCrossSells;
+    return availableCrossSells.filter((cs: any) => !removedProducts.includes(cs.cross_sell_product));
   };
 
   const getProductDetails = (productName: string) => {
@@ -611,6 +635,60 @@ export default function Projects() {
     } catch (error: any) {
       console.error('Error adding cross-sell:', error);
       toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+    }
+  };
+
+  const handleRemoveCrossSell = (project: any, crossSellProduct: string, application: string) => {
+    setSelectedCrossSellForRemoval({ project, crossSellProduct, application });
+    setRemovalDialogOpen(true);
+  };
+
+  const handleConfirmRemoval = async (reason: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Nicht authentifiziert');
+        return;
+      }
+
+      const { project, crossSellProduct, application } = selectedCrossSellForRemoval;
+
+      // Get project_number
+      const { data: projectData } = await supabase
+        .from('customer_projects')
+        .select('project_number')
+        .eq('customer', project.customer)
+        .eq('project_name', project.project_name)
+        .limit(1)
+        .maybeSingle();
+
+      if (!projectData) {
+        toast.error('Projekt nicht gefunden');
+        return;
+      }
+
+      // Insert into removed_cross_sells
+      const { error } = await supabase
+        .from('removed_cross_sells')
+        .insert([{
+          user_id: user.id,
+          project_number: projectData.project_number,
+          application: application,
+          cross_sell_product: crossSellProduct,
+          removal_reason: reason as any
+        }]);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ['removed_cross_sells'] });
+
+      toast.success('Cross-Sell Opportunity entfernt');
+      setRemovalDialogOpen(false);
+      setSelectedCrossSellForRemoval(null);
+    } catch (error) {
+      console.error('Error removing cross-sell:', error);
+      toast.error('Fehler beim Entfernen des Cross-Sells');
     }
   };
 
@@ -1286,57 +1364,71 @@ export default function Projects() {
                                            </Button>
                                          )}
                                        </TableCell>
-                                       {visibleCrossSellColumns.map((column) => {
-                                         let value: any = '-';
-                                         const isProductColumn = column.key === 'product';
-                                         if (column.key === 'product') {
-                                           value = (
-                                             <div className="flex items-center gap-2">
-                                               <span>{cs.cross_sell_product}</span>
-                                               {showAlternativesBadge && (
-                                                 <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                   A
-                                                 </Badge>
-                                               )}
-                                             </div>
-                                           );
-                                         } else if (column.key === 'action') {
-                                           value = (
-                                             <Button
-                                               size="sm"
-                                               variant="outline"
-                                               onClick={(e) => {
-                                                 e.stopPropagation();
-                                                 handleAddCrossSell(project, cs.cross_sell_product);
-                                               }}
-                                             >
-                                               <Plus className="h-3.5 w-3.5 mr-1" />
-                                               Hinzufügen
-                                             </Button>
-                                           );
-                                         } else if (details) {
-                                           if (column.key === 'manufacturer') value = details.manufacturer || '-';
-                                           if (column.key === 'product_family') value = details.product_family || '-';
-                                           if (column.key === 'description') value = details.product_description || '-';
-                                         }
+                                        {visibleCrossSellColumns.map((column) => {
+                                          let value: any = '-';
+                                          const isProductColumn = column.key === 'product';
+                                          if (column.key === 'product') {
+                                            value = (
+                                              <div className="flex items-center gap-2">
+                                                <span>{cs.cross_sell_product}</span>
+                                                {showAlternativesBadge && (
+                                                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                    A
+                                                  </Badge>
+                                                )}
+                                              </div>
+                                            );
+                                          } else if (column.key === 'action') {
+                                            value = (
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleAddCrossSell(project, cs.cross_sell_product);
+                                                }}
+                                              >
+                                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                                Hinzufügen
+                                              </Button>
+                                            );
+                                          } else if (column.key === 'remove') {
+                                            value = (
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleRemoveCrossSell(project, cs.cross_sell_product, cs.application);
+                                                }}
+                                              >
+                                                <ThumbsDown className="h-4 w-4 text-destructive" />
+                                              </Button>
+                                            );
+                                          } else if (details) {
+                                            if (column.key === 'manufacturer') value = details.manufacturer || '-';
+                                            if (column.key === 'product_family') value = details.product_family || '-';
+                                            if (column.key === 'description') value = details.product_description || '-';
+                                          }
 
-                                         return (
-                                           <TableCell 
-                                             key={column.key}
-                                             className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
-                                             style={{ width: `${column.width}px` }}
-                                             onClick={(e) => {
-                                               if (isProductColumn) {
-                                                 e.stopPropagation();
-                                                 setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                                 setProductQuickViewOpen(true);
-                                               }
-                                             }}
-                                           >
-                                             {value}
-                                           </TableCell>
-                                         );
-                                       })}
+                                          return (
+                                            <TableCell 
+                                              key={column.key}
+                                              className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                                              style={{ width: `${column.width}px` }}
+                                              onClick={(e) => {
+                                                if (isProductColumn) {
+                                                  e.stopPropagation();
+                                                  setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                  setProductQuickViewOpen(true);
+                                                }
+                                              }}
+                                            >
+                                              {value}
+                                            </TableCell>
+                                          );
+                                        })}
                                      </TableRow>
                                      
                                      {/* Alternative Products for Cross-Sells - Expandable */}
@@ -1803,6 +1895,58 @@ export default function Projects() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Removal Reason Dialog */}
+      <AlertDialog open={removalDialogOpen} onOpenChange={setRemovalDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cross-Sell Opportunity entfernen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bitte wählen Sie einen Grund für das Entfernen von "{selectedCrossSellForRemoval?.crossSellProduct}" aus diesem Projekt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-3 py-4">
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => handleConfirmRemoval('technischer_fit')}
+            >
+              Technischer Fit
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => handleConfirmRemoval('commercial_fit')}
+            >
+              Commercial Fit
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => handleConfirmRemoval('anderer_lieferant')}
+            >
+              Anderer Lieferant
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => handleConfirmRemoval('kein_bedarf')}
+            >
+              Kein Bedarf
+            </Button>
+            <Button
+              variant="outline"
+              className="justify-start"
+              onClick={() => handleConfirmRemoval('sonstige')}
+            >
+              Sonstige
+            </Button>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
