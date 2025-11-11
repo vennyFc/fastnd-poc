@@ -20,12 +20,17 @@ const timeRangeLabels: Record<TimeRange, string> = {
 const statusColors: Record<string, string> = {
   'Neu': '#3b82f6',
   'Identifiziert': '#06b6d4',
+  'Akzeptiert': '#10b981',
+  'Registriert': '#a855f7',
   'Vorgeschlagen': '#8b5cf6',
   'In Bearbeitung': '#f59e0b',
   'Angeboten': '#a855f7',
   'Gewonnen': '#10b981',
   'Verloren': '#ef4444',
+  'Abgelehnt': '#ef4444',
 };
+
+const statusOrder = ['Identifiziert', 'Akzeptiert', 'Registriert', 'Abgelehnt'];
 
 export function AddedProductsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
@@ -93,7 +98,19 @@ export function AddedProductsWidget() {
         fill: color,
       };
     }).sort((a, b) => {
-      // Sort by total (descending)
+      // Sort by predefined status order
+      const orderA = statusOrder.indexOf(a.status);
+      const orderB = statusOrder.indexOf(b.status);
+      
+      // If status is in the order array, use its position
+      // Otherwise, put it at the end
+      if (orderA !== -1 && orderB !== -1) {
+        return orderA - orderB;
+      }
+      if (orderA !== -1) return -1;
+      if (orderB !== -1) return 1;
+      
+      // For statuses not in the order array, sort by total (descending)
       const totalA = a.crossSells + a.alternativen;
       const totalB = b.crossSells + b.alternativen;
       return totalB - totalA;
