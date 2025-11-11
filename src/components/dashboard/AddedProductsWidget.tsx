@@ -185,25 +185,19 @@ export function AddedProductsWidget() {
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
                 />
-                {/* Legend entfernt, damit Status-Legende unten maßgeblich ist */}
+                {/* Serienfarben fixieren: Cross-Sells Blau, Alternativen Violett */}
                 <Bar 
                   dataKey="crossSells" 
                   name="Cross-Sells"
+                  fill="#3b82f6"
                   radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cross-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
+                />
                 <Bar 
                   dataKey="alternativen" 
                   name="Alternativen"
+                  fill="#8b5cf6"
                   radius={[4, 4, 0, 0]}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`alt-${index}`} fill={entry.fill} opacity={0.6} />
-                  ))}
-                </Bar>
+                />
               </BarChart>
             </ResponsiveContainer>
 
