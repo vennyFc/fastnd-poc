@@ -647,7 +647,7 @@ export default function Projects() {
     setRemovalDialogOpen(true);
   };
 
-  const handleConfirmRemoval = async (reason: string) => {
+  const handleConfirmRemoval = async (reason: string, ctx?: { project: any; crossSellProduct: string }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -655,7 +655,12 @@ export default function Projects() {
         return;
       }
 
-      const { project, crossSellProduct, application } = selectedCrossSellForRemoval;
+      const project = ctx?.project ?? selectedCrossSellForRemoval?.project;
+      const crossSellProduct = ctx?.crossSellProduct ?? selectedCrossSellForRemoval?.crossSellProduct;
+      if (!project || !crossSellProduct) {
+        toast.error('Kontext fehlt für das Entfernen');
+        return;
+      }
 
       // Get project_number and application
       const { data: projectData } = await supabase
@@ -709,9 +714,9 @@ export default function Projects() {
 
       setRemovalDialogOpen(false);
       setSelectedCrossSellForRemoval(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error removing cross-sell:', error);
-      toast.error('Fehler beim Entfernen des Cross-Sells');
+      toast.error(`Fehler beim Entfernen des Cross-Sells: ${error?.message || JSON.stringify(error)}`);
     }
   };
 
@@ -1476,11 +1481,11 @@ export default function Projects() {
                                               </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent side="left" align="end" sideOffset={6} onClick={(e) => e.stopPropagation()}>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit')}>Technischer Fit</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit')}>Commercial Fit</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant')}>Anderer Lieferant</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf')}>Kein Bedarf</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige')}>Sonstige</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project, crossSellProduct: cs.cross_sell_product })}>Technischer Fit</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project, crossSellProduct: cs.cross_sell_product })}>Commercial Fit</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project, crossSellProduct: cs.cross_sell_product })}>Anderer Lieferant</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project, crossSellProduct: cs.cross_sell_product })}>Kein Bedarf</DropdownMenuItem>
+                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project, crossSellProduct: cs.cross_sell_product })}>Sonstige</DropdownMenuItem>
                                             </DropdownMenuContent>
                                           </DropdownMenu>
                                         </TableCell>
