@@ -13,13 +13,13 @@ import { useTableColumns } from '@/hooks/useTableColumns';
 import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -638,8 +638,6 @@ export default function Projects() {
   };
 
   const handleRemoveCrossSell = (project: any, crossSellProduct: string, application: string) => {
-    console.log('Open removal dialog for', { project, crossSellProduct, application });
-    toast.message('Bitte Grund auswählen', { description: `${crossSellProduct} entfernen` });
     setSelectedCrossSellForRemoval({ project, crossSellProduct, application });
     setRemovalDialogOpen(true);
   };
@@ -1906,14 +1904,14 @@ export default function Projects() {
       </Sheet>
 
       {/* Removal Reason Dialog */}
-      <AlertDialog open={removalDialogOpen} onOpenChange={setRemovalDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cross-Sell Opportunity entfernen</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={removalDialogOpen} onOpenChange={setRemovalDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cross-Sell Opportunity entfernen</DialogTitle>
+            <DialogDescription>
               Bitte wählen Sie einen Grund für das Entfernen von "{selectedCrossSellForRemoval?.crossSellProduct}" aus diesem Projekt.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </DialogDescription>
+          </DialogHeader>
           <div className="grid gap-3 py-4">
             <Button
               variant="outline"
@@ -1951,11 +1949,13 @@ export default function Projects() {
               Sonstige
             </Button>
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>
+              Abbrechen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
