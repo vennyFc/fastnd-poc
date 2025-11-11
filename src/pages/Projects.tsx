@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,8 @@ export default function Projects() {
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
+
+  const queryClient = useQueryClient();
 
   
 
@@ -492,7 +494,9 @@ export default function Projects() {
 
       console.log('Optimization record created:', insertedOpp);
 
-      // Refetch data instead of reloading page
+      // Invalidate and refetch data instead of reloading page
+      await queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
+      await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
       await Promise.all([
         refetchProjects(),
         refetchOptimization()
