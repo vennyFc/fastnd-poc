@@ -30,7 +30,7 @@ const statusColors: Record<string, string> = {
   'Abgelehnt': '#ef4444',
 };
 
-const statusOrder = ['Identifiziert', 'Akzeptiert', 'Registriert', 'Abgelehnt'];
+const statusOrder = ['Identifiziert', 'Vorgeschlagen', 'Akzeptiert', 'Registriert', 'Abgelehnt'];
 
 export function AddedProductsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
