@@ -430,12 +430,13 @@ export default function Admin() {
                             Einladung
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
                             disabled={toggleAdminMutation.isPending}
                             className="whitespace-nowrap"
                           >
+                            <Shield className="h-4 w-4 mr-1" />
                             {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
                           </Button>
                           <Button
