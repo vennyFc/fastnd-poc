@@ -115,6 +115,19 @@ export default function Reports() {
     },
   });
 
+  // Fetch products for product family
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('product, product_family');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleRestore = async (id: string, productName: string) => {
     try {
       const { error } = await supabase
@@ -150,11 +163,12 @@ export default function Reports() {
   const enrichedAddedProducts = addedProducts.map((opt: any) => {
     const project = customerProjects.find((p: any) => p.project_number === opt.project_number);
     
-    const products = [];
+    const products_list = [];
     
     // Cross-Sell Product
     if (opt.cross_sell_product_name) {
-      products.push({
+      const productInfo = products.find((p: any) => p.product === opt.cross_sell_product_name);
+      products_list.push({
         id: `${opt.id}-cross`,
         customer: project?.customer || '-',
         application: project?.application || '-',
@@ -162,6 +176,7 @@ export default function Reports() {
         project_number: opt.project_number,
         optimization_status: opt.optimization_status,
         product_name: opt.cross_sell_product_name,
+        product_family: productInfo?.product_family || '-',
         product_type: 'Cross-Sell',
         validation_status: opt.cross_sell_status || 'Neu',
         date_added: opt.cross_sell_date_added,
@@ -170,7 +185,8 @@ export default function Reports() {
     
     // Alternative Product
     if (opt.alternative_product_name) {
-      products.push({
+      const productInfo = products.find((p: any) => p.product === opt.alternative_product_name);
+      products_list.push({
         id: `${opt.id}-alt`,
         customer: project?.customer || '-',
         application: project?.application || '-',
@@ -178,13 +194,14 @@ export default function Reports() {
         project_number: opt.project_number,
         optimization_status: opt.optimization_status,
         product_name: opt.alternative_product_name,
+        product_family: productInfo?.product_family || '-',
         product_type: 'Alternative',
         validation_status: opt.alternative_status || 'Neu',
         date_added: opt.alternative_date_added,
       });
     }
     
-    return products;
+    return products_list;
   }).flat();
 
   // Get unique values for filters
@@ -243,6 +260,7 @@ export default function Reports() {
       'Applikation': item.application,
       'Projekt-Status': item.optimization_status,
       'Produkt': item.product_name,
+      'Produktfamilie': item.product_family,
       'Produkttyp': item.product_type,
       'Validierungsstatus': item.validation_status,
       'Hinzugefügt': item.date_added ? format(new Date(item.date_added), 'dd.MM.yyyy', { locale: de }) : '-',
@@ -519,6 +537,7 @@ export default function Reports() {
                   <TableHead>Applikation</TableHead>
                   <TableHead>Projekt-Status</TableHead>
                   <TableHead>Produkt</TableHead>
+                  <TableHead>Produktfamilie</TableHead>
                   <TableHead>Typ</TableHead>
                   <TableHead>Validierungsstatus</TableHead>
                   <TableHead>Hinzugefügt</TableHead>
@@ -536,6 +555,7 @@ export default function Reports() {
                       <Badge variant="secondary">{item.optimization_status}</Badge>
                     </TableCell>
                     <TableCell className="font-medium">{item.product_name}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.product_family}</TableCell>
                     <TableCell>
                       <Badge 
                         variant={item.product_type === 'Cross-Sell' ? 'default' : 'outline'}
