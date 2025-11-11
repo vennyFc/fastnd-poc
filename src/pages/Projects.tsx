@@ -91,7 +91,8 @@ export default function Projects() {
       { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
       { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
       { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 3 },
+      { key: 'status', label: 'Status', visible: true, width: 150, order: 3 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
     ]
   );
 
@@ -105,10 +106,11 @@ export default function Projects() {
   } = useTableColumns(
     'project-detail-crosssell-columns',
     [
-      { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
-      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 180, order: 1 },
-      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 2 },
-      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 3 },
+      { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
+      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
+      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
+      { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
+      { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
     ]
   );
 
@@ -167,6 +169,19 @@ export default function Projects() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_alternatives')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch optimization records
+  const { data: optimizationRecords = [], refetch: refetchOptimization } = useQuery({
+    queryKey: ['opps_optimization'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('opps_optimization')
         .select('*');
       
       if (error) throw error;
@@ -323,11 +338,16 @@ export default function Projects() {
           if (project.product && !existing.products.includes(project.product)) {
             existing.products.push(project.product);
           }
+          // Store project_number if available
+          if (project.project_number && !existing.project_number) {
+            existing.project_number = project.project_number;
+          }
         } else {
           acc.push({
             id: project.id,
             customer: project.customer,
             project_name: project.project_name,
+            project_number: project.project_number,
             applications: project.application ? [project.application] : [],
             products: project.product ? [project.product] : [],
             created_at: project.created_at,
@@ -345,6 +365,7 @@ export default function Projects() {
         id: selectedProject.id,
         customer: selectedProject.customer,
         project_name: selectedProject.project_name,
+        project_number: projectData[0]?.project_number || null,
         applications: projectData.map(p => p.application).filter(Boolean),
         products: projectData.map(p => p.product).filter(Boolean),
         created_at: selectedProject.created_at,
@@ -374,6 +395,58 @@ export default function Projects() {
       ...prev,
       [productName]: !prev[productName]
     }));
+  };
+
+  const getOptimizationStatus = (projectNumber: string, productName: string, type: 'cross_sell' | 'alternative') => {
+    const record = optimizationRecords.find((rec: any) => 
+      rec.project_number === projectNumber && 
+      (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
+    );
+    return record ? (type === 'cross_sell' ? record.cross_sell_status : record.alternative_status) : null;
+  };
+
+  const handleAddCrossSell = async (project: any, crossSellProduct: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Nicht authentifiziert');
+        return;
+      }
+
+      // Get project_number from customer_projects
+      const { data: projectData, error: projectError } = await supabase
+        .from('customer_projects')
+        .select('project_number')
+        .eq('customer', project.customer)
+        .eq('project_name', project.project_name)
+        .limit(1)
+        .maybeSingle();
+
+      if (projectError) throw projectError;
+      if (!projectData) {
+        toast.error('Projekt nicht gefunden');
+        return;
+      }
+
+      // Insert into opps_optimization
+      const { error: insertError } = await supabase
+        .from('opps_optimization')
+        .insert({
+          user_id: user.id,
+          project_number: projectData.project_number,
+          cross_sell_product_name: crossSellProduct,
+          cross_sell_date_added: new Date().toISOString(),
+          cross_sell_status: 'Identifiziert'
+        });
+
+      if (insertError) throw insertError;
+
+      await refetchOptimization();
+      toast.success(`${crossSellProduct} als Cross-Sell hinzugefügt`);
+    } catch (error: any) {
+      console.error('Error adding cross-sell:', error);
+      toast.error('Fehler beim Hinzufügen des Cross-Sell Produkts');
+    }
   };
 
   const handleRowClick = (project: any) => {
@@ -513,11 +586,14 @@ export default function Projects() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {project.products.map((productName: string, idx: number) => {
+                             {project.products.map((productName: string, idx: number) => {
                               const details = getProductDetails(productName);
                               const alternatives = getProductAlternatives(productName);
                               const hasAlternatives = alternatives.length > 0;
                               const isExpanded = expandedAlternatives[productName];
+                              const productStatus = project.project_number 
+                                ? getOptimizationStatus(project.project_number, productName, 'cross_sell')
+                                : null;
 
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
@@ -535,9 +611,13 @@ export default function Projects() {
                                       )}
                                     </TableCell>
                                      {visibleProductColumns.map((column) => {
-                                       let value = '-';
+                                       let value: any = '-';
                                        if (column.key === 'product') {
                                          value = productName;
+                                       } else if (column.key === 'status') {
+                                         value = productStatus ? (
+                                           <Badge variant="secondary">{productStatus}</Badge>
+                                         ) : '-';
                                        } else if (details) {
                                          if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                          if (column.key === 'product_family') value = details.product_family || '-';
@@ -670,10 +750,24 @@ export default function Projects() {
                                 return (
                                   <TableRow key={idx}>
                                      {visibleCrossSellColumns.map((column) => {
-                                       let value = '-';
+                                       let value: any = '-';
                                        const isProductColumn = column.key === 'product';
                                       if (column.key === 'product') {
                                         value = cs.cross_sell_product;
+                                      } else if (column.key === 'action') {
+                                        value = (
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleAddCrossSell(project, cs.cross_sell_product);
+                                            }}
+                                          >
+                                            <Plus className="h-3.5 w-3.5 mr-1" />
+                                            Hinzufügen
+                                          </Button>
+                                        );
                                       } else if (details) {
                                         if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                         if (column.key === 'product_family') value = details.product_family || '-';
