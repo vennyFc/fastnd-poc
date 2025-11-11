@@ -107,7 +107,7 @@ export function AddedProductsWidget() {
   const totalProducts = totalCrossSells + totalAlternatives;
 
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card h-full flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -133,7 +133,7 @@ export function AddedProductsWidget() {
           </Select>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-8 w-full" />
@@ -164,7 +164,7 @@ export function AddedProductsWidget() {
               </div>
             </div>
             
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
