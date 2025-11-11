@@ -677,7 +677,7 @@ export default function Projects() {
         .insert([{
           user_id: user.id,
           project_number: projectData.project_number,
-          application: application,
+          application: projectData.application,
           cross_sell_product: crossSellProduct,
           removal_reason: reason as any
         }])
