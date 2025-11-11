@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserPlus, Mail, Shield, User, Trash2 } from 'lucide-react';
+import { UserPlus, Mail, Shield, User, Trash2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -24,6 +24,7 @@ export default function Admin() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch all users with their profiles and roles
   const { data: users, isLoading } = useQuery({
@@ -216,6 +217,16 @@ export default function Admin() {
     }
   };
 
+  // Filter users based on search query
+  const filteredUsers = users?.filter((user: any) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      user.email?.toLowerCase().includes(query) ||
+      user.full_name?.toLowerCase().includes(query)
+    );
+  }) || [];
+
   // Redirect if not admin (using useEffect to avoid hook ordering issues)
   if (!isAdmin) {
     navigate('/');
@@ -347,10 +358,23 @@ export default function Admin() {
       {/* Users Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Alle Benutzer</CardTitle>
-          <CardDescription>
-            Verwalten Sie Benutzer und deren Berechtigungen
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Alle Benutzer</CardTitle>
+              <CardDescription>
+                Verwalten Sie Benutzer und deren Berechtigungen
+              </CardDescription>
+            </div>
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Nach E-Mail oder Name suchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -359,7 +383,7 @@ export default function Admin() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : users && users.length > 0 ? (
+          ) : filteredUsers.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -371,7 +395,7 @@ export default function Admin() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user: any) => {
+                {filteredUsers.map((user: any) => {
                   const isUserAdmin = user.roles.some((r: any) => r.role === 'admin');
                   return (
                     <TableRow key={user.id}>
@@ -430,6 +454,10 @@ export default function Admin() {
                 })}
               </TableBody>
             </Table>
+          ) : searchQuery ? (
+            <div className="p-8 text-center text-muted-foreground">
+              Keine Benutzer gefunden für "{searchQuery}"
+            </div>
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               Keine Benutzer vorhanden
