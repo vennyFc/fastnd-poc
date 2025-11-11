@@ -1903,59 +1903,40 @@ export default function Projects() {
         </SheetContent>
       </Sheet>
 
-      {/* Removal Reason Dialog */}
-      <Dialog open={removalDialogOpen} onOpenChange={setRemovalDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Cross-Sell Opportunity entfernen</DialogTitle>
-            <DialogDescription>
-              Bitte wählen Sie einen Grund für das Entfernen von "{selectedCrossSellForRemoval?.crossSellProduct}" aus diesem Projekt.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-3 py-4">
-            <Button
-              variant="outline"
-              className="justify-start"
-              onClick={() => handleConfirmRemoval('technischer_fit')}
-            >
-              Technischer Fit
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start"
-              onClick={() => handleConfirmRemoval('commercial_fit')}
-            >
-              Commercial Fit
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start"
-              onClick={() => handleConfirmRemoval('anderer_lieferant')}
-            >
-              Anderer Lieferant
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start"
-              onClick={() => handleConfirmRemoval('kein_bedarf')}
-            >
-              Kein Bedarf
-            </Button>
-            <Button
-              variant="outline"
-              className="justify-start"
-              onClick={() => handleConfirmRemoval('sonstige')}
-            >
-              Sonstige
-            </Button>
+      {/* Removal Reason Modal (custom fallback to ensure visibility) */}
+      {removalDialogOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold">Cross-Sell Opportunity entfernen</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Bitte wählen Sie einen Grund für das Entfernen von "{selectedCrossSellForRemoval?.crossSellProduct}" aus diesem Projekt.
+              </p>
+            </div>
+            <div className="grid gap-3 py-2">
+              <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('technischer_fit')}>
+                Technischer Fit
+              </Button>
+              <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('commercial_fit')}>
+                Commercial Fit
+              </Button>
+              <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('anderer_lieferant')}>
+                Anderer Lieferant
+              </Button>
+              <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('kein_bedarf')}>
+                Kein Bedarf
+              </Button>
+              <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('sonstige')}>
+                Sonstige
+              </Button>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>Abbrechen</Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>
-              Abbrechen
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
+
     </div>
   );
 }
