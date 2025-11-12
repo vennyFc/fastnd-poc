@@ -22,6 +22,14 @@ import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -2158,6 +2166,44 @@ export default function Projects() {
       <Sheet open={applicationQuickViewOpen} onOpenChange={setApplicationQuickViewOpen}>
         <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setApplicationQuickViewOpen(false);
+                      // Optionally reopen project sheet if needed
+                      if (selectedProject) {
+                        setIsSheetOpen(true);
+                      }
+                    }}
+                  >
+                    Projekte
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {selectedProject && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setApplicationQuickViewOpen(false);
+                          setIsSheetOpen(true);
+                        }}
+                      >
+                        {selectedProject.project_name}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                  </>
+                )}
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedApplicationForQuickView}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
             <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
           </SheetHeader>

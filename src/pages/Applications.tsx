@@ -13,6 +13,14 @@ import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 type SortField = 'application' | 'related_product';
 type SortDirection = 'asc' | 'desc' | null;
@@ -232,6 +240,22 @@ export default function Applications() {
       <Sheet open={applicationQuickViewOpen} onOpenChange={setApplicationQuickViewOpen}>
         <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    className="cursor-pointer"
+                    onClick={() => setApplicationQuickViewOpen(false)}
+                  >
+                    Applikationen
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedApplicationForQuickView}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
             <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
           </SheetHeader>
