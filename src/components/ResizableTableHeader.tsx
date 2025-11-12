@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 
 interface ResizableTableHeaderProps {
-  label: string;
+  label: string | React.ReactNode;
   width: number;
   onResize: (width: number) => void;
   sortable?: boolean;
@@ -104,13 +104,13 @@ export function ResizableTableHeader({
             variant="ghost"
             size="sm"
             onClick={onSort}
-            className="h-auto p-0 font-semibold hover:bg-transparent flex-1 justify-start"
+            className="h-auto p-0 font-semibold hover:bg-transparent flex-1 justify-start text-left whitespace-normal leading-tight"
           >
-            {label}
+            <span className="block">{label}</span>
             {getSortIcon()}
           </Button>
         ) : (
-          <span className="font-semibold flex-1">{label}</span>
+          <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left">{label}</span>
         )}
         <div
           onMouseDown={handleMouseDown}

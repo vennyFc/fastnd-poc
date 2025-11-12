@@ -46,9 +46,9 @@ export default function Products() {
     { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_price', label: 'Preis', visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: 'Lieferzeit (Tage)', visible: true, width: 140, order: 4 },
-    { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
+    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 4 },
+    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
     { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 6 },
     { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 7 },
   ], []);
@@ -618,7 +618,7 @@ export default function Products() {
                               : '-';
                           } else if (column.key === 'product_lead_time') {
                             value = product.product_lead_time 
-                              ? `${product.product_lead_time} Tage` 
+                              ? `${Math.ceil(product.product_lead_time / 7)} Wochen` 
                               : '-';
                           } else if (column.key === 'product_inventory') {
                             value = product.product_inventory !== null && product.product_inventory !== undefined
@@ -683,7 +683,7 @@ export default function Products() {
                                 : '-';
                             } else if (column.key === 'product_lead_time') {
                               value = altProduct.product_lead_time 
-                                ? `${altProduct.product_lead_time} Tage` 
+                                ? `${Math.ceil(altProduct.product_lead_time / 7)} Wochen` 
                                 : '-';
                             } else if (column.key === 'product_inventory') {
                               value = altProduct.product_inventory !== null && altProduct.product_inventory !== undefined
@@ -868,7 +868,7 @@ export default function Products() {
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Lieferzeit</h3>
                   <p className="text-base font-semibold">
                     {selectedProduct.product_lead_time 
-                      ? `${selectedProduct.product_lead_time} Tage` 
+                      ? `${Math.ceil(selectedProduct.product_lead_time / 7)} Wochen` 
                       : '-'}
                   </p>
                 </div>

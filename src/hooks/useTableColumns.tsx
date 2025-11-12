@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export interface ColumnConfig {
   key: string;
-  label: string;
+  label: string | React.ReactNode;
   visible: boolean;
   width: number;
   order: number;
