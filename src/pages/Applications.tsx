@@ -10,6 +10,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
 import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
 
 type SortField = 'application' | 'related_product';
 type SortDirection = 'asc' | 'desc' | null;
@@ -19,6 +21,8 @@ export default function Applications() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [applicationQuickViewOpen, setApplicationQuickViewOpen] = useState(false);
+  const [selectedApplicationForQuickView, setSelectedApplicationForQuickView] = useState<string | null>(null);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'applications-columns',
@@ -44,6 +48,19 @@ export default function Applications() {
         .from('applications')
         .select('*')
         .order('application', { ascending: true });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch application insights
+  const { data: appInsights = [] } = useQuery({
+    queryKey: ['app_insights'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('app_insights')
+        .select('*');
       
       if (error) throw error;
       return data as any[];
@@ -176,10 +193,19 @@ export default function Applications() {
                         {visibleColumns.map((column) => {
                           const rawValue = app[column.key];
                           const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
+                          const isApplicationColumn = column.key === 'application';
+                          
                           return (
                             <TableCell 
                               key={column.key}
                               style={{ width: `${column.width}px` }}
+                              className={isApplicationColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                              onClick={() => {
+                                if (isApplicationColumn && app.application) {
+                                  setSelectedApplicationForQuickView(app.application);
+                                  setApplicationQuickViewOpen(true);
+                                }
+                              }}
                             >
                               {value}
                             </TableCell>
@@ -200,6 +226,67 @@ export default function Applications() {
           )}
         </CardContent>
       </Card>
+
+      {/* Application Quick View Sheet */}
+      <Sheet open={applicationQuickViewOpen} onOpenChange={setApplicationQuickViewOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
+            <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
+          </SheetHeader>
+          {selectedApplicationForQuickView && (() => {
+            const appData = appInsights.find(
+              (app: any) => app.application === selectedApplicationForQuickView
+            );
+            
+            return appData ? (
+              <div className="mt-6 space-y-6">
+                {appData.industry && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Industrie</h3>
+                    <Badge variant="secondary">{appData.industry}</Badge>
+                  </div>
+                )}
+
+                {appData.application_description && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                    <p className="text-base leading-relaxed">
+                      {appData.application_description}
+                    </p>
+                  </div>
+                )}
+
+                {appData.application_trends && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Trends</h3>
+                    <p className="text-base leading-relaxed">
+                      {appData.application_trends}
+                    </p>
+                  </div>
+                )}
+
+                {appData.application_block_diagram && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
+                    <div className="rounded-lg border bg-muted/50 p-4">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {appData.application_block_diagram}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-6">
+                <p className="text-sm text-muted-foreground">
+                  Keine detaillierten Informationen für diese Applikation verfügbar.
+                </p>
+              </div>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

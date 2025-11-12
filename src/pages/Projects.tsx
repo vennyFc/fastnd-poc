@@ -39,6 +39,8 @@ export default function Projects() {
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
   const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
   const [selectedProductForQuickView, setSelectedProductForQuickView] = useState<any>(null);
+  const [applicationQuickViewOpen, setApplicationQuickViewOpen] = useState(false);
+  const [selectedApplicationForQuickView, setSelectedApplicationForQuickView] = useState<string | null>(null);
   const [removalDialogOpen, setRemovalDialogOpen] = useState(false);
   const [selectedCrossSellForRemoval, setSelectedCrossSellForRemoval] = useState<any>(null);
   const [undoModalOpen, setUndoModalOpen] = useState(false);
@@ -192,6 +194,19 @@ export default function Projects() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('product_alternatives')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Fetch application insights
+  const { data: appInsights = [] } = useQuery({
+    queryKey: ['app_insights'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('app_insights')
         .select('*');
       
       if (error) throw error;
@@ -1974,7 +1989,17 @@ export default function Projects() {
                 <div className="flex flex-wrap gap-2">
                   {selectedProject.applications && selectedProject.applications.length > 0 ? (
                     selectedProject.applications.map((app: string, index: number) => (
-                      <Badge key={index} variant="secondary">{app}</Badge>
+                      <Badge 
+                        key={index} 
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-secondary/80"
+                        onClick={() => {
+                          setSelectedApplicationForQuickView(app);
+                          setApplicationQuickViewOpen(true);
+                        }}
+                      >
+                        {app}
+                      </Badge>
                     ))
                   ) : (
                     <span className="text-sm text-muted-foreground">Keine Applikationen</span>
@@ -2092,6 +2117,67 @@ export default function Projects() {
               </div>
             </div>
           )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Application Quick View Sheet */}
+      <Sheet open={applicationQuickViewOpen} onOpenChange={setApplicationQuickViewOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
+            <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
+          </SheetHeader>
+          {selectedApplicationForQuickView && (() => {
+            const appData = appInsights.find(
+              (app: any) => app.application === selectedApplicationForQuickView
+            );
+            
+            return appData ? (
+              <div className="mt-6 space-y-6">
+                {appData.industry && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Industrie</h3>
+                    <Badge variant="secondary">{appData.industry}</Badge>
+                  </div>
+                )}
+
+                {appData.application_description && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                    <p className="text-base leading-relaxed">
+                      {appData.application_description}
+                    </p>
+                  </div>
+                )}
+
+                {appData.application_trends && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Trends</h3>
+                    <p className="text-base leading-relaxed">
+                      {appData.application_trends}
+                    </p>
+                  </div>
+                )}
+
+                {appData.application_block_diagram && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
+                    <div className="rounded-lg border bg-muted/50 p-4">
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {appData.application_block_diagram}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-6">
+                <p className="text-sm text-muted-foreground">
+                  Keine detaillierten Informationen für diese Applikation verfügbar.
+                </p>
+              </div>
+            );
+          })()}
         </SheetContent>
       </Sheet>
 
