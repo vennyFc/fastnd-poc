@@ -269,6 +269,55 @@ export default function Projects() {
     return acc;
   }, []);
 
+  // Calculate automatic project status based on business rules
+  const calculateProjectStatus = (project: any): string => {
+    const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
+    if (groupNumbers.length === 0) return 'neu';
+    
+    // Check if user has manually set status to "Abgeschlossen"
+    const projectOptRecords = optimizationRecords.filter((rec: any) => 
+      groupNumbers.includes(rec.project_number)
+    );
+    
+    // If any record has "Abgeschlossen" optimization_status, respect that
+    const hasAbgeschlossen = projectOptRecords.some((rec: any) => 
+      rec.optimization_status === 'Abgeschlossen'
+    );
+    if (hasAbgeschlossen) return 'Abgeschlossen';
+    
+    // Check if products were added to project (from optimization)
+    const hasAddedProducts = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_product_name || rec.alternative_product_name
+    );
+    if (hasAddedProducts) return 'Validierung';
+    
+    // Check if project was viewed (from history)
+    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
+    if (!wasViewed) return 'Offen';
+    
+    // Check if opportunity was added within last week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const newestRecord = projectOptRecords
+      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
+        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
+        return dateB.getTime() - dateA.getTime();
+      })[0];
+    
+    if (newestRecord) {
+      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
+      if (addedDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    // Default: Prüfung
+    return 'Prüfung';
+  };
+
 
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
@@ -862,55 +911,6 @@ export default function Projects() {
       console.error('Error adding alternative:', error);
       toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
     }
-  };
-
-  // Calculate automatic project status based on business rules
-  const calculateProjectStatus = (project: any): string => {
-    const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
-    if (groupNumbers.length === 0) return 'neu';
-    
-    // Check if user has manually set status to "Abgeschlossen"
-    const projectOptRecords = optimizationRecords.filter((rec: any) => 
-      groupNumbers.includes(rec.project_number)
-    );
-    
-    // If any record has "Abgeschlossen" optimization_status, respect that
-    const hasAbgeschlossen = projectOptRecords.some((rec: any) => 
-      rec.optimization_status === 'Abgeschlossen'
-    );
-    if (hasAbgeschlossen) return 'Abgeschlossen';
-    
-    // Check if products were added to project (from optimization)
-    const hasAddedProducts = projectOptRecords.some((rec: any) => 
-      rec.cross_sell_product_name || rec.alternative_product_name
-    );
-    if (hasAddedProducts) return 'Validierung';
-    
-    // Check if project was viewed (from history)
-    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
-    if (!wasViewed) return 'Offen';
-    
-    // Check if opportunity was added within last week
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const newestRecord = projectOptRecords
-      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
-      .sort((a: any, b: any) => {
-        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
-        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
-        return dateB.getTime() - dateA.getTime();
-      })[0];
-    
-    if (newestRecord) {
-      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
-      if (addedDate > oneWeekAgo) {
-        return 'Neu';
-      }
-    }
-    
-    // Default: Prüfung
-    return 'Prüfung';
   };
 
   const handleProjectStatusChange = async (project: any, newStatus: string) => {
