@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,17 +31,22 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
     enabled: !!user,
   });
 
+  const defaultColumnsRef = React.useRef(defaultColumns);
+  defaultColumnsRef.current = defaultColumns;
+
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
     return defaultColumns;
   });
 
   // Update local state when database settings are loaded
   useEffect(() => {
+    const currentDefaults = defaultColumnsRef.current;
+    
     if (dbSettings?.settings) {
       const saved = (dbSettings.settings as any[]) || [];
       // Merge defaults with saved settings by key so new columns appear automatically
       const savedMap = new Map(saved.map((c) => [c.key, c]));
-      const merged: ColumnConfig[] = defaultColumns.map((def, idx) => {
+      const merged: ColumnConfig[] = currentDefaults.map((def, idx) => {
         const s = savedMap.get(def.key);
         return {
           ...def,
@@ -50,7 +55,7 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
         } as ColumnConfig;
       });
       // Keep any saved columns that are no longer in defaults (append at end)
-      const extras = saved.filter((c) => !defaultColumns.some((d) => d.key === c.key));
+      const extras = saved.filter((c) => !currentDefaults.some((d) => d.key === c.key));
       const mergedWithExtras = [...merged, ...extras.map((c, i) => ({
         ...c,
         order: (merged.length + i),
@@ -59,10 +64,10 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
       setColumns(mergedWithExtras);
     } else {
       // No saved settings: ensure defaults are set
-      console.log('📊 Using default columns for', storageKey, ':', defaultColumns);
-      setColumns(defaultColumns);
+      console.log('📊 Using default columns for', storageKey, ':', currentDefaults);
+      setColumns(currentDefaults);
     }
-  }, [dbSettings, defaultColumns]);
+  }, [dbSettings, storageKey]);
 
   // Mutation to save settings to database
   const saveSettings = useMutation({
