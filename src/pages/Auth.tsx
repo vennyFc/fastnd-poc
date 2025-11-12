@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import fastndLogo from '@/assets/fastnd-logo-blue-black.svg';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -51,9 +52,8 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 bg-primary rounded-md" />
-            <h1 className="text-2xl font-bold text-foreground">FASTND</h1>
+          <div className="flex items-center mb-4">
+            <img src={fastndLogo} alt="FASTND Logo" className="h-10" />
           </div>
           <CardTitle className="text-2xl">
             {isLogin ? 'Anmelden' : 'Registrieren'}
