@@ -52,6 +52,7 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
         return {
           ...def,
           ...(s || {}),
+          label: def.label, // Always use label from defaults (not from saved settings)
           order: s?.order !== undefined ? s.order : def.order ?? idx,
         } as ColumnConfig;
       });
