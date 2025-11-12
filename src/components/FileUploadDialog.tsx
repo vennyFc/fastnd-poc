@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,6 +7,67 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+
+// Calculate similarity between two strings (0-1, where 1 is identical)
+const calculateSimilarity = (str1: string, str2: string): number => {
+  const normalize = (s: string) => s.toLowerCase().replace(/[_\s-]/g, '');
+  const s1 = normalize(str1);
+  const s2 = normalize(str2);
+  
+  // Exact match after normalization
+  if (s1 === s2) return 1;
+  
+  // Check if one contains the other
+  if (s1.includes(s2) || s2.includes(s1)) {
+    return 0.8;
+  }
+  
+  // Levenshtein distance-based similarity
+  const longer = s1.length > s2.length ? s1 : s2;
+  const shorter = s1.length > s2.length ? s2 : s1;
+  
+  if (longer.length === 0) return 1;
+  
+  const editDistance = (s1: string, s2: string): number => {
+    const costs: number[] = [];
+    for (let i = 0; i <= s1.length; i++) {
+      let lastValue = i;
+      for (let j = 0; j <= s2.length; j++) {
+        if (i === 0) {
+          costs[j] = j;
+        } else if (j > 0) {
+          let newValue = costs[j - 1];
+          if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          }
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+      if (i > 0) costs[s2.length] = lastValue;
+    }
+    return costs[s2.length];
+  };
+  
+  return (longer.length - editDistance(longer, shorter)) / longer.length;
+};
+
+// Find best matching column for a field
+const findBestMatch = (field: string, columns: string[]): string | null => {
+  let bestMatch: string | null = null;
+  let bestScore = 0;
+  const threshold = 0.6; // Minimum similarity threshold
+  
+  for (const column of columns) {
+    const score = calculateSimilarity(field, column);
+    if (score > bestScore && score >= threshold) {
+      bestScore = score;
+      bestMatch = column;
+    }
+  }
+  
+  return bestMatch;
+};
 
 interface FileUploadDialogProps {
   open: boolean;
@@ -35,6 +96,31 @@ export default function FileUploadDialog({
   const fileColumns = parsedData.length > 0 
     ? Array.from(new Set(parsedData.flatMap(row => Object.keys(row))))
     : [];
+
+  // Auto-map columns when dialog opens or data changes
+  useEffect(() => {
+    if (open && fileColumns.length > 0 && dataType.fields.length > 0) {
+      const autoMapping: Record<string, string> = {};
+      const usedColumns = new Set<string>();
+      
+      // First pass: find best matches for each field
+      dataType.fields.forEach(field => {
+        const bestMatch = findBestMatch(field, fileColumns);
+        if (bestMatch && !usedColumns.has(bestMatch)) {
+          autoMapping[field] = bestMatch;
+          usedColumns.add(bestMatch);
+        }
+      });
+      
+      setColumnMapping(autoMapping);
+      
+      // Show toast if auto-mapping was successful
+      const mappedCount = Object.keys(autoMapping).length;
+      if (mappedCount > 0) {
+        toast.success(`${mappedCount} von ${dataType.fields.length} Spalten automatisch zugeordnet`);
+      }
+    }
+  }, [open, fileColumns.length, dataType.fields]);
 
   const handleUpload = async () => {
     // Validate all required fields are mapped
