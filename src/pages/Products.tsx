@@ -856,7 +856,11 @@ export default function Products() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Preis</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Preis
+                    <br />
+                    <span className="text-xs font-normal">(in €/pcs)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProduct.product_price 
                       ? `€ ${Number(selectedProduct.product_price).toFixed(2)}` 
@@ -865,7 +869,11 @@ export default function Products() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lieferzeit</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Lieferzeit
+                    <br />
+                    <span className="text-xs font-normal">(in Wochen)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProduct.product_lead_time 
                       ? `${Math.ceil(selectedProduct.product_lead_time / 7)} Wochen` 
@@ -874,7 +882,11 @@ export default function Products() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lagerbestand</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Lagerbestand
+                    <br />
+                    <span className="text-xs font-normal">(in pcs)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProduct.product_inventory !== null && selectedProduct.product_inventory !== undefined
                       ? selectedProduct.product_inventory.toString()

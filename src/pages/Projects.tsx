@@ -2047,7 +2047,11 @@ export default function Projects() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Preis</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Preis
+                    <br />
+                    <span className="text-xs font-normal">(in €/pcs)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProductForQuickView.product_price 
                       ? `€ ${Number(selectedProductForQuickView.product_price).toFixed(2)}` 
@@ -2055,7 +2059,11 @@ export default function Projects() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lieferzeit</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Lieferzeit
+                    <br />
+                    <span className="text-xs font-normal">(in Wochen)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProductForQuickView.product_lead_time 
                       ? `${Math.ceil(selectedProductForQuickView.product_lead_time / 7)} Wochen` 
@@ -2063,7 +2071,11 @@ export default function Projects() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lagerbestand</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Lagerbestand
+                    <br />
+                    <span className="text-xs font-normal">(in pcs)</span>
+                  </h3>
                   <p className="text-base font-semibold">
                     {selectedProductForQuickView.product_inventory !== null && selectedProductForQuickView.product_inventory !== undefined
                       ? selectedProductForQuickView.product_inventory.toString()
