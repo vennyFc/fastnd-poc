@@ -136,6 +136,22 @@ export default function DataHub() {
             defval: '',
             raw: false 
           });
+          
+          // Debug: Log detected columns
+          if (jsonData.length > 0) {
+            const detectedColumns = Array.from(new Set(jsonData.flatMap(row => Object.keys(row))));
+            console.log('🔍 Detected columns in XLS file:', detectedColumns);
+            console.log('📋 Expected fields for', dataType.title, ':', dataType.fields);
+            const missingInConfig = detectedColumns.filter(col => !dataType.fields.includes(col));
+            const missingInFile = dataType.fields.filter(field => !detectedColumns.includes(field));
+            if (missingInConfig.length > 0) {
+              console.warn('⚠️ Columns in file but not in config:', missingInConfig);
+            }
+            if (missingInFile.length > 0) {
+              console.warn('⚠️ Fields expected but not in file:', missingInFile);
+            }
+          }
+          
           setParsedData(jsonData);
           setSelectedDataType(dataType);
           setDialogOpen(true);

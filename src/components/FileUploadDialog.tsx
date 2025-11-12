@@ -100,6 +100,10 @@ export default function FileUploadDialog({
   // Auto-map columns when dialog opens or data changes
   useEffect(() => {
     if (open && fileColumns.length > 0 && dataType.fields.length > 0) {
+      console.log('🔧 FileUploadDialog - Auto-mapping columns');
+      console.log('📁 File columns:', fileColumns);
+      console.log('📝 Required fields:', dataType.fields);
+      
       const autoMapping: Record<string, string> = {};
       const usedColumns = new Set<string>();
       
@@ -109,6 +113,9 @@ export default function FileUploadDialog({
         if (bestMatch && !usedColumns.has(bestMatch)) {
           autoMapping[field] = bestMatch;
           usedColumns.add(bestMatch);
+          console.log(`✅ Auto-mapped: ${field} -> ${bestMatch}`);
+        } else {
+          console.log(`❌ No match found for: ${field}`);
         }
       });
       
@@ -118,6 +125,12 @@ export default function FileUploadDialog({
       const mappedCount = Object.keys(autoMapping).length;
       if (mappedCount > 0) {
         toast.success(`${mappedCount} von ${dataType.fields.length} Spalten automatisch zugeordnet`);
+      }
+      
+      // Warn about unmapped fields
+      const unmappedFields = dataType.fields.filter(f => !autoMapping[f]);
+      if (unmappedFields.length > 0) {
+        console.warn('⚠️ Unmapped required fields:', unmappedFields);
       }
     }
   }, [open, fileColumns.length, dataType.fields]);
