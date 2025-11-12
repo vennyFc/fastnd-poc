@@ -118,8 +118,11 @@ export default function Projects() {
     { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
-    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 3 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 4 },
+    { key: 'product_price', label: 'Preis', visible: true, width: 120, order: 3 },
+    { key: 'product_lead_time', label: 'Lieferzeit (Tage)', visible: true, width: 150, order: 4 },
+    { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
+    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 6 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
   ]), []);
 
   const { 
@@ -1501,6 +1504,9 @@ export default function Projects() {
                                           } else if (details) {
                                             if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                             if (column.key === 'product_family') value = details.product_family || '-';
+                                            if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
+                                            if (column.key === 'product_lead_time') value = details.product_lead_time ? `${details.product_lead_time} Tage` : '-';
+                                            if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                             if (column.key === 'description') value = details.product_description || '-';
                                           }
 
@@ -1623,13 +1629,16 @@ export default function Projects() {
                                                    )}
                                                  </TableCell>
                                                );
-                                             } else {
-                                               let value = '-';
-                                               if (altDetails) {
-                                                 if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                                 if (column.key === 'product_family') value = altDetails.product_family || '-';
-                                                 if (column.key === 'description') value = altDetails.product_description || '-';
-                                               }
+                                              } else {
+                                                let value = '-';
+                                                if (altDetails) {
+                                                  if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                                  if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                                  if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
+                                                  if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? `${altDetails.product_lead_time} Tage` : '-';
+                                                  if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
+                                                  if (column.key === 'description') value = altDetails.product_description || '-';
+                                                }
 
                                                return (
                                                  <TableCell 
