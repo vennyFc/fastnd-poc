@@ -123,6 +123,7 @@ export default function Projects() {
     { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
     { key: 'action', label: 'Aktion', visible: true, width: 120, order: 6 },
     { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
+    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 8 },
   ]), []);
 
   const { 
@@ -1447,7 +1448,7 @@ export default function Projects() {
                                       onDragEnd={() => setDraggedCrossSellIndex(null)}
                                     />
                                   ))}
-                                  <th className="w-16 text-right pr-4">Entfernen</th>
+                                  
                                 </TableRow>
                               </TableHeader>
                              <TableBody>
@@ -1474,34 +1475,79 @@ export default function Projects() {
                                          )}
                                         </TableCell>
                                          {visibleCrossSellColumns.map((column) => {
-                                          let value: any = '-';
                                           const isProductColumn = column.key === 'product';
+
                                           if (column.key === 'product') {
-                                            value = (
-                                              <div className="flex items-center gap-2">
-                                                <span>{cs.cross_sell_product}</span>
-                                                {showAlternativesBadge && (
-                                                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                    A
-                                                  </Badge>
-                                                )}
-                                              </div>
-                                            );
-                                          } else if (column.key === 'action') {
-                                            value = (
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
+                                            return (
+                                              <TableCell 
+                                                key={column.key}
+                                                className="font-medium cursor-pointer text-primary hover:underline"
+                                                style={{ width: `${column.width}px` }}
                                                 onClick={(e) => {
                                                   e.stopPropagation();
-                                                  handleAddCrossSell(project, cs.cross_sell_product);
+                                                  setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                  setProductQuickViewOpen(true);
                                                 }}
                                               >
-                                                <Plus className="h-3.5 w-3.5 mr-1" />
-                                                Hinzufügen
-                                              </Button>
+                                                <div className="flex items-center gap-2">
+                                                  <span>{cs.cross_sell_product}</span>
+                                                  {showAlternativesBadge && (
+                                                    <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                      A
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              </TableCell>
                                             );
-                                          } else if (details) {
+                                          }
+
+                                          if (column.key === 'action') {
+                                            return (
+                                              <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleAddCrossSell(project, cs.cross_sell_product);
+                                                  }}
+                                                >
+                                                  <Plus className="h-3.5 w-3.5 mr-1" />
+                                                  Hinzufügen
+                                                </Button>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          if (column.key === 'remove') {
+                                            return (
+                                              <TableCell key={column.key} className="text-right w-16 pr-4" style={{ width: `${column.width}px` }} onClick={(e) => e.stopPropagation()}>
+                                                <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                      size="sm"
+                                                      variant="ghost"
+                                                      className="h-8 w-8 p-0"
+                                                      onClick={() => setSelectedCrossSellForRemoval({ project, crossSellProduct: cs.cross_sell_product })}
+                                                    >
+                                                      <ThumbsDown className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent side="left" align="end" sideOffset={6} onClick={(e) => e.stopPropagation()}>
+                                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project, crossSellProduct: cs.cross_sell_product })}>Technischer Fit</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project, crossSellProduct: cs.cross_sell_product })}>Commercial Fit</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project, crossSellProduct: cs.cross_sell_product })}>Anderer Lieferant</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project, crossSellProduct: cs.cross_sell_product })}>Kein Bedarf</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project, crossSellProduct: cs.cross_sell_product })}>Sonstige</DropdownMenuItem>
+                                                  </DropdownMenuContent>
+                                                </DropdownMenu>
+                                              </TableCell>
+                                            );
+                                          }
+
+                                          // Default details columns
+                                          let value: any = '-';
+                                          if (details) {
                                             if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                             if (column.key === 'product_family') value = details.product_family || '-';
                                             if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
@@ -1515,39 +1561,11 @@ export default function Projects() {
                                               key={column.key}
                                               className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
                                               style={{ width: `${column.width}px` }}
-                                              onClick={(e) => {
-                                                if (isProductColumn) {
-                                                  e.stopPropagation();
-                                                  setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                                  setProductQuickViewOpen(true);
-                                                }
-                                              }}
                                             >
                                               {value}
                                             </TableCell>
                                           );
                                         })}
-                                        <TableCell className="text-right w-16 pr-4" onClick={(e) => e.stopPropagation()}>
-                                          <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                              <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="h-8 w-8 p-0"
-                                                onClick={() => setSelectedCrossSellForRemoval({ project, crossSellProduct: cs.cross_sell_product })}
-                                              >
-                                                <ThumbsDown className="h-4 w-4 text-destructive" />
-                                              </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent side="left" align="end" sideOffset={6} onClick={(e) => e.stopPropagation()}>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project, crossSellProduct: cs.cross_sell_product })}>Technischer Fit</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project, crossSellProduct: cs.cross_sell_product })}>Commercial Fit</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project, crossSellProduct: cs.cross_sell_product })}>Anderer Lieferant</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project, crossSellProduct: cs.cross_sell_product })}>Kein Bedarf</DropdownMenuItem>
-                                              <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project, crossSellProduct: cs.cross_sell_product })}>Sonstige</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                          </DropdownMenu>
-                                        </TableCell>
                                      </TableRow>
                                      
                                      {/* Alternative Products for Cross-Sells - Expandable */}

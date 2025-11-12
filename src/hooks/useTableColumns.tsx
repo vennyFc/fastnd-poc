@@ -31,12 +31,13 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
     enabled: !!user,
   });
 
-  const defaultColumnsRef = React.useRef(defaultColumns);
-  defaultColumnsRef.current = defaultColumns;
-
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
     return defaultColumns;
   });
+
+  // Keep a ref of the latest defaults without affecting hook order (placed after useState)
+  const defaultColumnsRef = React.useRef(defaultColumns);
+  defaultColumnsRef.current = defaultColumns;
 
   // Update local state when database settings are loaded
   useEffect(() => {
@@ -119,11 +120,30 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
   };
 
   const reorderColumns = (fromIndex: number, toIndex: number) => {
-    const sorted = [...columns].sort((a, b) => a.order - b.order);
-    const [movedColumn] = sorted.splice(fromIndex, 1);
-    sorted.splice(toIndex, 0, movedColumn);
-    
-    const newColumns = sorted.map((col, idx) => ({ ...col, order: idx }));
+    // Work on full ordered list but map indices from VISIBLE headers
+    const sortedAll = [...columns].sort((a, b) => a.order - b.order);
+    const visiblePositions = sortedAll.reduce<number[]>((acc, col, idx) => {
+      if (col.visible) acc.push(idx);
+      return acc;
+    }, []);
+
+    if (
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= visiblePositions.length ||
+      toIndex >= visiblePositions.length
+    ) {
+      return;
+    }
+
+    const fromPos = visiblePositions[fromIndex];
+    const toPos = visiblePositions[toIndex];
+
+    const updated = [...sortedAll];
+    const [moved] = updated.splice(fromPos, 1);
+    updated.splice(toPos, 0, moved);
+
+    const newColumns = updated.map((col, idx) => ({ ...col, order: idx }));
     updateColumns(newColumns);
   };
 
