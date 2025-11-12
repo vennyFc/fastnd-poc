@@ -269,6 +269,16 @@ export default function Projects() {
     return acc;
   }, []);
 
+  // Collect all project_numbers that belong to the logical group (customer + project_name)
+  const getProjectNumbersForGroup = (customer: string, projectName: string): string[] => {
+    if (!projects) return [];
+    const nums = projects
+      .filter((p: any) => p.customer === customer && p.project_name === projectName)
+      .map((p: any) => p.project_number)
+      .filter(Boolean);
+    return Array.from(new Set(nums));
+  };
+
   // Calculate automatic project status based on business rules
   const calculateProjectStatus = (project: any): string => {
     const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
@@ -533,16 +543,6 @@ export default function Projects() {
       ...prev,
       [productName]: !prev[productName]
     }));
-  };
-
-  // Collect all project_numbers that belong to the logical group (customer + project_name)
-  const getProjectNumbersForGroup = (customer: string, projectName: string): string[] => {
-    if (!projects) return [];
-    const nums = projects
-      .filter((p: any) => p.customer === customer && p.project_name === projectName)
-      .map((p: any) => p.project_number)
-      .filter(Boolean);
-    return Array.from(new Set(nums));
   };
 
   const getOptimizationStatus = (
