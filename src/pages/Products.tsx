@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,18 +42,20 @@ export default function Products() {
 
   const queryClient = useQueryClient();
 
+  const defaultColumns = React.useMemo(() => [
+    { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
+    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
+    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
+    { key: 'product_price', label: 'Preis', visible: true, width: 120, order: 3 },
+    { key: 'product_lead_time', label: 'Lieferzeit (Tage)', visible: true, width: 140, order: 4 },
+    { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
+    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 6 },
+    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 7 },
+  ], []);
+
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'products-columns',
-    [
-      { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
-      { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
-      { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-      { key: 'product_price', label: 'Preis', visible: true, width: 120, order: 3 },
-      { key: 'product_lead_time', label: 'Lieferzeit (Tage)', visible: true, width: 140, order: 4 },
-      { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
-      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 6 },
-      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 7 },
-    ]
+    defaultColumns
   );
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
