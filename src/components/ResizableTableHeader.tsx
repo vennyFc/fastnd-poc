@@ -95,7 +95,7 @@ export function ResizableTableHeader({
       onDrop={onDrop}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex items-center justify-between gap-1">
+      <div className="flex items-center justify-between gap-1 pr-3">
         {draggable && (
           <GripVertical className="h-4 w-4 text-muted-foreground cursor-move flex-shrink-0" />
         )}
@@ -114,8 +114,13 @@ export function ResizableTableHeader({
         )}
         <div
           onMouseDown={handleMouseDown}
-          className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/50 active:bg-primary"
+          className={`absolute right-0 top-0 h-full w-2 cursor-col-resize border-r-2 transition-colors ${
+            isResizing 
+              ? 'border-primary bg-primary/20' 
+              : 'border-transparent hover:border-primary/30 hover:bg-primary/10'
+          }`}
           style={{ userSelect: 'none' }}
+          title="Spaltenbreite anpassen"
         />
       </div>
     </TableHead>
