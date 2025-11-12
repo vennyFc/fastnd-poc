@@ -22,7 +22,7 @@ import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'created_at';
+type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
@@ -34,7 +34,7 @@ export default function Projects() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
-  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent'>('all');
+  const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent' | 'open'>('all');
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
   const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
@@ -82,7 +82,8 @@ export default function Projects() {
     { key: 'customer', label: 'Kunde', visible: true, width: 180, order: 1 },
     { key: 'applications', label: 'Applikation', visible: true, width: 200, order: 2 },
     { key: 'products', label: 'Produkt', visible: true, width: 200, order: 3 },
-    { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 4 },
+    { key: 'optimization_status', label: 'Optimierungsstatus', visible: true, width: 160, order: 4 },
+    { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 5 },
   ]), []);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -278,6 +279,11 @@ export default function Projects() {
     if (quickFilter === 'recent') {
       const recentlyViewed = getRecentlyViewed();
       if (!recentlyViewed.includes(project.id)) return false;
+    }
+    
+    if (quickFilter === 'open') {
+      const status = calculateProjectStatus(project);
+      if (status !== 'Offen') return false;
     }
 
     // Search filter
@@ -1742,6 +1748,13 @@ export default function Projects() {
         >
           Zuletzt angesehen
         </Badge>
+        <Badge
+          variant={quickFilter === 'open' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => setQuickFilter(quickFilter === 'open' ? 'all' : 'open')}
+        >
+          Offen
+        </Badge>
       </div>
 
       {/* Projects Table */}
@@ -1824,6 +1837,8 @@ export default function Projects() {
                         value = project.applications.length > 0 ? project.applications.join(', ') : '-';
                       } else if (column.key === 'products') {
                         value = null; // Will be handled separately
+                      } else if (column.key === 'optimization_status') {
+                        value = null; // Will be handled separately
                       } else if (column.key === 'created_at') {
                         value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
                       } else {
@@ -1868,6 +1883,16 @@ export default function Projects() {
                                 '-'
                               )}
                             </div>
+                          ) : column.key === 'optimization_status' ? (
+                            <Badge variant={
+                              calculateProjectStatus(project) === 'Offen' ? 'outline' :
+                              calculateProjectStatus(project) === 'Neu' ? 'default' :
+                              calculateProjectStatus(project) === 'Prüfung' ? 'secondary' :
+                              calculateProjectStatus(project) === 'Validierung' ? 'default' :
+                              'secondary'
+                            }>
+                              {calculateProjectStatus(project)}
+                            </Badge>
                           ) : (
                             value
                           )}
