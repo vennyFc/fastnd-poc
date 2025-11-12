@@ -1728,6 +1728,22 @@ export default function Projects() {
         <Sheet open={productQuickViewOpen} onOpenChange={setProductQuickViewOpen}>
           <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
             <SheetHeader>
+              <Breadcrumb className="mb-4">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink 
+                      className="cursor-pointer"
+                      onClick={() => setProductQuickViewOpen(false)}
+                    >
+                      Projekte
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{selectedProductForQuickView?.product}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
               <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
               <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
             </SheetHeader>
@@ -2079,6 +2095,44 @@ export default function Projects() {
       <Sheet open={productQuickViewOpen} onOpenChange={setProductQuickViewOpen}>
         <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
+            <Breadcrumb className="mb-4">
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink 
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setProductQuickViewOpen(false);
+                      // Optionally reopen project sheet if needed
+                      if (selectedProject) {
+                        setIsSheetOpen(true);
+                      }
+                    }}
+                  >
+                    Projekte
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {selectedProject && (
+                  <>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setProductQuickViewOpen(false);
+                          setIsSheetOpen(true);
+                        }}
+                      >
+                        {selectedProject.project_name}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                  </>
+                )}
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{selectedProductForQuickView?.product}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
             <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
           </SheetHeader>
