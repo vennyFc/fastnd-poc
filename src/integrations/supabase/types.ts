@@ -110,6 +110,11 @@ export type Database = {
           created_at: string
           id: string
           industry: string | null
+          product_family_1: string | null
+          product_family_2: string | null
+          product_family_3: string | null
+          product_family_4: string | null
+          product_family_5: string | null
           updated_at: string
           upload_id: string | null
           user_id: string
@@ -122,6 +127,11 @@ export type Database = {
           created_at?: string
           id?: string
           industry?: string | null
+          product_family_1?: string | null
+          product_family_2?: string | null
+          product_family_3?: string | null
+          product_family_4?: string | null
+          product_family_5?: string | null
           updated_at?: string
           upload_id?: string | null
           user_id: string
@@ -134,6 +144,11 @@ export type Database = {
           created_at?: string
           id?: string
           industry?: string | null
+          product_family_1?: string | null
+          product_family_2?: string | null
+          product_family_3?: string | null
+          product_family_4?: string | null
+          product_family_5?: string | null
           updated_at?: string
           upload_id?: string | null
           user_id?: string

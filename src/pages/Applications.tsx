@@ -267,6 +267,20 @@ export default function Applications() {
                   </div>
                 )}
 
+                {(appData.product_family_1 || appData.product_family_2 || appData.product_family_3 || 
+                  appData.product_family_4 || appData.product_family_5) && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Product Families</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {appData.product_family_1 && <Badge variant="outline">#{1} {appData.product_family_1}</Badge>}
+                      {appData.product_family_2 && <Badge variant="outline">#{2} {appData.product_family_2}</Badge>}
+                      {appData.product_family_3 && <Badge variant="outline">#{3} {appData.product_family_3}</Badge>}
+                      {appData.product_family_4 && <Badge variant="outline">#{4} {appData.product_family_4}</Badge>}
+                      {appData.product_family_5 && <Badge variant="outline">#{5} {appData.product_family_5}</Badge>}
+                    </div>
+                  </div>
+                )}
+
                 {appData.application_block_diagram && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
