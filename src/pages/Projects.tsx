@@ -1072,7 +1072,19 @@ export default function Projects() {
                     <CardDescription className="mt-1">
                       <span className="font-medium">{project.customer}</span>
                       {project.applications.length > 0 && (
-                        <span className="ml-2">• {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}</span>
+                        <span 
+                          className="ml-2 text-primary hover:underline cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const appName = typeof project.applications[0] === 'string' 
+                              ? project.applications[0] 
+                              : project.applications[0]?.application || '';
+                            setSelectedApplicationForQuickView(appName);
+                            setApplicationQuickViewOpen(true);
+                          }}
+                        >
+                          • {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}
+                        </span>
                       )}
                     </CardDescription>
                     
@@ -1891,7 +1903,7 @@ export default function Projects() {
                       let value;
                       
                       if (column.key === 'applications') {
-                        value = project.applications.length > 0 ? project.applications.join(', ') : '-';
+                        value = null; // Will be handled separately
                       } else if (column.key === 'products') {
                         value = null; // Will be handled separately
                       } else if (column.key === 'optimization_status') {
@@ -1918,6 +1930,27 @@ export default function Projects() {
                             <span className="text-primary hover:underline cursor-pointer">
                               {value}
                             </span>
+                          ) : column.key === 'applications' ? (
+                            <div className="flex flex-wrap gap-1">
+                              {project.applications.length > 0 ? (
+                                project.applications.map((appName: string, idx: number) => (
+                                  <span
+                                    key={idx}
+                                    className="text-primary hover:underline cursor-pointer text-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedApplicationForQuickView(appName);
+                                      setApplicationQuickViewOpen(true);
+                                    }}
+                                  >
+                                    {appName}
+                                    {idx < project.applications.length - 1 && ', '}
+                                  </span>
+                                ))
+                              ) : (
+                                '-'
+                              )}
+                            </div>
                           ) : column.key === 'products' ? (
                             <div className="flex flex-wrap gap-1">
                               {project.products.length > 0 ? (
