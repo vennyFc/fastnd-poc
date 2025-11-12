@@ -55,9 +55,11 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
         ...c,
         order: (merged.length + i),
       }))];
+      console.log('📊 Merged columns for', storageKey, ':', mergedWithExtras);
       setColumns(mergedWithExtras);
     } else {
       // No saved settings: ensure defaults are set
+      console.log('📊 Using default columns for', storageKey, ':', defaultColumns);
       setColumns(defaultColumns);
     }
   }, [dbSettings, defaultColumns]);

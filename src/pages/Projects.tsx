@@ -316,6 +316,12 @@ export default function Projects() {
     let aValue = a[sortField];
     let bValue = b[sortField];
 
+    // Handle optimization_status (computed field)
+    if (sortField === 'optimization_status') {
+      aValue = calculateProjectStatus(a);
+      bValue = calculateProjectStatus(b);
+    }
+
     // Handle array fields
     if (sortField === 'applications' || sortField === 'products') {
       aValue = aValue?.join(', ') || '';
