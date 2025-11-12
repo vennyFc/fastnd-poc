@@ -31,7 +31,10 @@ export default function FileUploadDialog({
   const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
 
-  const fileColumns = parsedData.length > 0 ? Object.keys(parsedData[0]) : [];
+  // Collect all unique columns from all rows, not just the first one
+  const fileColumns = parsedData.length > 0 
+    ? Array.from(new Set(parsedData.flatMap(row => Object.keys(row))))
+    : [];
 
   const handleUpload = async () => {
     // Validate all required fields are mapped

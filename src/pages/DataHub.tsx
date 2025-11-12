@@ -65,8 +65,8 @@ const dataTypes = [
   {
     id: 'app_insights',
     title: 'App Insights',
-    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry',
-    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry'],
+    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry, Product_Family_1-5',
+    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
     icon: FileSpreadsheet,
   },
 ];
@@ -132,7 +132,10 @@ export default function DataHub() {
           const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            defval: '',
+            raw: false 
+          });
           setParsedData(jsonData);
           setSelectedDataType(dataType);
           setDialogOpen(true);
