@@ -21,7 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
-type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_description';
+type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price' | 'product_lead_time' | 'product_inventory' | 'product_description';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
@@ -48,8 +48,11 @@ export default function Products() {
       { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
       { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
       { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
-      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 4 },
+      { key: 'product_price', label: 'Preis', visible: true, width: 120, order: 3 },
+      { key: 'product_lead_time', label: 'Lieferzeit (Tage)', visible: true, width: 140, order: 4 },
+      { key: 'product_inventory', label: 'Lagerbestand', visible: true, width: 130, order: 5 },
+      { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 6 },
+      { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 7 },
     ]
   );
 
@@ -607,6 +610,18 @@ export default function Products() {
                                 )}
                               </div>
                             );
+                          } else if (column.key === 'product_price') {
+                            value = product.product_price 
+                              ? `€ ${Number(product.product_price).toFixed(2)}` 
+                              : '-';
+                          } else if (column.key === 'product_lead_time') {
+                            value = product.product_lead_time 
+                              ? `${product.product_lead_time} Tage` 
+                              : '-';
+                          } else if (column.key === 'product_inventory') {
+                            value = product.product_inventory !== null && product.product_inventory !== undefined
+                              ? product.product_inventory.toString()
+                              : '-';
                           } else {
                             value = product[column.key] || '-';
                           }
@@ -660,6 +675,18 @@ export default function Products() {
                                   )}
                                 </div>
                               );
+                            } else if (column.key === 'product_price') {
+                              value = altProduct.product_price 
+                                ? `€ ${Number(altProduct.product_price).toFixed(2)}` 
+                                : '-';
+                            } else if (column.key === 'product_lead_time') {
+                              value = altProduct.product_lead_time 
+                                ? `${altProduct.product_lead_time} Tage` 
+                                : '-';
+                            } else if (column.key === 'product_inventory') {
+                              value = altProduct.product_inventory !== null && altProduct.product_inventory !== undefined
+                                ? altProduct.product_inventory.toString()
+                                : '-';
                             } else {
                               value = altProduct[column.key] || '-';
                             }
@@ -824,6 +851,35 @@ export default function Products() {
                   </a>
                 </div>
               )}
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Preis</h3>
+                  <p className="text-base font-semibold">
+                    {selectedProduct.product_price 
+                      ? `€ ${Number(selectedProduct.product_price).toFixed(2)}` 
+                      : '-'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lieferzeit</h3>
+                  <p className="text-base font-semibold">
+                    {selectedProduct.product_lead_time 
+                      ? `${selectedProduct.product_lead_time} Tage` 
+                      : '-'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lagerbestand</h3>
+                  <p className="text-base font-semibold">
+                    {selectedProduct.product_inventory !== null && selectedProduct.product_inventory !== undefined
+                      ? selectedProduct.product_inventory.toString()
+                      : '-'}
+                  </p>
+                </div>
+              </div>
 
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>

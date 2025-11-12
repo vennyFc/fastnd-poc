@@ -520,6 +520,9 @@ export type Database = {
           product: string
           product_description: string | null
           product_family: string | null
+          product_inventory: number | null
+          product_lead_time: number | null
+          product_price: number | null
           upload_id: string | null
           user_id: string
         }
@@ -531,6 +534,9 @@ export type Database = {
           product: string
           product_description?: string | null
           product_family?: string | null
+          product_inventory?: number | null
+          product_lead_time?: number | null
+          product_price?: number | null
           upload_id?: string | null
           user_id: string
         }
@@ -542,6 +548,9 @@ export type Database = {
           product?: string
           product_description?: string | null
           product_family?: string | null
+          product_inventory?: number | null
+          product_lead_time?: number | null
+          product_price?: number | null
           upload_id?: string | null
           user_id?: string
         }
