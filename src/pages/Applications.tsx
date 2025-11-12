@@ -12,6 +12,7 @@ import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
 
 type SortField = 'application' | 'related_product';
 type SortDirection = 'asc' | 'desc' | null;
@@ -269,11 +270,7 @@ export default function Applications() {
                 {appData.application_block_diagram && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
-                    <div className="rounded-lg border bg-muted/50 p-4">
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {appData.application_block_diagram}
-                      </p>
-                    </div>
+                    <BlockDiagramViewer content={appData.application_block_diagram} />
                   </div>
                 )}
               </div>

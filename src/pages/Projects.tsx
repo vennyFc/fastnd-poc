@@ -21,6 +21,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -2162,11 +2163,7 @@ export default function Projects() {
                 {appData.application_block_diagram && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
-                    <div className="rounded-lg border bg-muted/50 p-4">
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {appData.application_block_diagram}
-                      </p>
-                    </div>
+                    <BlockDiagramViewer content={appData.application_block_diagram} />
                   </div>
                 )}
               </div>
