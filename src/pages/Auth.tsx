@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import fastndLogo from '@/assets/fastnd-logo-blue-black.svg';
+import fastndLogo from '@/assets/fastnd-logo-gradient.svg';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
