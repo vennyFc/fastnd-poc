@@ -1269,12 +1269,12 @@ export default function Projects() {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
-                                           <div className="flex items-center gap-2">
-                                             <span>{productName}</span>
-                                             {showAlternativesBadge && (
-                                               <span className="text-muted-foreground text-sm">↳</span>
-                                             )}
-                                           </div>
+                                             <div className="flex items-center gap-2">
+                                               <span>{productName}</span>
+                                               {hasAlternatives && (
+                                                 <span className="text-muted-foreground text-sm">↳</span>
+                                               )}
+                                             </div>
                                          );
                                        } else if (column.key === 'status') {
                                          const isRegistered = productStatus === 'Registriert';
