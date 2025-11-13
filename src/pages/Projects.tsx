@@ -1303,13 +1303,37 @@ export default function Projects() {
                                               </SelectContent>
                                            </Select>
                                          ) : '-';
-                                        } else if (details) {
+                                         } else if (details) {
                                           if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                           if (column.key === 'product_family') value = details.product_family || '-';
                                           if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
                                           if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                           if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                           if (column.key === 'description') value = details.product_description || '-';
+                                          if (column.key === 'product_lifecycle') {
+                                            value = details.product_lifecycle ? (
+                                              <Badge 
+                                                variant={
+                                                  details.product_lifecycle === 'Active' ? 'default' :
+                                                  details.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                  details.product_lifecycle === 'NFND' ? 'outline' :
+                                                  'destructive'
+                                                }
+                                              >
+                                                {details.product_lifecycle}
+                                              </Badge>
+                                            ) : '-';
+                                          }
+                                          if (column.key === 'product_new') {
+                                            value = details.product_new === 'Y' ? (
+                                              <Badge variant="default" className="bg-green-600">Neu</Badge>
+                                            ) : '-';
+                                          }
+                                          if (column.key === 'product_top') {
+                                            value = details.product_top === 'Y' ? (
+                                              <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                                            ) : '-';
+                                          }
                                         }
 
                                        return (
@@ -1590,6 +1614,30 @@ export default function Projects() {
                                             if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                             if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                             if (column.key === 'description') value = details.product_description || '-';
+                                            if (column.key === 'product_lifecycle') {
+                                              value = details.product_lifecycle ? (
+                                                <Badge 
+                                                  variant={
+                                                    details.product_lifecycle === 'Active' ? 'default' :
+                                                    details.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                    details.product_lifecycle === 'NFND' ? 'outline' :
+                                                    'destructive'
+                                                  }
+                                                >
+                                                  {details.product_lifecycle}
+                                                </Badge>
+                                              ) : '-';
+                                            }
+                                            if (column.key === 'product_new') {
+                                              value = details.product_new === 'Y' ? (
+                                                <Badge variant="default" className="bg-green-600">Neu</Badge>
+                                              ) : '-';
+                                            }
+                                            if (column.key === 'product_top') {
+                                              value = details.product_top === 'Y' ? (
+                                                <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                                              ) : '-';
+                                            }
                                           }
 
                                           return (
