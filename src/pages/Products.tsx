@@ -53,7 +53,7 @@ export default function Products() {
     { key: 'product_new', label: 'Neu', visible: true, width: 80, order: 4 },
     { key: 'product_top', label: 'Top', visible: true, width: 80, order: 5 },
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 6 },
-    { key: 'product_lead_time', label: 'Lieferzeit', visible: true, width: 140, order: 7 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 7 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 8 },
     { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 9 },
     { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 10 },
@@ -1008,6 +1008,8 @@ export default function Products() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">
                     Lieferzeit
+                    <br />
+                    <span className="text-xs font-normal">(in Wochen)</span>
                   </h3>
                   <p className="text-base font-semibold">
                     {selectedProduct.product_lead_time 
