@@ -21,7 +21,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
-type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price' | 'product_lead_time' | 'product_inventory' | 'product_description';
+type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price' | 'product_lead_time' | 'product_inventory' | 'product_description' | 'product_lifecycle' | 'product_new' | 'product_top';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
@@ -38,6 +38,9 @@ export default function Products() {
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
   const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
+  const [selectedLifecycle, setSelectedLifecycle] = useState<string>('all');
+  const [showNewOnly, setShowNewOnly] = useState(false);
+  const [showTopOnly, setShowTopOnly] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const queryClient = useQueryClient();
@@ -46,11 +49,14 @@ export default function Products() {
     { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 4 },
-    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 6 },
-    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 7 },
+    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 130, order: 3 },
+    { key: 'product_new', label: 'Neu', visible: true, width: 80, order: 4 },
+    { key: 'product_top', label: 'Top', visible: true, width: 80, order: 5 },
+    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 6 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 7 },
+    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 8 },
+    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 9 },
+    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 10 },
   ], []);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -279,6 +285,27 @@ export default function Products() {
       }
     }
 
+    // Lifecycle filter
+    if (selectedLifecycle && selectedLifecycle !== 'all') {
+      if (product.product_lifecycle !== selectedLifecycle) {
+        return false;
+      }
+    }
+
+    // New products filter
+    if (showNewOnly) {
+      if (product.product_new !== 'Y') {
+        return false;
+      }
+    }
+
+    // Top products filter
+    if (showTopOnly) {
+      if (product.product_top !== 'Y') {
+        return false;
+      }
+    }
+
     // Preferences filter
     if (userPreferences) {
       // Filter by product families
@@ -368,12 +395,15 @@ export default function Products() {
                 <Button variant="outline">
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
-                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0) && (
+                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
                     <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                       {[
                         selectedApplication !== 'all' ? 1 : 0,
                         selectedProductFamilies.length,
-                        selectedManufacturers.length
+                        selectedManufacturers.length,
+                        selectedLifecycle !== 'all' ? 1 : 0,
+                        showNewOnly ? 1 : 0,
+                        showTopOnly ? 1 : 0
                       ].reduce((a, b) => a + b, 0)}
                     </Badge>
                   )}
@@ -496,7 +526,58 @@ export default function Products() {
                     </ScrollArea>
                   </div>
 
-                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="lifecycle-filter">Lifecycle Status</Label>
+                    <Select
+                      value={selectedLifecycle}
+                      onValueChange={setSelectedLifecycle}
+                    >
+                      <SelectTrigger id="lifecycle-filter">
+                        <SelectValue placeholder="Nach Lifecycle filtern" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle Status</SelectItem>
+                        <SelectItem value="Coming Soon">Coming Soon</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="NFND">NFND</SelectItem>
+                        <SelectItem value="Discontinued">Discontinued</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Produkt-Tags</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="new-products"
+                          checked={showNewOnly}
+                          onCheckedChange={(checked) => setShowNewOnly(checked as boolean)}
+                        />
+                        <label
+                          htmlFor="new-products"
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          Nur neue Produkte
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="top-products"
+                          checked={showTopOnly}
+                          onCheckedChange={(checked) => setShowTopOnly(checked as boolean)}
+                        />
+                        <label
+                          htmlFor="top-products"
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          Nur Top-Produkte
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -505,6 +586,9 @@ export default function Products() {
                         setSelectedApplication('all');
                         setSelectedProductFamilies([]);
                         setSelectedManufacturers([]);
+                        setSelectedLifecycle('all');
+                        setShowNewOnly(false);
+                        setShowTopOnly(false);
                       }}
                     >
                       Alle Filter zurücksetzen
@@ -624,6 +708,27 @@ export default function Products() {
                             value = product.product_inventory !== null && product.product_inventory !== undefined
                               ? product.product_inventory.toString()
                               : '-';
+                          } else if (column.key === 'product_lifecycle') {
+                            value = product.product_lifecycle ? (
+                              <Badge 
+                                variant={
+                                  product.product_lifecycle === 'Active' ? 'default' :
+                                  product.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                  product.product_lifecycle === 'NFND' ? 'outline' :
+                                  'destructive'
+                                }
+                              >
+                                {product.product_lifecycle}
+                              </Badge>
+                            ) : '-';
+                          } else if (column.key === 'product_new') {
+                            value = product.product_new === 'Y' ? (
+                              <Badge variant="default" className="bg-green-600">Neu</Badge>
+                            ) : '-';
+                          } else if (column.key === 'product_top') {
+                            value = product.product_top === 'Y' ? (
+                              <Badge variant="default" className="bg-amber-600">Top</Badge>
+                            ) : '-';
                           } else {
                             value = product[column.key] || '-';
                           }
@@ -838,6 +943,38 @@ export default function Products() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
                 <p className="text-base font-semibold">{selectedProduct.manufacturer || '-'}</p>
               </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
+                {selectedProduct.product_lifecycle ? (
+                  <Badge 
+                    variant={
+                      selectedProduct.product_lifecycle === 'Active' ? 'default' :
+                      selectedProduct.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                      selectedProduct.product_lifecycle === 'NFND' ? 'outline' :
+                      'destructive'
+                    }
+                  >
+                    {selectedProduct.product_lifecycle}
+                  </Badge>
+                ) : (
+                  <p className="text-base">-</p>
+                )}
+              </div>
+
+              {(selectedProduct.product_new === 'Y' || selectedProduct.product_top === 'Y') && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
+                  <div className="flex gap-2">
+                    {selectedProduct.product_new === 'Y' && (
+                      <Badge variant="default" className="bg-green-600">Neu</Badge>
+                    )}
+                    {selectedProduct.product_top === 'Y' && (
+                      <Badge variant="default" className="bg-amber-600">Top</Badge>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {selectedProduct.manufacturer_link && (
                 <div>
