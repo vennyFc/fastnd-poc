@@ -1272,9 +1272,7 @@ export default function Projects() {
                                            <div className="flex items-center gap-2">
                                              <span>{productName}</span>
                                              {showAlternativesBadge && (
-                                               <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                 A
-                                               </Badge>
+                                               <span className="text-muted-foreground text-sm">↳</span>
                                              )}
                                            </div>
                                          );
