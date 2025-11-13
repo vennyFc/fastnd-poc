@@ -1205,6 +1205,7 @@ export default function Projects() {
                                   onResize={(width) => updateProductColumnWidth(column.key, width)}
                                   sortable={false}
                                   draggable={true}
+                                  className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''}
                                   onDragStart={() => setDraggedProductIndex(index)}
                                   onDragOver={(e) => {
                                     e.preventDefault();
@@ -1345,22 +1346,26 @@ export default function Projects() {
                                           }
                                         }
 
-                                       return (
-                                         <TableCell 
-                                           key={column.key}
-                                           className={column.key === 'product' ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
-                                           style={{ width: `${column.width}px` }}
-                                           onClick={(e) => {
-                                             if (column.key === 'product') {
-                                               e.stopPropagation();
-                                               setSelectedProductForQuickView(details || { product: productName });
-                                               setProductQuickViewOpen(true);
-                                             }
-                                           }}
-                                         >
-                                           {value}
-                                         </TableCell>
-                                       );
+                                        return (
+                                          <TableCell 
+                                            key={column.key}
+                                            className={
+                                              column.key === 'product' ? 'font-medium cursor-pointer text-primary hover:underline' :
+                                              ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
+                                              ''
+                                            }
+                                            style={{ width: `${column.width}px` }}
+                                            onClick={(e) => {
+                                              if (column.key === 'product') {
+                                                e.stopPropagation();
+                                                setSelectedProductForQuickView(details || { product: productName });
+                                                setProductQuickViewOpen(true);
+                                              }
+                                            }}
+                                          >
+                                            {value}
+                                          </TableCell>
+                                        );
                                      })}
                                   </TableRow>
                                   
@@ -1502,6 +1507,7 @@ export default function Projects() {
                                       onResize={(width) => updateCrossSellColumnWidth(column.key, width)}
                                       sortable={false}
                                       draggable={true}
+                                      className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''}
                                       onDragStart={() => setDraggedCrossSellIndex(index)}
                                       onDragOver={(e) => {
                                         e.preventDefault();
@@ -1656,15 +1662,19 @@ export default function Projects() {
                                             }
                                           }
 
-                                          return (
-                                            <TableCell 
-                                              key={column.key}
-                                              className={isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
-                                              style={{ width: `${column.width}px` }}
-                                            >
-                                              {value}
-                                            </TableCell>
-                                          );
+                                           return (
+                                             <TableCell 
+                                               key={column.key}
+                                               className={
+                                                 isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' :
+                                                 ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
+                                                 ''
+                                               }
+                                               style={{ width: `${column.width}px` }}
+                                             >
+                                               {value}
+                                             </TableCell>
+                                           );
                                         })}
                                      </TableRow>
                                      
