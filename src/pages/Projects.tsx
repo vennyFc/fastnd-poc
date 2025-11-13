@@ -1269,12 +1269,14 @@ export default function Projects() {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
-                                             <div className="flex items-center gap-2">
-                                               <span>{productName}</span>
-                                               {hasAlternatives && (
-                                                 <span className="text-muted-foreground text-sm">↳</span>
-                                               )}
-                                             </div>
+                                           <div className="flex items-center gap-2">
+                                             <span>{productName}</span>
+                                             {showAlternativesBadge && (
+                                               <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                 A
+                                               </Badge>
+                                             )}
+                                           </div>
                                          );
                                        } else if (column.key === 'status') {
                                          const isRegistered = productStatus === 'Registriert';
@@ -1376,6 +1378,7 @@ export default function Projects() {
                                       return (
                                         <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
                                          <TableCell className="w-12 pl-8">
+                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                          </TableCell>
                                           {visibleProductColumns.map((column) => {
                                             if (column.key === 'product') {
@@ -1392,7 +1395,6 @@ export default function Projects() {
                                                 >
                                                   <div className="flex items-center gap-2">
                                                     <span>{alt.alternative_product}</span>
-                                                    <span className="text-muted-foreground text-sm">↳</span>
                                                     {alt.similarity && (
                                                       <Badge variant="secondary" className="text-xs">
                                                         {alt.similarity}% ähnlich
@@ -1565,7 +1567,9 @@ export default function Projects() {
                                                 <div className="flex items-center gap-2">
                                                   <span>{cs.cross_sell_product}</span>
                                                   {showAlternativesBadge && (
-                                                    <span className="text-muted-foreground text-sm">↳</span>
+                                                    <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                      A
+                                                    </Badge>
                                                   )}
                                                 </div>
                                               </TableCell>
