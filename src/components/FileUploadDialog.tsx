@@ -198,6 +198,23 @@ export default function FileUploadDialog({
               }
             }
             
+            // Convert numeric product fields
+            if ((field === 'product_price' || field === 'product_inventory' || field === 'product_lead_time') 
+                && value !== null && value !== undefined && value !== '') {
+              value = parseFloat(value);
+              if (isNaN(value)) {
+                value = null;
+              }
+            }
+            
+            // Handle product_new and product_top - convert to 'Y' or empty
+            if ((field === 'product_new' || field === 'product_top') && value) {
+              // Check if value is truthy (Y, yes, true, 1, etc.)
+              const normalizedValue = String(value).toLowerCase().trim();
+              value = (normalizedValue === 'y' || normalizedValue === 'yes' || 
+                       normalizedValue === 'true' || normalizedValue === '1') ? 'Y' : '';
+            }
+            
             transformed[field] = value;
           }
         });
