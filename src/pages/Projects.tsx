@@ -1565,12 +1565,10 @@ export default function Projects() {
                                                 }}
                                               >
                                                 <div className="flex items-center gap-2">
-                                                  <span>{cs.cross_sell_product}</span>
                                                   {showAlternativesBadge && (
-                                                    <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                      A
-                                                    </Badge>
+                                                    <span className="text-muted-foreground text-sm">↳</span>
                                                   )}
+                                                  <span>{cs.cross_sell_product}</span>
                                                 </div>
                                               </TableCell>
                                             );
