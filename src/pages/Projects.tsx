@@ -1759,6 +1759,39 @@ export default function Projects() {
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
                   <p className="text-base font-semibold">{selectedProductForQuickView.manufacturer || '-'}</p>
                 </div>
+
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
+                  {selectedProductForQuickView.product_lifecycle ? (
+                    <Badge 
+                      variant={
+                        selectedProductForQuickView.product_lifecycle === 'Active' ? 'default' :
+                        selectedProductForQuickView.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                        selectedProductForQuickView.product_lifecycle === 'NFND' ? 'outline' :
+                        'destructive'
+                      }
+                    >
+                      {selectedProductForQuickView.product_lifecycle}
+                    </Badge>
+                  ) : (
+                    <p className="text-base">-</p>
+                  )}
+                </div>
+
+                {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
+                    <div className="flex gap-2">
+                      {selectedProductForQuickView.product_new === 'Y' && (
+                        <Badge variant="default" className="bg-green-600">Neu</Badge>
+                      )}
+                      {selectedProductForQuickView.product_top === 'Y' && (
+                        <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {selectedProductForQuickView.manufacturer_link && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller-Link</h3>
@@ -2150,6 +2183,38 @@ export default function Projects() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
                 <p className="text-base font-semibold">{selectedProductForQuickView.manufacturer || '-'}</p>
               </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
+                {selectedProductForQuickView.product_lifecycle ? (
+                  <Badge 
+                    variant={
+                      selectedProductForQuickView.product_lifecycle === 'Active' ? 'default' :
+                      selectedProductForQuickView.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                      selectedProductForQuickView.product_lifecycle === 'NFND' ? 'outline' :
+                      'destructive'
+                    }
+                  >
+                    {selectedProductForQuickView.product_lifecycle}
+                  </Badge>
+                ) : (
+                  <p className="text-base">-</p>
+                )}
+              </div>
+
+              {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && (
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
+                  <div className="flex gap-2">
+                    {selectedProductForQuickView.product_new === 'Y' && (
+                      <Badge variant="default" className="bg-green-600">Neu</Badge>
+                    )}
+                    {selectedProductForQuickView.product_top === 'Y' && (
+                      <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {selectedProductForQuickView.manufacturer_link && (
                 <div>
