@@ -44,8 +44,8 @@ const dataTypes = [
   {
     id: 'products',
     title: 'Produkte',
-    description: 'Produkt, Produktfamilie, Produktbeschreibung, Hersteller, Link_Herstellerseite',
-    fields: ['product', 'product_family', 'product_description', 'manufacturer', 'manufacturer_link'],
+    description: 'Produkt, Produktfamilie, Produktbeschreibung, Hersteller, Preis, Inventory, Lead_Time, Lifecycle, NPI, Top_Seller, Link_Herstellerseite',
+    fields: ['product', 'product_family', 'product_description', 'manufacturer', 'product_price', 'product_inventory', 'product_lead_time', 'product_lifecycle', 'product_new', 'product_top', 'manufacturer_link'],
     icon: FileSpreadsheet,
   },
   {
