@@ -49,14 +49,12 @@ export default function Products() {
     { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 130, order: 3 },
-    { key: 'product_new', label: 'Neu', visible: true, width: 80, order: 4 },
-    { key: 'product_top', label: 'Top', visible: true, width: 80, order: 5 },
-    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 6 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 7 },
-    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 8 },
-    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 9 },
-    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 10 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 150, order: 3 },
+    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 4 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 5 },
+    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 6 },
+    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 7 },
+    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 8 },
   ], []);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -635,6 +633,7 @@ export default function Products() {
                       sortDirection={sortField === column.key ? sortDirection : null}
                       onSort={column.key !== 'manufacturer_link' ? () => handleSort(column.key as SortField) : undefined}
                       draggable={true}
+                      className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''}
                       onDragStart={() => setDraggedIndex(index)}
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -708,26 +707,35 @@ export default function Products() {
                             value = product.product_inventory !== null && product.product_inventory !== undefined
                               ? product.product_inventory.toString()
                               : '-';
-                          } else if (column.key === 'product_lifecycle') {
-                            value = product.product_lifecycle ? (
-                              <Badge 
-                                variant={
-                                  product.product_lifecycle === 'Active' ? 'default' :
-                                  product.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                  product.product_lifecycle === 'NFND' ? 'outline' :
-                                  'destructive'
-                                }
-                              >
-                                {product.product_lifecycle}
-                              </Badge>
-                            ) : '-';
-                          } else if (column.key === 'product_new') {
-                            value = product.product_new === 'Y' ? (
-                              <Badge variant="default" className="bg-green-600">Neu</Badge>
-                            ) : '-';
-                          } else if (column.key === 'product_top') {
-                            value = product.product_top === 'Y' ? (
-                              <Badge variant="default" className="bg-amber-600">Top</Badge>
+                          } else if (column.key === 'product_tags') {
+                            const badges = [];
+                            if (product.product_lifecycle) {
+                              badges.push(
+                                <Badge 
+                                  key="lifecycle"
+                                  variant={
+                                    product.product_lifecycle === 'Active' ? 'default' :
+                                    product.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                    product.product_lifecycle === 'NFND' ? 'outline' :
+                                    'destructive'
+                                  }
+                                >
+                                  {product.product_lifecycle}
+                                </Badge>
+                              );
+                            }
+                            if (product.product_new === 'Y') {
+                              badges.push(
+                                <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                              );
+                            }
+                            if (product.product_top === 'Y') {
+                              badges.push(
+                                <Badge key="top" variant="default" className="bg-amber-600">Top</Badge>
+                              );
+                            }
+                            value = badges.length > 0 ? (
+                              <div className="flex flex-col gap-1">{badges}</div>
                             ) : '-';
                           } else {
                             value = product[column.key] || '-';
@@ -736,7 +744,12 @@ export default function Products() {
                           return (
                             <TableCell 
                               key={column.key}
-                              className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
+                              className={
+                                column.key === 'product' ? 'font-medium' : 
+                                column.key === 'product_description' ? 'max-w-xs truncate' : 
+                                ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
+                                ''
+                              }
                               style={{ width: `${column.width}px` }}
                             >
                               {value}
@@ -794,6 +807,36 @@ export default function Products() {
                               value = altProduct.product_inventory !== null && altProduct.product_inventory !== undefined
                                 ? altProduct.product_inventory.toString()
                                 : '-';
+                            } else if (column.key === 'product_tags') {
+                              const badges = [];
+                              if (altProduct.product_lifecycle) {
+                                badges.push(
+                                  <Badge 
+                                    key="lifecycle"
+                                    variant={
+                                      altProduct.product_lifecycle === 'Active' ? 'default' :
+                                      altProduct.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                      altProduct.product_lifecycle === 'NFND' ? 'outline' :
+                                      'destructive'
+                                    }
+                                  >
+                                    {altProduct.product_lifecycle}
+                                  </Badge>
+                                );
+                              }
+                              if (altProduct.product_new === 'Y') {
+                                badges.push(
+                                  <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                );
+                              }
+                              if (altProduct.product_top === 'Y') {
+                                badges.push(
+                                  <Badge key="top" variant="default" className="bg-amber-600">Top</Badge>
+                                );
+                              }
+                              value = badges.length > 0 ? (
+                                <div className="flex flex-col gap-1">{badges}</div>
+                              ) : '-';
                             } else {
                               value = altProduct[column.key] || '-';
                             }
@@ -801,7 +844,12 @@ export default function Products() {
                             return (
                               <TableCell 
                                 key={column.key}
-                                className={column.key === 'product' ? 'font-medium' : column.key === 'product_description' ? 'max-w-xs truncate' : ''}
+                                className={
+                                  column.key === 'product' ? 'font-medium' : 
+                                  column.key === 'product_description' ? 'max-w-xs truncate' : 
+                                  ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
+                                  ''
+                                }
                                 style={{ width: `${column.width}px` }}
                               >
                                 {value}
