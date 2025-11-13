@@ -786,8 +786,8 @@ export default function Products() {
                             } else if (column.key === 'product') {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
-                                  <span className="text-muted-foreground text-sm">↳</span>
                                   <span>{altProduct[column.key] || '-'}</span>
+                                  <span className="text-muted-foreground text-sm">↳</span>
                                   {altProduct.similarity !== null && altProduct.similarity !== undefined && (
                                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                       {altProduct.similarity}% Ähnlichkeit
