@@ -109,8 +109,11 @@ export default function Projects() {
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
     { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'status', label: 'Status', visible: true, width: 150, order: 6 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
+    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 120, order: 6 },
+    { key: 'product_new', label: 'NPI', visible: true, width: 100, order: 7 },
+    { key: 'product_top', label: 'Top Seller', visible: true, width: 120, order: 8 },
+    { key: 'status', label: 'Status', visible: true, width: 150, order: 9 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 10 },
   ]), []);
 
   const { 
@@ -132,9 +135,12 @@ export default function Projects() {
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
     { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 6 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
-    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 8 },
+    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 120, order: 6 },
+    { key: 'product_new', label: 'NPI', visible: true, width: 100, order: 7 },
+    { key: 'product_top', label: 'Top Seller', visible: true, width: 120, order: 8 },
+    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 9 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 10 },
+    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 11 },
   ]), []);
 
   const { 
