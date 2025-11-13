@@ -1376,7 +1376,6 @@ export default function Projects() {
                                       return (
                                         <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
                                          <TableCell className="w-12 pl-8">
-                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                          </TableCell>
                                           {visibleProductColumns.map((column) => {
                                             if (column.key === 'product') {
@@ -1393,6 +1392,7 @@ export default function Projects() {
                                                 >
                                                   <div className="flex items-center gap-2">
                                                     <span>{alt.alternative_product}</span>
+                                                    <span className="text-muted-foreground text-sm">↳</span>
                                                     {alt.similarity && (
                                                       <Badge variant="secondary" className="text-xs">
                                                         {alt.similarity}% ähnlich
