@@ -109,11 +109,9 @@ export default function Projects() {
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
     { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 120, order: 6 },
-    { key: 'product_new', label: 'NPI', visible: true, width: 100, order: 7 },
-    { key: 'product_top', label: 'Top Seller', visible: true, width: 120, order: 8 },
-    { key: 'status', label: 'Status', visible: true, width: 150, order: 9 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 10 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 200, order: 6 },
+    { key: 'status', label: 'Status', visible: true, width: 150, order: 7 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 8 },
   ]), []);
 
   const { 
@@ -135,12 +133,10 @@ export default function Projects() {
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
     { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'product_lifecycle', label: 'Lifecycle', visible: true, width: 120, order: 6 },
-    { key: 'product_new', label: 'NPI', visible: true, width: 100, order: 7 },
-    { key: 'product_top', label: 'Top Seller', visible: true, width: 120, order: 8 },
-    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 9 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 10 },
-    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 11 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 200, order: 6 },
+    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 7 },
+    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 8 },
+    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 9 },
   ]), []);
 
   const { 
@@ -1316,28 +1312,35 @@ export default function Projects() {
                                           if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                           if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                           if (column.key === 'description') value = details.product_description || '-';
-                                          if (column.key === 'product_lifecycle') {
-                                            value = details.product_lifecycle ? (
-                                              <Badge 
-                                                variant={
-                                                  details.product_lifecycle === 'Active' ? 'default' :
-                                                  details.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                                  details.product_lifecycle === 'NFND' ? 'outline' :
-                                                  'destructive'
-                                                }
-                                              >
-                                                {details.product_lifecycle}
-                                              </Badge>
-                                            ) : '-';
-                                          }
-                                          if (column.key === 'product_new') {
-                                            value = details.product_new === 'Y' ? (
-                                              <Badge variant="default" className="bg-green-600">Neu</Badge>
-                                            ) : '-';
-                                          }
-                                          if (column.key === 'product_top') {
-                                            value = details.product_top === 'Y' ? (
-                                              <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                                          if (column.key === 'product_tags') {
+                                            const badges = [];
+                                            if (details.product_lifecycle) {
+                                              badges.push(
+                                                <Badge 
+                                                  key="lifecycle"
+                                                  variant={
+                                                    details.product_lifecycle === 'Active' ? 'default' :
+                                                    details.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                    details.product_lifecycle === 'NFND' ? 'outline' :
+                                                    'destructive'
+                                                  }
+                                                >
+                                                  {details.product_lifecycle}
+                                                </Badge>
+                                              );
+                                            }
+                                            if (details.product_new === 'Y') {
+                                              badges.push(
+                                                <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                              );
+                                            }
+                                            if (details.product_top === 'Y') {
+                                              badges.push(
+                                                <Badge key="top" variant="default" className="bg-amber-600">Top Seller</Badge>
+                                              );
+                                            }
+                                            value = badges.length > 0 ? (
+                                              <div className="flex gap-1 flex-wrap">{badges}</div>
                                             ) : '-';
                                           }
                                         }
@@ -1620,28 +1623,35 @@ export default function Projects() {
                                             if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                             if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                             if (column.key === 'description') value = details.product_description || '-';
-                                            if (column.key === 'product_lifecycle') {
-                                              value = details.product_lifecycle ? (
-                                                <Badge 
-                                                  variant={
-                                                    details.product_lifecycle === 'Active' ? 'default' :
-                                                    details.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                                    details.product_lifecycle === 'NFND' ? 'outline' :
-                                                    'destructive'
-                                                  }
-                                                >
-                                                  {details.product_lifecycle}
-                                                </Badge>
-                                              ) : '-';
-                                            }
-                                            if (column.key === 'product_new') {
-                                              value = details.product_new === 'Y' ? (
-                                                <Badge variant="default" className="bg-green-600">Neu</Badge>
-                                              ) : '-';
-                                            }
-                                            if (column.key === 'product_top') {
-                                              value = details.product_top === 'Y' ? (
-                                                <Badge variant="default" className="bg-amber-600">Top Seller</Badge>
+                                            if (column.key === 'product_tags') {
+                                              const badges = [];
+                                              if (details.product_lifecycle) {
+                                                badges.push(
+                                                  <Badge 
+                                                    key="lifecycle"
+                                                    variant={
+                                                      details.product_lifecycle === 'Active' ? 'default' :
+                                                      details.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                      details.product_lifecycle === 'NFND' ? 'outline' :
+                                                      'destructive'
+                                                    }
+                                                  >
+                                                    {details.product_lifecycle}
+                                                  </Badge>
+                                                );
+                                              }
+                                              if (details.product_new === 'Y') {
+                                                badges.push(
+                                                  <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                                );
+                                              }
+                                              if (details.product_top === 'Y') {
+                                                badges.push(
+                                                  <Badge key="top" variant="default" className="bg-amber-600">Top Seller</Badge>
+                                                );
+                                              }
+                                              value = badges.length > 0 ? (
+                                                <div className="flex gap-1 flex-wrap">{badges}</div>
                                               ) : '-';
                                             }
                                           }
