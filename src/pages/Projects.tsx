@@ -1340,7 +1340,7 @@ export default function Projects() {
                                               );
                                             }
                                             value = badges.length > 0 ? (
-                                              <div className="flex gap-1 flex-wrap">{badges}</div>
+                                              <div className="flex flex-col gap-1">{badges}</div>
                                             ) : '-';
                                           }
                                         }
@@ -1651,7 +1651,7 @@ export default function Projects() {
                                                 );
                                               }
                                               value = badges.length > 0 ? (
-                                                <div className="flex gap-1 flex-wrap">{badges}</div>
+                                                <div className="flex flex-col gap-1">{badges}</div>
                                               ) : '-';
                                             }
                                           }
