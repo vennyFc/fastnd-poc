@@ -107,7 +107,7 @@ export default function Projects() {
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 160, order: 1 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 160, order: 2 },
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
+    { key: 'product_lead_time', label: 'Lieferzeit', visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
     { key: 'status', label: 'Status', visible: true, width: 150, order: 6 },
     { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
@@ -130,7 +130,7 @@ export default function Projects() {
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
     { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
+    { key: 'product_lead_time', label: 'Lieferzeit', visible: true, width: 150, order: 4 },
     { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
     { key: 'action', label: 'Aktion', visible: true, width: 120, order: 6 },
     { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 7 },
@@ -1307,7 +1307,7 @@ export default function Projects() {
                                           if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                           if (column.key === 'product_family') value = details.product_family || '-';
                                           if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
-                                          if (column.key === 'product_lead_time') value = details.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} Wochen` : '-';
+                                          if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                           if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                           if (column.key === 'description') value = details.product_description || '-';
                                         }
@@ -1417,7 +1417,7 @@ export default function Projects() {
                                                 if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
                                                 if (column.key === 'product_family') value = altDetails.product_family || '-';
                                                 if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
-                                                if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? `${Math.ceil(altDetails.product_lead_time / 7)} Wochen` : '-';
+                                                if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
                                                 if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
                                                 if (column.key === 'description') value = altDetails.product_description || '-';
                                               }
@@ -1587,7 +1587,7 @@ export default function Projects() {
                                             if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                             if (column.key === 'product_family') value = details.product_family || '-';
                                             if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
-                                            if (column.key === 'product_lead_time') value = details.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} Wochen` : '-';
+                                            if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                             if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
                                             if (column.key === 'description') value = details.product_description || '-';
                                           }
@@ -1689,7 +1689,7 @@ export default function Projects() {
                                                   if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
                                                   if (column.key === 'product_family') value = altDetails.product_family || '-';
                                                   if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
-                                                  if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? `${Math.ceil(altDetails.product_lead_time / 7)} Wochen` : '-';
+                                                  if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
                                                   if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
                                                   if (column.key === 'description') value = altDetails.product_description || '-';
                                                 }
@@ -2187,7 +2187,7 @@ export default function Projects() {
                   </h3>
                   <p className="text-base font-semibold">
                     {selectedProductForQuickView.product_lead_time 
-                      ? `${Math.ceil(selectedProductForQuickView.product_lead_time / 7)} Wochen` 
+                      ? String(Math.ceil(selectedProductForQuickView.product_lead_time / 7))
                       : '-'}
                   </p>
                 </div>
