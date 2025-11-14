@@ -537,7 +537,12 @@ export type Database = {
           product_family: string | null
           product_inventory: number | null
           product_lead_time: number | null
+          product_lifecycle:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new: string | null
           product_price: number | null
+          product_top: string | null
           upload_id: string | null
           user_id: string
         }
@@ -551,7 +556,12 @@ export type Database = {
           product_family?: string | null
           product_inventory?: number | null
           product_lead_time?: number | null
+          product_lifecycle?:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new?: string | null
           product_price?: number | null
+          product_top?: string | null
           upload_id?: string | null
           user_id: string
         }
@@ -565,7 +575,12 @@ export type Database = {
           product_family?: string | null
           product_inventory?: number | null
           product_lead_time?: number | null
+          product_lifecycle?:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new?: string | null
           product_price?: number | null
+          product_top?: string | null
           upload_id?: string | null
           user_id?: string
         }
@@ -870,6 +885,11 @@ export type Database = {
         | "Prüfung"
         | "Validierung"
         | "Abgeschlossen"
+      product_lifecycle_status:
+        | "Coming Soon"
+        | "Active"
+        | "NFND"
+        | "Discontinued"
       product_optimization_status:
         | "Identifiziert"
         | "Vorgeschlagen"
@@ -1018,6 +1038,12 @@ export const Constants = {
         "Prüfung",
         "Validierung",
         "Abgeschlossen",
+      ],
+      product_lifecycle_status: [
+        "Coming Soon",
+        "Active",
+        "NFND",
+        "Discontinued",
       ],
       product_optimization_status: [
         "Identifiziert",
