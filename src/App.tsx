@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/AdminRoute";
 import { MainLayout } from "./components/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import DataHub from "./pages/DataHub";
@@ -107,16 +108,16 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Admin />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <MainLayout>
+                    <Admin />
+                  </MainLayout>
+                </AdminRoute>
+              }
+            />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </LanguageProvider>
