@@ -4,9 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from 'embla-carousel-autoplay';
+import { useRef } from 'react';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
 
   const { data: npiProducts = [], isLoading } = useQuery({
     queryKey: ['npi-products'],
@@ -78,7 +83,10 @@ export function NPIProductsWidget() {
             align: "start",
             loop: true,
           }}
+          plugins={[autoplayPlugin.current]}
           className="w-full"
+          onMouseEnter={() => autoplayPlugin.current.stop()}
+          onMouseLeave={() => autoplayPlugin.current.play()}
         >
           <CarouselContent>
             {displayProducts.map((product) => (
