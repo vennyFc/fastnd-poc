@@ -87,7 +87,10 @@ export function NotificationPopover() {
                     <Link 
                       to={notification.link} 
                       className="block p-4 cursor-pointer"
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={() => {
+                        // Delay removal slightly to ensure navigation occurs
+                        setTimeout(() => markAsRead(notification.id), 0);
+                      }}
                     >
                       <div className="flex gap-3">
                         <div className="mt-0.5">{getIcon(notification.type)}</div>
