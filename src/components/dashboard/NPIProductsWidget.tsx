@@ -21,7 +21,7 @@ export function NPIProductsWidget() {
       const { data } = await supabase
         .from('products')
         .select('*')
-        .eq('product_new', 'yes')
+        .ilike('product_new', 'Y')
         .limit(10);
 
       return data || [];
