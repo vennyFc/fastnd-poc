@@ -2367,8 +2367,14 @@ export default function Projects() {
       </Sheet>
 
       {/* Application Quick View Sheet */}
-      <Sheet open={applicationQuickViewOpen} onOpenChange={setApplicationQuickViewOpen}>
-        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+      <Sheet 
+        open={applicationQuickViewOpen} 
+        onOpenChange={(open) => {
+          console.log('📝 Sheet onOpenChange:', open);
+          setApplicationQuickViewOpen(open);
+        }}
+      >
+        <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto z-[2000]">
           <SheetHeader>
             <Breadcrumb className="mb-4">
               <BreadcrumbList>
@@ -2377,38 +2383,18 @@ export default function Projects() {
                     className="cursor-pointer"
                     onClick={() => {
                       setApplicationQuickViewOpen(false);
-                      // Optionally reopen project sheet if needed
-                      if (selectedProject) {
-                        setIsSheetOpen(true);
-                      }
                     }}
                   >
                     Projekte
                   </BreadcrumbLink>
                 </BreadcrumbItem>
-                {selectedProject && (
-                  <>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbLink 
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setApplicationQuickViewOpen(false);
-                          setIsSheetOpen(true);
-                        }}
-                      >
-                        {selectedProject.project_name}
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                  </>
-                )}
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>{selectedApplicationForQuickView}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
+            <SheetTitle className="text-2xl">{selectedApplicationForQuickView}</SheetTitle>
             <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
           </SheetHeader>
           {appInsightsLoading ? (

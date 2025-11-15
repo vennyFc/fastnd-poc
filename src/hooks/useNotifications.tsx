@@ -129,7 +129,15 @@ export function useNotifications() {
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-    setNotifications(allNotifications);
+    // Only update if there are actual changes to prevent infinite loops
+    setNotifications(prev => {
+      const prevIds = prev.map(n => n.id).join(',');
+      const newIds = allNotifications.map(n => n.id).join(',');
+      if (prevIds === newIds) {
+        return prev;
+      }
+      return allNotifications;
+    });
   }, [newProjects, newActionItems, overdueActionItems]);
 
   // Set up realtime listeners for new projects and action items
