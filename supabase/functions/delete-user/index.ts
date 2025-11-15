@@ -25,19 +25,17 @@ serve(async (req) => {
       );
     }
 
-    // Create a Supabase client with the auth token
-    const supabase = createClient(
+    // Create admin client to verify the user
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // Get the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Verify the JWT and get the user
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
     
     if (userError || !user) {
       console.error('Error getting user:', userError);
@@ -51,7 +49,7 @@ serve(async (req) => {
     }
 
     // Check if the user is an admin
-    const { data: roleData, error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -92,12 +90,6 @@ serve(async (req) => {
         }
       );
     }
-
-    // Create admin client
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     // Delete the user using admin client
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
