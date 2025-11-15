@@ -984,7 +984,32 @@ export default function Projects() {
       const dbStatus = statusMap[newStatus.toLowerCase()] || 'Neu';
       console.log('📊 Database status:', dbStatus);
 
-      // Update optimization records with new status
+      // Optimistic UI update: update React Query cache so the Progress Bar updates instantly
+      const prevData = queryClient.getQueryData<any[]>(['opps_optimization']) || [];
+      queryClient.setQueryData<any[]>(['opps_optimization'], (old: any[] = []) => {
+        const groupSet = new Set(groupNumbers);
+        let matched = false;
+        const updated = old.map((r: any) => {
+          if (groupSet.has(r.project_number)) {
+            matched = true;
+            return { ...r, optimization_status: dbStatus, updated_at: new Date().toISOString() };
+          }
+          return r;
+        });
+        if (!matched && groupNumbers.length > 0) {
+          updated.push({
+            id: `temp-${Date.now()}`,
+            user_id: user.id,
+            project_number: groupNumbers[0],
+            optimization_status: dbStatus,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+        }
+        return updated;
+      });
+
+      // Persist: Update optimization records with new status on the backend
       for (const projectNumber of groupNumbers) {
         console.log(`🔄 Processing project number: ${projectNumber}`);
 
@@ -997,6 +1022,8 @@ export default function Projects() {
 
         if (updateError) {
           console.error('❌ Update error:', updateError);
+          // rollback optimistic cache
+          queryClient.setQueryData(['opps_optimization'], prevData);
           throw updateError;
         }
 
@@ -1015,6 +1042,8 @@ export default function Projects() {
 
           if (insertError) {
             console.error('❌ Insert error:', insertError);
+            // rollback optimistic cache
+            queryClient.setQueryData(['opps_optimization'], prevData);
             throw insertError;
           }
           console.log(`✅ Inserted new status row for ${projectNumber}`);
