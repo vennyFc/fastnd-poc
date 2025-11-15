@@ -80,6 +80,7 @@ export default function DataHub() {
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [deleteTableDialogOpen, setDeleteTableDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<string | null>(null);
+  const [selectedUploads, setSelectedUploads] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadUploadHistory();
@@ -190,6 +191,54 @@ export default function DataHub() {
     toast.success('Upload gelöscht');
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedUploads.size === 0) return;
+    
+    const count = selectedUploads.size;
+    if (!confirm(`Möchten Sie ${count} Upload(s) wirklich löschen?`)) return;
+
+    // Optimistically remove from UI
+    const idsToDelete = Array.from(selectedUploads);
+    setUploadHistory(prev => prev.filter(upload => !selectedUploads.has(upload.id)));
+    setSelectedUploads(new Set());
+
+    // @ts-ignore - Supabase types not yet updated
+    const { error } = await supabase
+      // @ts-ignore
+      .from('upload_history')
+      .delete()
+      .in('id', idsToDelete);
+
+    if (error) {
+      toast.error('Fehler beim Löschen der Uploads');
+      // Reload on error to restore correct state
+      loadUploadHistory();
+      return;
+    }
+
+    toast.success(`${count} Upload(s) gelöscht`);
+  };
+
+  const toggleSelectUpload = (id: string) => {
+    setSelectedUploads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUploads.size === uploadHistory.length) {
+      setSelectedUploads(new Set());
+    } else {
+      setSelectedUploads(new Set(uploadHistory.map(u => u.id)));
+    }
+  };
+
   const openDeleteTableDialog = (tableId: string) => {
     setTableToDelete(tableId);
     setDeleteTableDialogOpen(true);
@@ -285,16 +334,38 @@ export default function DataHub() {
       {/* Upload History */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Upload-Historie</CardTitle>
-          <CardDescription>
-            Übersicht Ihrer hochgeladenen Datensätze
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Upload-Historie</CardTitle>
+              <CardDescription>
+                Übersicht Ihrer hochgeladenen Datensätze
+              </CardDescription>
+            </div>
+            {selectedUploads.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteSelected}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Ausgewählte löschen ({selectedUploads.size})
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border border-border">
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
+                  <th className="text-left p-3 text-sm font-semibold w-12">
+                    <input
+                      type="checkbox"
+                      checked={uploadHistory.length > 0 && selectedUploads.size === uploadHistory.length}
+                      onChange={toggleSelectAll}
+                      className="cursor-pointer"
+                    />
+                  </th>
                   <th className="text-left p-3 text-sm font-semibold">Dateiname</th>
                   <th className="text-left p-3 text-sm font-semibold">Datentyp</th>
                   <th className="text-left p-3 text-sm font-semibold">Upload-Datum</th>
@@ -306,13 +377,21 @@ export default function DataHub() {
               <tbody>
                 {uploadHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground">
                       Keine Uploads vorhanden. Laden Sie Dateien hoch, um zu beginnen.
                     </td>
                   </tr>
                 ) : (
                   uploadHistory.map((upload) => (
                     <tr key={upload.id} className="border-b border-border hover:bg-muted/50">
+                      <td className="p-3 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={selectedUploads.has(upload.id)}
+                          onChange={() => toggleSelectUpload(upload.id)}
+                          className="cursor-pointer"
+                        />
+                      </td>
                       <td className="p-3 text-sm">{upload.filename}</td>
                       <td className="p-3 text-sm">{upload.data_type}</td>
                       <td className="p-3 text-sm">
