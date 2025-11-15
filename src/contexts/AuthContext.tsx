@@ -73,12 +73,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error, data } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    if (!error) {
+    if (!error && data.user) {
+      // Track login event
+      await supabase.from('user_access_logs').insert({
+        user_id: data.user.id,
+        event_type: 'login',
+        event_data: { email },
+        user_agent: navigator.userAgent,
+      });
+      
       navigate('/');
     }
     
@@ -107,6 +115,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (user) {
+      // Track logout event
+      await supabase.from('user_access_logs').insert({
+        user_id: user.id,
+        event_type: 'logout',
+        user_agent: navigator.userAgent,
+      });
+    }
+    
     await supabase.auth.signOut();
     navigate('/auth');
   };

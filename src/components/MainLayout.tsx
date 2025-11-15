@@ -11,12 +11,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { UserPreferencesPopover } from './UserPreferencesPopover';
 import { LanguageSelector } from './LanguageSelector';
 import { NotificationPopover } from './NotificationPopover';
+import { useAccessTracking } from '@/hooks/useAccessTracking';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  useAccessTracking();
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
