@@ -20,6 +20,7 @@ interface WidgetSettingsProps {
   onToggleWidget: (id: string) => void;
   onReset: () => void;
   onSetWidgetSize: (id: string, size: WidgetSize) => void;
+  isAdmin?: boolean;
 }
 
 const widgetLabels: Record<string, string> = {
@@ -28,6 +29,7 @@ const widgetLabels: Record<string, string> = {
   'npi-products': 'NPI Produkte',
   'statistics': 'Statistiken',
   'optimization-status': 'Optimierungsstatus',
+  'access-stats': 'Access Statistiken (Admin)',
   'added-products': 'Ergänzte Produkte',
   'getting-started': 'Erste Schritte',
 };
@@ -37,7 +39,16 @@ const sizeLabels: Record<WidgetSize, string> = {
   full: 'Volle Breite',
 };
 
-export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize }: WidgetSettingsProps) {
+export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize, isAdmin = false }: WidgetSettingsProps) {
+  // Filter widgets based on admin status
+  const visibleWidgets = widgets.filter(widget => {
+    // Hide access-stats widget for non-admins
+    if (widget.type === 'access-stats' && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -58,7 +69,7 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSi
           <Separator />
 
           <div className="space-y-3">
-            {widgets.map((widget) => (
+            {visibleWidgets.map((widget) => (
               <div
                 key={widget.id}
                 className="space-y-2 p-2 rounded-lg hover:bg-muted"
