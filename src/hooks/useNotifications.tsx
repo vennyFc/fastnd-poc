@@ -187,12 +187,12 @@ export function useNotifications() {
 
   const markAsRead = (id: string) => {
     setNotifications((prev) =>
-      prev.filter((n) => n.id !== id)
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications([]);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   return {

@@ -82,7 +82,9 @@ export function NotificationPopover() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`transition-colors ${getPriorityColor(notification.type)}`}
+                  className={`transition-colors ${
+                    notification.read ? 'opacity-60' : ''
+                  } ${getPriorityColor(notification.type)}`}
                 >
                   {notification.link ? (
                     <Link 
@@ -90,9 +92,8 @@ export function NotificationPopover() {
                       className="block p-4 cursor-pointer"
                       onClick={(e) => {
                         e.preventDefault();
+                        markAsRead(notification.id);
                         navigate(notification.link!);
-                        // Remove after navigation to avoid canceling it
-                        setTimeout(() => markAsRead(notification.id), 100);
                       }}
                     >
                       <div className="flex gap-3">
@@ -100,7 +101,9 @@ export function NotificationPopover() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <p className="font-medium text-sm">{notification.title}</p>
-                            <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                            {!notification.read && (
+                              <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground mb-1">
                             {notification.message}
@@ -123,7 +126,9 @@ export function NotificationPopover() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <p className="font-medium text-sm">{notification.title}</p>
-                          <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                          {!notification.read && (
+                            <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground mb-1">
                           {notification.message}
