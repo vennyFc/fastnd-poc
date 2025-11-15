@@ -1073,6 +1073,124 @@ export default function Projects() {
         </div>
 
         <div className="space-y-6">
+          {/* Application Quick View Sheet (Detail-Ansicht) */}
+          <Sheet 
+            open={applicationQuickViewOpen} 
+            onOpenChange={(open) => {
+              console.log('📝 Sheet onOpenChange (detail):', open);
+              setApplicationQuickViewOpen(open);
+            }}
+          >
+            <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto z-[2000]">
+              <SheetHeader>
+                <Breadcrumb className="mb-4">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink 
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setApplicationQuickViewOpen(false);
+                        }}
+                      >
+                        Projekte
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{selectedApplicationForQuickView}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <SheetTitle className="text-2xl">{selectedApplicationForQuickView}</SheetTitle>
+                <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
+              </SheetHeader>
+              {appInsightsLoading ? (
+                <div className="mt-6 space-y-6">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ) : selectedApplicationForQuickView ? (() => {
+                const appData = appInsights.find(
+                  (app: any) => 
+                    app.application === selectedApplicationForQuickView ||
+                    app.application?.toLowerCase() === selectedApplicationForQuickView?.toLowerCase() ||
+                    app.application?.toLowerCase().includes(selectedApplicationForQuickView?.toLowerCase()) ||
+                    selectedApplicationForQuickView?.toLowerCase().includes(app.application?.toLowerCase())
+                );
+                console.log('🔍 Searching for application (detail):', selectedApplicationForQuickView);
+                console.log('📊 Available applications:', appInsights.map((a: any) => a.application));
+                console.log('✅ Found app data:', appData);
+                return appData ? (
+                  <div className="mt-6 space-y-6">
+                    {appData.industry && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Industrie</h3>
+                        <Badge variant="secondary">{appData.industry}</Badge>
+                      </div>
+                    )}
+                    {appData.application_description && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                        <p className="text-base leading-relaxed">
+                          {appData.application_description}
+                        </p>
+                      </div>
+                    )}
+                    {appData.application_trends && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Trends</h3>
+                        <p className="text-base leading-relaxed">
+                          {appData.application_trends}
+                        </p>
+                      </div>
+                    )}
+                    {(appData.product_family_1 || appData.product_family_2 || appData.product_family_3 || appData.product_family_4 || appData.product_family_5) && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Product Families</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {appData.product_family_1 && <Badge variant="outline">#{1} {appData.product_family_1}</Badge>}
+                          {appData.product_family_2 && <Badge variant="outline">#{2} {appData.product_family_2}</Badge>}
+                          {appData.product_family_3 && <Badge variant="outline">#{3} {appData.product_family_3}</Badge>}
+                          {appData.product_family_4 && <Badge variant="outline">#{4} {appData.product_family_4}</Badge>}
+                          {appData.product_family_5 && <Badge variant="outline">#{5} {appData.product_family_5}</Badge>}
+                        </div>
+                      </div>
+                    )}
+                    {appData.application_block_diagram && (
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
+                        <BlockDiagramViewer content={appData.application_block_diagram} />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-6 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Keine detaillierten Informationen für diese Applikation verfügbar.
+                    </p>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Gesuchte Applikation:</strong> {selectedApplicationForQuickView}
+                      </p>
+                      {appInsights.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          <strong>Verfügbare Applikationen:</strong> {appInsights.length}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })() : (
+                <div className="mt-6">
+                  <p className="text-sm text-muted-foreground">
+                    Keine Applikation ausgewählt.
+                  </p>
+                </div>
+              )}
+            </SheetContent>
+          </Sheet>
+
           {detailProjects.map((project: any) => (
             <Card key={project.id}>
               <CardHeader>
