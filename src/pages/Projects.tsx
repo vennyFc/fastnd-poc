@@ -314,18 +314,24 @@ export default function Projects() {
   // Calculate automatic project status based on business rules
   const calculateProjectStatus = (project: any): string => {
     const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
-    if (groupNumbers.length === 0) return 'neu';
+    if (groupNumbers.length === 0) return 'Neu';
     
-    // Check if user has manually set status to "Abgeschlossen"
+    // Read all optimization records for the grouped project numbers
     const projectOptRecords = optimizationRecords.filter((rec: any) => 
       groupNumbers.includes(rec.project_number)
     );
     
-    // If any record has "Abgeschlossen" optimization_status, respect that
-    const hasAbgeschlossen = projectOptRecords.some((rec: any) => 
-      rec.optimization_status === 'Abgeschlossen'
-    );
-    if (hasAbgeschlossen) return 'Abgeschlossen';
+    // If there is any manually set optimization_status, choose the highest in the workflow
+    const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
+    const manualStatuses = projectOptRecords
+      .map((rec: any) => rec.optimization_status)
+      .filter(Boolean) as typeof order[number][];
+    if (manualStatuses.length > 0) {
+      const highest = manualStatuses.reduce((acc, cur) => 
+        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Neu' as typeof order[number]
+      );
+      return highest;
+    }
     
     // Check if products were added to project (from optimization)
     const hasAddedProducts = projectOptRecords.some((rec: any) => 
