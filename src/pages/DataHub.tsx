@@ -170,6 +170,9 @@ export default function DataHub() {
   const handleDelete = async (id: string) => {
     if (!confirm('Möchten Sie diesen Upload wirklich löschen?')) return;
 
+    // Optimistically remove from UI
+    setUploadHistory(prev => prev.filter(upload => upload.id !== id));
+
     // @ts-ignore - Supabase types not yet updated
     const { error } = await supabase
       // @ts-ignore
@@ -179,11 +182,12 @@ export default function DataHub() {
 
     if (error) {
       toast.error('Fehler beim Löschen');
+      // Reload on error to restore correct state
+      loadUploadHistory();
       return;
     }
 
     toast.success('Upload gelöscht');
-    loadUploadHistory();
   };
 
   const openDeleteTableDialog = (tableId: string) => {
