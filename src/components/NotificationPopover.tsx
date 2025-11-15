@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export function NotificationPopover() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const navigate = useNavigate();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -87,9 +88,11 @@ export function NotificationPopover() {
                     <Link 
                       to={notification.link} 
                       className="block p-4 cursor-pointer"
-                      onClick={() => {
-                        // Delay removal slightly to ensure navigation occurs
-                        setTimeout(() => markAsRead(notification.id), 0);
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(notification.link!);
+                        // Remove after navigation to avoid canceling it
+                        setTimeout(() => markAsRead(notification.id), 100);
                       }}
                     >
                       <div className="flex gap-3">
