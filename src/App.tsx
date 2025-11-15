@@ -18,6 +18,7 @@ import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import AccessLogs from "./pages/AccessLogs";
 
 const App = () => (
   <TooltipProvider>
@@ -114,6 +115,16 @@ const App = () => (
                 <AdminRoute>
                   <MainLayout>
                     <Admin />
+                  </MainLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/access-logs"
+              element={
+                <AdminRoute>
+                  <MainLayout>
+                    <AccessLogs />
                   </MainLayout>
                 </AdminRoute>
               }

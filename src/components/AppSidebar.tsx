@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, Target, BarChart3, Activity } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -46,6 +46,7 @@ export function AppSidebar() {
   const adminMenuItems = [
     { title: t('nav.admin'), url: '/admin', icon: Shield },
     { title: t('nav.dataHub'), url: '/data-hub', icon: Upload },
+    { title: 'Access Logs', url: '/access-logs', icon: Activity },
   ];
 
   return (

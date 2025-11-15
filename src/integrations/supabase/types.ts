@@ -696,6 +696,39 @@ export type Database = {
           },
         ]
       }
+      user_access_logs: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: Database["public"]["Enums"]["access_event_type"]
+          id: string
+          ip_address: string | null
+          page_path: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: Database["public"]["Enums"]["access_event_type"]
+          id?: string
+          ip_address?: string | null
+          page_path?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: Database["public"]["Enums"]["access_event_type"]
+          id?: string
+          ip_address?: string | null
+          page_path?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_column_settings: {
         Row: {
           created_at: string
@@ -875,6 +908,7 @@ export type Database = {
       }
     }
     Enums: {
+      access_event_type: "login" | "logout" | "page_view" | "action"
       action_item_priority: "low" | "medium" | "high"
       action_item_status: "open" | "in_progress" | "completed"
       app_role: "admin" | "user"
@@ -1028,6 +1062,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_event_type: ["login", "logout", "page_view", "action"],
       action_item_priority: ["low", "medium", "high"],
       action_item_status: ["open", "in_progress", "completed"],
       app_role: ["admin", "user"],
