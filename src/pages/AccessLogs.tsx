@@ -282,8 +282,88 @@ export default function AccessLogs() {
 
   const hasActiveFilters = eventTypeFilter !== 'all' || userFilter || dateFromFilter || dateToFilter;
 
+  // Calculate statistics
+  const statistics = {
+    total: filteredLogs.length,
+    login: filteredLogs.filter(log => log.event_type === 'login').length,
+    logout: filteredLogs.filter(log => log.event_type === 'logout').length,
+    page_view: filteredLogs.filter(log => log.event_type === 'page_view').length,
+    action: filteredLogs.filter(log => log.event_type === 'action').length,
+    uniqueUsers: new Set(filteredLogs.map(log => log.user_id)).size,
+  };
+
+  const StatCard = ({ title, value, icon: Icon, variant = 'default' }: { 
+    title: string; 
+    value: number; 
+    icon: any; 
+    variant?: 'default' | 'login' | 'logout' | 'view' | 'action' 
+  }) => {
+    const variantStyles = {
+      default: 'bg-primary/10 text-primary',
+      login: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      logout: 'bg-slate-500/10 text-slate-600 dark:text-slate-400',
+      view: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      action: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    };
+
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+              <p className="text-3xl font-bold mt-2">{value.toLocaleString('de-DE')}</p>
+            </div>
+            <div className={`p-3 rounded-full ${variantStyles[variant]}`}>
+              <Icon className="h-6 w-6" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StatCard 
+          title="Gesamt Events" 
+          value={statistics.total} 
+          icon={Activity}
+        />
+        <StatCard 
+          title="Logins" 
+          value={statistics.login} 
+          icon={LogIn}
+          variant="login"
+        />
+        <StatCard 
+          title="Logouts" 
+          value={statistics.logout} 
+          icon={LogOut}
+          variant="logout"
+        />
+        <StatCard 
+          title="Seitenaufrufe" 
+          value={statistics.page_view} 
+          icon={Eye}
+          variant="view"
+        />
+        <StatCard 
+          title="Aktionen" 
+          value={statistics.action} 
+          icon={Activity}
+          variant="action"
+        />
+        <StatCard 
+          title="Unique Users" 
+          value={statistics.uniqueUsers} 
+          icon={Activity}
+        />
+      </div>
+
+      {/* Access Logs Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
