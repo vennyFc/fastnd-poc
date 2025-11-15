@@ -229,9 +229,7 @@ export function useNotifications() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-read-states', user?.id] });
-    },
+    // Don't invalidate queries - let notifications stay until next login
   });
 
   // Mutation to mark all notifications as read
@@ -254,9 +252,7 @@ export function useNotifications() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification-read-states', user?.id] });
-    },
+    // Don't invalidate queries - let notifications stay until next login
   });
 
   const unreadCount = notifications.filter((n) => !n.read).length;
