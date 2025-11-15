@@ -13,6 +13,7 @@ import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationSta
 import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
 import { NPIProductsWidget } from '@/components/dashboard/NPIProductsWidget';
 import { AccessStatsWidget } from '@/components/dashboard/AccessStatsWidget';
+import { LoginActivityWidget } from '@/components/dashboard/LoginActivityWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -213,6 +214,23 @@ export default function Dashboard() {
             size={widget.size}
           >
             <OptimizationStatusWidget />
+          </WidgetContainer>
+        );
+      case 'login-activity':
+        // Only show for admins
+        if (!isAdmin) return null;
+        return (
+          <WidgetContainer
+            key="login-activity"
+            id="login-activity"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <LoginActivityWidget />
           </WidgetContainer>
         );
       case 'access-stats':

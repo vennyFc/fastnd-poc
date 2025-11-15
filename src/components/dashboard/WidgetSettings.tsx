@@ -29,6 +29,7 @@ const widgetLabels: Record<string, string> = {
   'npi-products': 'NPI Produkte',
   'statistics': 'Statistiken',
   'optimization-status': 'Optimierungsstatus',
+  'login-activity': 'Login-Aktivität (Admin)',
   'access-stats': 'Access Statistiken (Admin)',
   'added-products': 'Ergänzte Produkte',
   'getting-started': 'Erste Schritte',
@@ -42,8 +43,8 @@ const sizeLabels: Record<WidgetSize, string> = {
 export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize, isAdmin = false }: WidgetSettingsProps) {
   // Filter widgets based on admin status
   const visibleWidgets = widgets.filter(widget => {
-    // Hide access-stats widget for non-admins
-    if (widget.type === 'access-stats' && !isAdmin) {
+    // Hide admin-only widgets for non-admins
+    if ((widget.type === 'access-stats' || widget.type === 'login-activity') && !isAdmin) {
       return false;
     }
     return true;
