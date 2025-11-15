@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSearchParams } from 'react-router-dom';
 import { useWidgets } from '@/hooks/useWidgets';
+import { useAuth } from '@/contexts/AuthContext';
 import { SearchWidget } from '@/components/dashboard/SearchWidget';
 import { StatisticsWidget } from '@/components/dashboard/StatisticsWidget';
 import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidget';
@@ -11,6 +12,7 @@ import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
 import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationStatusWidget';
 import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
 import { NPIProductsWidget } from '@/components/dashboard/NPIProductsWidget';
+import { AccessStatsWidget } from '@/components/dashboard/AccessStatsWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -20,6 +22,21 @@ export default function Dashboard() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   
   const { widgets, toggleWidget, reorderWidgets, resetWidgets, setWidgetSize } = useWidgets();
+  const { user } = useAuth();
+
+  // Check if user is admin
+  const { data: isAdmin = false } = useQuery({
+    queryKey: ['user-is-admin', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      
+      const { data } = await supabase
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      
+      return data || false;
+    },
+    enabled: !!user,
+  });
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -198,6 +215,23 @@ export default function Dashboard() {
             <OptimizationStatusWidget />
           </WidgetContainer>
         );
+      case 'access-stats':
+        // Only show for admins
+        if (!isAdmin) return null;
+        return (
+          <WidgetContainer
+            key="access-stats"
+            id="access-stats"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <AccessStatsWidget />
+          </WidgetContainer>
+        );
       case 'added-products':
         return (
           <WidgetContainer
@@ -241,6 +275,7 @@ export default function Dashboard() {
           onToggleWidget={toggleWidget}
           onReset={resetWidgets}
           onSetWidgetSize={setWidgetSize}
+          isAdmin={isAdmin}
         />
       </div>
 
