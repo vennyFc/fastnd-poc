@@ -4,13 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import Autoplay from 'embla-carousel-autoplay';
+import AutoScroll from 'embla-carousel-auto-scroll';
 import { useRef } from 'react';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
+  const autoScrollPlugin = useRef(
+    AutoScroll({ 
+      speed: 1,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+      startDelay: 1000
+    })
   );
 
   const { data: npiProducts = [], isLoading } = useQuery({
@@ -82,11 +87,10 @@ export function NPIProductsWidget() {
           opts={{
             align: "start",
             loop: true,
+            dragFree: true,
           }}
-          plugins={[autoplayPlugin.current]}
+          plugins={[autoScrollPlugin.current]}
           className="w-full"
-          onMouseEnter={() => autoplayPlugin.current.stop()}
-          onMouseLeave={() => autoplayPlugin.current.play()}
         >
           <CarouselContent>
             {displayProducts.map((product) => (
