@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
     // Fetch all products for the user
     const { data: allProducts, error: fetchError } = await supabase
       .from('products')
-      .select('id, product, created_at, user_id')
+      .select('id, product, manufacturer, created_at, user_id')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -72,12 +72,13 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${allProducts.length} total products`);
 
-    // Group products by name
+    // Group products by name + manufacturer (case-insensitive)
     const productGroups = new Map<string, typeof allProducts>();
     for (const product of allProducts) {
-      const existing = productGroups.get(product.product) || [];
-      existing.push(product);
-      productGroups.set(product.product, existing);
+      const key = `${(product.product || '').toLowerCase()}|${(product as any).manufacturer ? (product as any).manufacturer.toLowerCase() : ''}`;
+      const existing = productGroups.get(key) || [];
+      existing.push(product as any);
+      productGroups.set(key, existing);
     }
 
     // Find duplicates
