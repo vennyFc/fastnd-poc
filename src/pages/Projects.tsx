@@ -946,15 +946,25 @@ export default function Projects() {
   };
 
   const handleProjectStatusChange = async (project: any, newStatus: string) => {
+    console.log('🔄 handleProjectStatusChange called:', { project: project.project_name, newStatus });
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.error('❌ User not authenticated');
         toast.error('Nicht authentifiziert');
         return;
       }
 
+      console.log('👤 User authenticated:', user.id);
+
       const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
-      if (groupNumbers.length === 0) return;
+      console.log('📋 Group numbers:', groupNumbers);
+      
+      if (groupNumbers.length === 0) {
+        console.warn('⚠️ No group numbers found');
+        return;
+      }
 
       // Map German status to database enum value
       const statusMap: Record<string, 'Neu' | 'Offen' | 'Prüfung' | 'Validierung' | 'Abgeschlossen'> = {
@@ -966,15 +976,20 @@ export default function Projects() {
       };
       
       const dbStatus = statusMap[newStatus.toLowerCase()] || 'Neu';
+      console.log('📊 Database status:', dbStatus);
 
       // Update optimization records with new status
       for (const projectNumber of groupNumbers) {
+        console.log(`🔄 Processing project number: ${projectNumber}`);
+        
         // Check if record exists
         const { data: existing } = await supabase
           .from('opps_optimization')
           .select('id')
           .eq('project_number', projectNumber)
           .maybeSingle();
+
+        console.log(`📝 Existing record for ${projectNumber}:`, existing);
 
         if (existing) {
           // Update existing record
@@ -985,7 +1000,11 @@ export default function Projects() {
             })
             .eq('id', existing.id);
 
-          if (error) throw error;
+          if (error) {
+            console.error('❌ Update error:', error);
+            throw error;
+          }
+          console.log(`✅ Updated record for ${projectNumber}`);
         } else {
           // Insert new record with user_id
           const { error } = await supabase
@@ -996,17 +1015,23 @@ export default function Projects() {
               optimization_status: dbStatus
             });
 
-          if (error) throw error;
+          if (error) {
+            console.error('❌ Insert error:', error);
+            throw error;
+          }
+          console.log(`✅ Inserted new record for ${projectNumber}`);
         }
       }
 
+      console.log('🔄 Invalidating queries...');
       // Invalidate and refetch data to update the UI immediately
       await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
       await refetchOptimization();
+      console.log('✅ Queries invalidated and refetched');
       
       toast.success(`Projekt-Status auf "${newStatus}" gesetzt`);
     } catch (error) {
-      console.error('Error updating project status:', error);
+      console.error('❌ Error updating project status:', error);
       toast.error('Fehler beim Aktualisieren des Projekt-Status');
     }
   };
@@ -1278,12 +1303,15 @@ export default function Projects() {
                             {/* Status Dropdown */}
                             <Select 
                               value={currentStatus.toLowerCase()} 
-                              onValueChange={(value) => handleProjectStatusChange(project, value)}
+                              onValueChange={(value) => {
+                                console.log('📋 Select onValueChange triggered:', value);
+                                handleProjectStatusChange(project, value);
+                              }}
                             >
                               <SelectTrigger className="w-[180px] bg-background">
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="z-[9999] bg-popover">
                                 <SelectItem value="neu">Neu</SelectItem>
                                 <SelectItem value="offen">Offen</SelectItem>
                                 <SelectItem value="prüfung">Prüfung</SelectItem>
