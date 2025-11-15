@@ -262,33 +262,23 @@ export function useNotifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
-    // First mark as read for visual feedback
+    // Mark as read for visual feedback (will stay in list until next login)
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
     
     // Save to database
     markAsReadMutation.mutate(id);
-    
-    // Then remove after a short delay
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 300);
   };
 
   const markAllAsRead = () => {
     const notificationIds = notifications.map(n => n.id);
     
-    // First mark all as read
+    // Mark all as read (will stay in list until next login)
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     
     // Save to database
     markAllAsReadMutation.mutate(notificationIds);
-    
-    // Then remove all after a short delay
-    setTimeout(() => {
-      setNotifications([]);
-    }, 300);
   };
 
   return {
