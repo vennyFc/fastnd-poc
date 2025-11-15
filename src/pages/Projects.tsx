@@ -987,45 +987,37 @@ export default function Projects() {
       // Update optimization records with new status
       for (const projectNumber of groupNumbers) {
         console.log(`🔄 Processing project number: ${projectNumber}`);
-        
-        // Check if record exists
-        const { data: existing } = await supabase
+
+        // Try to update ALL existing rows for this project number
+        const { data: updatedRows, error: updateError } = await supabase
           .from('opps_optimization')
-          .select('id')
+          .update({ optimization_status: dbStatus })
           .eq('project_number', projectNumber)
-          .maybeSingle();
+          .select('id');
 
-        console.log(`📝 Existing record for ${projectNumber}:`, existing);
+        if (updateError) {
+          console.error('❌ Update error:', updateError);
+          throw updateError;
+        }
 
-        if (existing) {
-          // Update existing record
-          const { error } = await supabase
-            .from('opps_optimization')
-            .update({ 
-              optimization_status: dbStatus
-            })
-            .eq('id', existing.id);
+        const updatedCount = updatedRows?.length ?? 0;
+        console.log(`🛠️ Updated ${updatedCount} rows for ${projectNumber}`);
 
-          if (error) {
-            console.error('❌ Update error:', error);
-            throw error;
-          }
-          console.log(`✅ Updated record for ${projectNumber}`);
-        } else {
-          // Insert new record with user_id
-          const { error } = await supabase
+        // If no rows were updated, insert a new canonical row carrying the status
+        if (updatedCount === 0) {
+          const { error: insertError } = await supabase
             .from('opps_optimization')
             .insert({
               user_id: user.id,
               project_number: projectNumber,
-              optimization_status: dbStatus
+              optimization_status: dbStatus,
             });
 
-          if (error) {
-            console.error('❌ Insert error:', error);
-            throw error;
+          if (insertError) {
+            console.error('❌ Insert error:', insertError);
+            throw insertError;
           }
-          console.log(`✅ Inserted new record for ${projectNumber}`);
+          console.log(`✅ Inserted new status row for ${projectNumber}`);
         }
       }
 
