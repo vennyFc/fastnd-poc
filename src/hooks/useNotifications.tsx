@@ -186,13 +186,25 @@ export function useNotifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
+    // First mark as read for visual feedback
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+    
+    // Then remove after a short delay
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 300);
   };
 
   const markAllAsRead = () => {
+    // First mark all as read
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    
+    // Then remove all after a short delay
+    setTimeout(() => {
+      setNotifications([]);
+    }, 300);
   };
 
   return {
