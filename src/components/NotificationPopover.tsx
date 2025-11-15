@@ -81,11 +81,14 @@ export function NotificationPopover() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 transition-colors cursor-pointer ${getPriorityColor(notification.type)}`}
-                  onClick={() => markAsRead(notification.id)}
+                  className={`transition-colors ${getPriorityColor(notification.type)}`}
                 >
                   {notification.link ? (
-                    <Link to={notification.link} className="block">
+                    <Link 
+                      to={notification.link} 
+                      className="block p-4 cursor-pointer"
+                      onClick={() => markAsRead(notification.id)}
+                    >
                       <div className="flex gap-3">
                         <div className="mt-0.5">{getIcon(notification.type)}</div>
                         <div className="flex-1 min-w-0">
@@ -106,7 +109,10 @@ export function NotificationPopover() {
                       </div>
                     </Link>
                   ) : (
-                    <div className="flex gap-3">
+                    <div 
+                      className="flex gap-3 p-4 cursor-pointer"
+                      onClick={() => markAsRead(notification.id)}
+                    >
                       <div className="mt-0.5">{getIcon(notification.type)}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
