@@ -225,17 +225,86 @@ export default function FileUploadDialog({
         return transformed;
       });
 
-      // Insert data based on type with upload_id
-      // @ts-ignore - Supabase types not yet updated
-      const { error } = await supabase
-        // @ts-ignore
-        .from(dataType.id)
-        // @ts-ignore
-        .insert(transformedData);
+      // Handle products table with upsert logic
+      if (dataType.id === 'products') {
+        // Fetch existing products for the user
+        const { data: existingProducts, error: fetchError } = await supabase
+          .from('products')
+          .select('id, product, manufacturer')
+          .eq('user_id', session.user.id);
 
-      if (error) throw error;
+        if (fetchError) throw fetchError;
 
-      toast.success(`${parsedData.length} Einträge erfolgreich hochgeladen`);
+        // Create a map of existing products by product name and manufacturer
+        const existingMap = new Map<string, string>();
+        existingProducts?.forEach(p => {
+          const key = `${p.product?.toLowerCase() || ''}_${p.manufacturer?.toLowerCase() || ''}`;
+          existingMap.set(key, p.id);
+        });
+
+        const toInsert: any[] = [];
+        const toUpdate: any[] = [];
+
+        // Separate data into inserts and updates
+        transformedData.forEach(item => {
+          const key = `${item.product?.toLowerCase() || ''}_${item.manufacturer?.toLowerCase() || ''}`;
+          const existingId = existingMap.get(key);
+          
+          if (existingId) {
+            // Product exists - prepare for update
+            toUpdate.push({
+              ...item,
+              id: existingId,
+            });
+          } else {
+            // New product - prepare for insert
+            toInsert.push(item);
+          }
+        });
+
+        // Perform inserts
+        if (toInsert.length > 0) {
+          const { error: insertError } = await supabase
+            .from('products')
+            .insert(toInsert);
+          
+          if (insertError) throw insertError;
+        }
+
+        // Perform updates (one by one for now, could be optimized)
+        for (const item of toUpdate) {
+          const { id, ...updateData } = item;
+          const { error: updateError } = await supabase
+            .from('products')
+            .update(updateData)
+            .eq('id', id);
+          
+          if (updateError) throw updateError;
+        }
+
+        const insertedCount = toInsert.length;
+        const updatedCount = toUpdate.length;
+        
+        if (insertedCount > 0 && updatedCount > 0) {
+          toast.success(`${insertedCount} neue Einträge erstellt, ${updatedCount} bestehende aktualisiert`);
+        } else if (insertedCount > 0) {
+          toast.success(`${insertedCount} Einträge erfolgreich hochgeladen`);
+        } else if (updatedCount > 0) {
+          toast.success(`${updatedCount} Einträge erfolgreich aktualisiert`);
+        }
+      } else {
+        // For other tables, use normal insert
+        // @ts-ignore - Supabase types not yet updated
+        const { error } = await supabase
+          // @ts-ignore
+          .from(dataType.id)
+          // @ts-ignore
+          .insert(transformedData);
+
+        if (error) throw error;
+
+        toast.success(`${parsedData.length} Einträge erfolgreich hochgeladen`);
+      }
       onOpenChange(false);
       window.location.reload();
     } catch (error: any) {
