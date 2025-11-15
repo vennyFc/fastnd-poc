@@ -2,18 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import useEmblaCarousel from 'embla-carousel-react';
-import { useCallback } from 'react';
+import { Sparkles } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: true,
-    align: 'start',
-    slidesToScroll: 1,
-  });
 
   const { data: npiProducts = [], isLoading } = useQuery({
     queryKey: ['npi-products'],
@@ -30,14 +23,6 @@ export function NPIProductsWidget() {
 
   // Get only first 10 for carousel
   const displayProducts = npiProducts.slice(0, 10);
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
 
   const handleProductClick = (productName: string) => {
     navigate(`/products?search=${encodeURIComponent(productName)}`);
@@ -82,39 +67,22 @@ export function NPIProductsWidget() {
   return (
     <Card className="shadow-card h-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>NPI Produkte ({npiProducts.length})</CardTitle>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollPrev}
-              className="h-8 w-8"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollNext}
-              className="h-8 w-8"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <CardTitle>NPI Produkte ({npiProducts.length})</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-4">
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
             {displayProducts.map((product) => (
-              <div
-                key={product.id}
-                className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%]"
-              >
+              <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
                 <div
                   onClick={() => handleProductClick(product.product)}
                   className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-full flex flex-col"
@@ -152,10 +120,12 @@ export function NPIProductsWidget() {
                     )}
                   </div>
                 </div>
-              </div>
+              </CarouselItem>
             ))}
-          </div>
-        </div>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </CardContent>
     </Card>
   );
