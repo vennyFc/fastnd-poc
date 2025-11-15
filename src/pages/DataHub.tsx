@@ -82,6 +82,7 @@ export default function DataHub() {
   const [deleteTableDialogOpen, setDeleteTableDialogOpen] = useState(false);
   const [tableToDelete, setTableToDelete] = useState<string | null>(null);
   const [selectedUploads, setSelectedUploads] = useState<Set<string>>(new Set());
+  const [isRemovingDuplicates, setIsRemovingDuplicates] = useState(false);
 
   useEffect(() => {
     loadUploadHistory();
@@ -286,13 +287,50 @@ export default function DataHub() {
     }
   };
 
+  const handleRemoveDuplicates = async () => {
+    setIsRemovingDuplicates(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('remove-product-duplicates');
+
+      if (error) {
+        toast.error('Fehler beim Entfernen von Duplikaten: ' + error.message);
+        return;
+      }
+
+      if (data.duplicatesRemoved === 0) {
+        toast.info('Keine Duplikate gefunden');
+      } else {
+        toast.success(`${data.duplicatesRemoved} Duplikate wurden erfolgreich entfernt`);
+        // Reload upload history if needed
+        loadUploadHistory();
+      }
+    } catch (err) {
+      console.error('Error removing duplicates:', err);
+      toast.error('Ein unerwarteter Fehler ist aufgetreten');
+    } finally {
+      setIsRemovingDuplicates(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Datenhub</h1>
-        <p className="text-muted-foreground">
-          Laden Sie Ihre Daten hoch und verwalten Sie Ihre Uploads
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Datenhub</h1>
+          <p className="text-muted-foreground">
+            Laden Sie Ihre Daten hoch und verwalten Sie Ihre Uploads
+          </p>
+        </div>
+        <Button
+          onClick={handleRemoveDuplicates}
+          disabled={isRemovingDuplicates}
+          variant="outline"
+          className="gap-2"
+        >
+          <Database className="h-4 w-4" />
+          {isRemovingDuplicates ? 'Wird verarbeitet...' : 'Duplikate entfernen'}
+        </Button>
       </div>
 
       {/* Upload Sections */}
