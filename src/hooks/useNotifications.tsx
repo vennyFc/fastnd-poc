@@ -48,10 +48,18 @@ export function useNotifications() {
         .from('customer_projects')
         .select('id, project_name, customer, created_at')
         .gte('created_at', sevenDaysAgo.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10);
+        .order('created_at', { ascending: false });
 
-      return data || [];
+      // Remove duplicates by project_name and customer combination
+      const uniqueProjects = new Map();
+      data?.forEach(project => {
+        const key = `${project.project_name}-${project.customer}`;
+        if (!uniqueProjects.has(key)) {
+          uniqueProjects.set(key, project);
+        }
+      });
+
+      return Array.from(uniqueProjects.values()).slice(0, 10);
     },
     enabled: !!user,
   });
