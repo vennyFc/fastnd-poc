@@ -3,10 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Search, Filter, Building2, MapPin, Briefcase, Tag, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTableColumns } from '@/hooks/useTableColumns';
+import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
+import { ResizableTableHeader } from '@/components/ResizableTableHeader';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface Customer {
   id: string;
@@ -20,6 +26,9 @@ interface Customer {
   last_activity?: string;
 }
 
+type SortField = 'customer_name' | 'industry' | 'country' | 'city' | 'customer_category' | 'project_count';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -27,8 +36,25 @@ export default function Customers() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const defaultColumns = [
+    { key: 'customer_name', label: 'Kunde', visible: true, width: 250, order: 0 },
+    { key: 'industry', label: 'Branche', visible: true, width: 180, order: 1 },
+    { key: 'country', label: 'Land', visible: true, width: 150, order: 2 },
+    { key: 'city', label: 'Stadt', visible: true, width: 150, order: 3 },
+    { key: 'customer_category', label: 'Kategorie', visible: true, width: 150, order: 4 },
+    { key: 'project_count', label: 'Projekte', visible: true, width: 120, order: 5 },
+  ];
+
+  const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
+    'customers-columns',
+    defaultColumns
+  );
 
   useEffect(() => {
     loadCustomers();
@@ -39,11 +65,62 @@ export default function Customers() {
       setFilteredCustomers(customers);
     } else {
       const filtered = customers.filter(customer =>
-        customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+        customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.city?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredCustomers(filtered);
     }
   }, [searchTerm, customers]);
+
+  const sortedCustomers = filteredCustomers.sort((a, b) => {
+    if (!sortField || !sortDirection) return 0;
+
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+
+    if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+    if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortField(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    reorderColumns(draggedIndex, index);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
 
   const loadCustomers = async () => {
     try {
@@ -111,120 +188,129 @@ export default function Customers() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Kunden</h1>
-          <p className="text-muted-foreground">
-            Übersicht aller Kunden und deren Projekte
-          </p>
+          <h1 className="text-3xl font-bold">Kunden</h1>
+          <p className="text-muted-foreground">Verwalten Sie Ihre Kundendaten</p>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Kundenname suchen..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Kunde suchen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <ColumnVisibilityToggle
+                columns={columns}
+                onToggle={toggleColumn}
+                onReset={resetColumns}
               />
             </div>
-            <Button variant="outline">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Customers List */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Alle Kunden</CardTitle>
-          <CardDescription>
-            Kundenübersicht mit Projektanzahl
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border border-border overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-3 text-sm font-semibold">Kunde</th>
-                  <th className="text-left p-3 text-sm font-semibold">Anzahl Projekte</th>
-                  <th className="text-left p-3 text-sm font-semibold">Letzte Aktivität</th>
-                  <th className="text-left p-3 text-sm font-semibold">Kategorie</th>
-                  <th className="text-left p-3 text-sm font-semibold">Standort</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Lädt...
-                    </td>
-                  </tr>
-                ) : filteredCustomers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      {searchTerm ? 'Keine Kunden gefunden.' : 'Keine Kunden vorhanden.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCustomers.map((customer) => (
-                    <tr 
-                      key={customer.id} 
-                      className="border-t hover:bg-muted/50 cursor-pointer transition-colors"
+          {isLoading ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.filter(col => col.visible).map((column) => (
+                    <TableCell key={column.key}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TableRow key={i}>
+                    {columns.filter(col => col.visible).map((column) => (
+                      <TableCell key={column.key}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : sortedCustomers.length === 0 ? (
+            <div className="text-center py-12">
+              <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Keine Kunden gefunden</h3>
+              <p className="text-muted-foreground">
+                {searchTerm ? 'Versuchen Sie einen anderen Suchbegriff' : 'Beginnen Sie mit dem Hochladen von Kundendaten'}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {columns
+                      .filter(col => col.visible)
+                      .map((column, index) => (
+                        <ResizableTableHeader
+                          key={column.key}
+                          label={column.label}
+                          width={column.width}
+                          onResize={(newWidth) => updateColumnWidth(column.key, newWidth)}
+                          sortable={true}
+                          sortDirection={sortField === column.key ? sortDirection : null}
+                          onSort={() => handleSort(column.key as SortField)}
+                          draggable={true}
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragEnd={handleDragEnd}
+                        />
+                      ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedCustomers.map((customer) => (
+                    <TableRow
+                      key={customer.id}
+                      className="cursor-pointer hover:bg-muted/50"
                       onClick={() => handleCustomerClick(customer)}
                     >
-                      <td className="p-3 font-medium text-primary">{customer.customer_name}</td>
-                      <td className="p-3 text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <span>{customer.project_count || 0}</span>
-                          {customer.project_count && customer.project_count > 0 && (
-                            <button
-                              onClick={(e) => handleProjectsClick(e, customer)}
-                              className="text-primary hover:text-primary/80 transition-colors"
-                              aria-label="Projekte anzeigen"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
+                      {columns.filter(col => col.visible).map((column) => (
+                        <TableCell key={column.key} style={{ width: column.width }}>
+                          {column.key === 'customer_name' && (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-primary" />
+                              <span className="font-medium">{customer.customer_name}</span>
+                            </div>
                           )}
-                        </div>
-                      </td>
-                      <td className="p-3 text-muted-foreground">
-                        {customer.last_activity 
-                          ? new Date(customer.last_activity).toLocaleDateString('de-DE')
-                          : '-'
-                        }
-                      </td>
-                      <td className="p-3">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          customer.customer_category === 'TOP' 
-                            ? 'bg-primary/10 text-primary' 
-                            : customer.customer_category === 'KEY'
-                            ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {customer.customer_category || '-'}
-                        </span>
-                      </td>
-                      <td className="p-3 text-muted-foreground">
-                        {customer.city && customer.country
-                          ? `${customer.city}, ${customer.country}`
-                          : customer.city || customer.country || '-'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          {column.key === 'industry' && customer.industry}
+                          {column.key === 'country' && customer.country}
+                          {column.key === 'city' && customer.city}
+                          {column.key === 'customer_category' && customer.customer_category && (
+                            <Badge variant="outline">{customer.customer_category}</Badge>
+                          )}
+                          {column.key === 'project_count' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleProjectsClick(e, customer)}
+                            >
+                              {customer.project_count || 0}
+                            </Button>
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
