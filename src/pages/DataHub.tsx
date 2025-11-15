@@ -8,6 +8,7 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import FileUploadDialog from '@/components/FileUploadDialog';
 import { format } from 'date-fns';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -359,11 +360,9 @@ export default function DataHub() {
               <thead className="bg-muted">
                 <tr>
                   <th className="text-left p-3 text-sm font-semibold w-12">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={uploadHistory.length > 0 && selectedUploads.size === uploadHistory.length}
-                      onChange={toggleSelectAll}
-                      className="cursor-pointer"
+                      onCheckedChange={toggleSelectAll}
                     />
                   </th>
                   <th className="text-left p-3 text-sm font-semibold">Dateiname</th>
@@ -385,11 +384,9 @@ export default function DataHub() {
                   uploadHistory.map((upload) => (
                     <tr key={upload.id} className="border-b border-border hover:bg-muted/50">
                       <td className="p-3 text-sm">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={selectedUploads.has(upload.id)}
-                          onChange={() => toggleSelectUpload(upload.id)}
-                          className="cursor-pointer"
+                          onCheckedChange={() => toggleSelectUpload(upload.id)}
                         />
                       </td>
                       <td className="p-3 text-sm">{upload.filename}</td>
