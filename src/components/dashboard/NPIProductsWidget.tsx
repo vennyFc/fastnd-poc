@@ -22,11 +22,14 @@ export function NPIProductsWidget() {
         .from('products')
         .select('*')
         .ilike('product_new', 'Y')
-        .limit(10);
+        .order('created_at', { ascending: false });
 
       return data || [];
     },
   });
+
+  // Get only first 10 for carousel
+  const displayProducts = npiProducts.slice(0, 10);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -64,7 +67,7 @@ export function NPIProductsWidget() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>NPI Produkte</CardTitle>
+            <CardTitle>NPI Produkte (0)</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -82,7 +85,7 @@ export function NPIProductsWidget() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>NPI Produkte</CardTitle>
+            <CardTitle>NPI Produkte ({npiProducts.length})</CardTitle>
           </div>
           <div className="flex gap-2">
             <Button
@@ -107,7 +110,7 @@ export function NPIProductsWidget() {
       <CardContent>
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex gap-4">
-            {npiProducts.map((product) => (
+            {displayProducts.map((product) => (
               <div
                 key={product.id}
                 className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] lg:flex-[0_0_33.333%]"
