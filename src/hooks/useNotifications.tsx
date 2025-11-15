@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -15,7 +15,25 @@ export interface Notification {
 
 export function useNotifications() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // Fetch read notification states from database
+  const { data: readStates = [] } = useQuery({
+    queryKey: ['notification-read-states', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data } = await supabase
+        .from('user_notifications')
+        .select('notification_id, read')
+        .eq('user_id', user.id)
+        .eq('read', true);
+
+      return data || [];
+    },
+    enabled: !!user,
+  });
 
   // Fetch new projects (last 7 days)
   const { data: newProjects = [] } = useQuery({
@@ -80,48 +98,58 @@ export function useNotifications() {
     enabled: !!user,
   });
 
-  // Transform data into notifications
+  // Transform data into notifications and filter out read ones
   useEffect(() => {
     const allNotifications: Notification[] = [];
+    const readNotificationIds = new Set(readStates.map(rs => rs.notification_id));
 
     // Add new project notifications
     newProjects.forEach((project) => {
-      allNotifications.push({
-        id: `project-${project.id}`,
-        type: 'new_project',
-        title: 'Neues Projekt',
-        message: `${project.project_name} für ${project.customer} wurde erstellt`,
-        link: `/projects?search=${encodeURIComponent(project.project_name)}`,
-        created_at: project.created_at,
-        read: false,
-      });
+      const id = `project-${project.id}`;
+      if (!readNotificationIds.has(id)) {
+        allNotifications.push({
+          id,
+          type: 'new_project',
+          title: 'Neues Projekt',
+          message: `${project.project_name} für ${project.customer} wurde erstellt`,
+          link: `/projects?search=${encodeURIComponent(project.project_name)}`,
+          created_at: project.created_at,
+          read: false,
+        });
+      }
     });
 
     // Add new action item notifications
     newActionItems.forEach((item) => {
-      allNotifications.push({
-        id: `action-${item.id}`,
-        type: 'new_action_item',
-        title: 'Neue Aufgabe',
-        message: item.title,
-        created_at: item.created_at,
-        read: false,
-      });
+      const id = `action-${item.id}`;
+      if (!readNotificationIds.has(id)) {
+        allNotifications.push({
+          id,
+          type: 'new_action_item',
+          title: 'Neue Aufgabe',
+          message: item.title,
+          created_at: item.created_at,
+          read: false,
+        });
+      }
     });
 
     // Add overdue action item notifications
     overdueActionItems.forEach((item) => {
-      const daysOverdue = Math.floor(
-        (new Date().getTime() - new Date(item.due_date).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      allNotifications.push({
-        id: `overdue-${item.id}`,
-        type: 'overdue_action_item',
-        title: 'Überfällige Aufgabe',
-        message: `${item.title} (${daysOverdue} ${daysOverdue === 1 ? 'Tag' : 'Tage'} überfällig)`,
-        created_at: item.due_date,
-        read: false,
-      });
+      const id = `overdue-${item.id}`;
+      if (!readNotificationIds.has(id)) {
+        const daysOverdue = Math.floor(
+          (new Date().getTime() - new Date(item.due_date).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        allNotifications.push({
+          id,
+          type: 'overdue_action_item',
+          title: 'Überfällige Aufgabe',
+          message: `${item.title} (${daysOverdue} ${daysOverdue === 1 ? 'Tag' : 'Tage'} überfällig)`,
+          created_at: item.due_date,
+          read: false,
+        });
+      }
     });
 
     // Sort by date (most recent first)
@@ -138,7 +166,7 @@ export function useNotifications() {
       }
       return allNotifications;
     });
-  }, [newProjects, newActionItems, overdueActionItems]);
+  }, [newProjects, newActionItems, overdueActionItems, readStates]);
 
   // Set up realtime listeners for new projects and action items
   useEffect(() => {
@@ -183,6 +211,54 @@ export function useNotifications() {
     };
   }, [user]);
 
+  // Mutation to mark notification as read
+  const markAsReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      if (!user) return;
+      
+      const { error } = await supabase
+        .from('user_notifications')
+        .upsert({
+          user_id: user.id,
+          notification_id: notificationId,
+          read: true,
+          read_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,notification_id'
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-read-states', user?.id] });
+    },
+  });
+
+  // Mutation to mark all notifications as read
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async (notificationIds: string[]) => {
+      if (!user) return;
+      
+      const records = notificationIds.map(id => ({
+        user_id: user.id,
+        notification_id: id,
+        read: true,
+        read_at: new Date().toISOString(),
+      }));
+
+      const { error } = await supabase
+        .from('user_notifications')
+        .upsert(records, {
+          onConflict: 'user_id,notification_id'
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-read-states', user?.id] });
+    },
+  });
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
@@ -191,6 +267,9 @@ export function useNotifications() {
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
     
+    // Save to database
+    markAsReadMutation.mutate(id);
+    
     // Then remove after a short delay
     setTimeout(() => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -198,8 +277,13 @@ export function useNotifications() {
   };
 
   const markAllAsRead = () => {
+    const notificationIds = notifications.map(n => n.id);
+    
     // First mark all as read
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    
+    // Save to database
+    markAllAsReadMutation.mutate(notificationIds);
     
     // Then remove all after a short delay
     setTimeout(() => {
