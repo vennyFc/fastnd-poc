@@ -34,8 +34,8 @@ export function NPIProductsWidget() {
   // Get only first 10 for carousel
   const displayProducts = npiProducts.slice(0, 10);
 
-  const handleProductClick = (productName: string) => {
-    navigate(`/products?search=${encodeURIComponent(productName)}`);
+  const handleProductClick = (productId: string, productName: string) => {
+    navigate(`/products?id=${productId}&search=${encodeURIComponent(productName)}`);
   };
 
   if (isLoading) {
@@ -96,7 +96,7 @@ export function NPIProductsWidget() {
             {displayProducts.map((product) => (
               <CarouselItem key={product.id} className="md:basis-1/2 lg:basis-1/3">
                 <div
-                  onClick={() => handleProductClick(product.product)}
+                  onClick={() => handleProductClick(product.id, product.product)}
                   className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer h-full flex flex-col"
                 >
                   <div className="flex items-start justify-between mb-3">
