@@ -10,7 +10,7 @@ import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranc
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
-import { ColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
+import { ColumnVisibilityToggle, MultiColumnVisibilityToggle } from '@/components/ColumnVisibilityToggle';
 import { ResizableTableHeader } from '@/components/ResizableTableHeader';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1113,18 +1113,22 @@ export default function Projects() {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <ColumnVisibilityToggle
-              columns={productColumns}
-              onToggle={toggleProductColumn}
-              onReset={resetProductColumns}
-            />
-            <ColumnVisibilityToggle
-              columns={crossSellColumns}
-              onToggle={toggleCrossSellColumn}
-              onReset={resetCrossSellColumns}
-            />
-          </div>
+          <MultiColumnVisibilityToggle
+            groups={[
+              {
+                label: 'Produkte',
+                columns: productColumns,
+                onToggle: toggleProductColumn,
+                onReset: resetProductColumns,
+              },
+              {
+                label: 'Cross-Sells',
+                columns: crossSellColumns,
+                onToggle: toggleCrossSellColumn,
+                onReset: resetCrossSellColumns,
+              },
+            ]}
+          />
         </div>
 
         <div className="space-y-6">
