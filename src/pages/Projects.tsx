@@ -213,7 +213,7 @@ export default function Projects() {
   });
 
   // Fetch application insights
-  const { data: appInsights = [] } = useQuery({
+  const { data: appInsights = [], isLoading: appInsightsLoading } = useQuery({
     queryKey: ['app_insights'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -2400,10 +2400,25 @@ export default function Projects() {
             <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
             <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
           </SheetHeader>
-          {selectedApplicationForQuickView && (() => {
+          {appInsightsLoading ? (
+            <div className="mt-6 space-y-6">
+              <Skeleton className="h-20 w-full" />
+              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : selectedApplicationForQuickView ? (() => {
+            // Try exact match first, then case-insensitive match, then partial match
             const appData = appInsights.find(
-              (app: any) => app.application === selectedApplicationForQuickView
+              (app: any) => 
+                app.application === selectedApplicationForQuickView ||
+                app.application?.toLowerCase() === selectedApplicationForQuickView?.toLowerCase() ||
+                app.application?.toLowerCase().includes(selectedApplicationForQuickView?.toLowerCase()) ||
+                selectedApplicationForQuickView?.toLowerCase().includes(app.application?.toLowerCase())
             );
+            
+            console.log('🔍 Searching for application:', selectedApplicationForQuickView);
+            console.log('📊 Available applications:', appInsights.map((a: any) => a.application));
+            console.log('✅ Found app data:', appData);
             
             return appData ? (
               <div className="mt-6 space-y-6">
@@ -2454,13 +2469,29 @@ export default function Projects() {
                 )}
               </div>
             ) : (
-              <div className="mt-6">
+              <div className="mt-6 space-y-4">
                 <p className="text-sm text-muted-foreground">
                   Keine detaillierten Informationen für diese Applikation verfügbar.
                 </p>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Gesuchte Applikation:</strong> {selectedApplicationForQuickView}
+                  </p>
+                  {appInsights.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      <strong>Verfügbare Applikationen:</strong> {appInsights.length}
+                    </p>
+                  )}
+                </div>
               </div>
             );
-          })()}
+          })() : (
+            <div className="mt-6">
+              <p className="text-sm text-muted-foreground">
+                Keine Applikation ausgewählt.
+              </p>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
 
