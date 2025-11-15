@@ -10,6 +10,7 @@ import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
 import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
 import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationStatusWidget';
 import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
+import { NPIProductsWidget } from '@/components/dashboard/NPIProductsWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
@@ -165,6 +166,21 @@ export default function Dashboard() {
               products={products || []}
               crossSells={crossSells || []}
             />
+          </WidgetContainer>
+        );
+      case 'npi-products':
+        return (
+          <WidgetContainer
+            key="npi-products"
+            id="npi-products"
+            index={index}
+            isDragging={draggedIndex === index}
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <NPIProductsWidget />
           </WidgetContainer>
         );
       case 'optimization-status':

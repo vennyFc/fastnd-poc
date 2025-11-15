@@ -25,6 +25,7 @@ interface WidgetSettingsProps {
 const widgetLabels: Record<string, string> = {
   'projects': 'Projekte',
   'action-items': 'Action Items',
+  'npi-products': 'NPI Produkte',
   'statistics': 'Statistiken',
   'optimization-status': 'Optimierungsstatus',
   'added-products': 'Ergänzte Produkte',
