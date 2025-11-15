@@ -1000,7 +1000,10 @@ export default function Projects() {
         }
       }
 
+      // Invalidate and refetch data to update the UI immediately
       await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      await refetchOptimization();
+      
       toast.success(`Projekt-Status auf "${newStatus}" gesetzt`);
     } catch (error) {
       console.error('Error updating project status:', error);
