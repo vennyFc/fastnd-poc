@@ -1089,8 +1089,19 @@ export default function Projects() {
                             const appName = typeof project.applications[0] === 'string' 
                               ? project.applications[0] 
                               : project.applications[0]?.application || '';
+                            
+                            console.log('🔍 Application Quick View clicked:', appName);
+                            console.log('📊 Current project:', project.project_name);
+                            
+                            // Ensure selectedProject is set for the breadcrumb
+                            if (!selectedProject || selectedProject.id !== project.id) {
+                              setSelectedProject(project);
+                            }
+                            
                             setSelectedApplicationForQuickView(appName);
                             setApplicationQuickViewOpen(true);
+                            
+                            console.log('✅ Application Quick View state updated');
                           }}
                         >
                           • {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}
