@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('new');
@@ -211,12 +212,29 @@ export function ProjectsWidget() {
     return 'Prüfung';
   };
 
-  const renderProjectList = (projects: any[]) => {
+  const renderProjectList = (projects: any[], showViewedTime: boolean = false) => {
     if (projects.length === 0) {
       return <div className="text-center py-8 text-muted-foreground text-sm">
           Keine Projekte gefunden
         </div>;
     }
+    
+    // Helper function to get the most recent viewed_at time for a project
+    const getViewedTime = (project: any) => {
+      if (!showViewedTime || !recentHistory.length) return null;
+      
+      const relevantHistories = recentHistory.filter((rh) =>
+        project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
+      );
+      
+      if (relevantHistories.length === 0) return null;
+      
+      const mostRecent = relevantHistories.reduce((latest, current) =>
+        new Date(current.viewed_at) > new Date(latest.viewed_at) ? current : latest
+      );
+      
+      return mostRecent.viewed_at;
+    };
     return <div className="space-y-1">
         {projects.slice(0, 5).map((project: any) => (
           <div key={project.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
@@ -281,11 +299,18 @@ export function ProjectsWidget() {
                   >
                     {calculateProjectStatus(project)}
                   </Badge>
-                  {project.created_at && (
+                  {showViewedTime && getViewedTime(project) ? (
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {formatDistanceToNow(new Date(getViewedTime(project)!), { 
+                        addSuffix: true, 
+                        locale: de 
+                      })}
+                    </span>
+                  ) : project.created_at && !showViewedTime ? (
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {format(new Date(project.created_at), 'dd.MM.yyyy')}
                     </span>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </Link>
@@ -334,7 +359,7 @@ export function ProjectsWidget() {
           </TabsList>
 
           <TabsContent value="recent" className="mt-4">
-            {renderProjectList(recentProjects)}
+            {renderProjectList(recentProjects, true)}
           </TabsContent>
 
           <TabsContent value="favorites" className="mt-4">
