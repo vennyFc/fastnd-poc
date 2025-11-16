@@ -210,9 +210,10 @@ export function UserPreferencesPopover() {
           <Separator />
 
           <Tabs defaultValue="content" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="content">Inhalte</TabsTrigger>
               <TabsTrigger value="view">Ansicht</TabsTrigger>
+              <TabsTrigger value="functions">Funktionen</TabsTrigger>
             </TabsList>
 
             <TabsContent value="content" className="space-y-4 mt-4">
@@ -368,6 +369,20 @@ export function UserPreferencesPopover() {
                     <SelectItem value="30">30 Projekte</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={saveMutation.isPending}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
+              >
+                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+              </button>
+            </TabsContent>
+
+            <TabsContent value="functions" className="space-y-4 mt-4">
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Funktionseinstellungen folgen in Kürze
               </div>
 
               <button
