@@ -849,6 +849,7 @@ export type Database = {
       }
       user_preferences: {
         Row: {
+          auto_logoff_minutes: number
           created_at: string
           id: string
           manufacturers: string[] | null
@@ -859,6 +860,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          auto_logoff_minutes?: number
           created_at?: string
           id?: string
           manufacturers?: string[] | null
@@ -869,6 +871,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          auto_logoff_minutes?: number
           created_at?: string
           id?: string
           manufacturers?: string[] | null

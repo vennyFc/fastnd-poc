@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [autoLogoffMinutes, setAutoLogoffMinutes] = useState<number>(30);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,10 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check admin status
+        // Check admin status and load preferences
         if (session?.user) {
           setTimeout(() => {
             checkAdminStatus(session.user.id);
+            loadUserPreferences(session.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        loadUserPreferences(session.user.id);
       }
       setLoading(false);
     });
@@ -71,6 +74,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(false);
     }
   };
+
+  const loadUserPreferences = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('user_preferences')
+        .select('auto_logoff_minutes')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (data?.auto_logoff_minutes) {
+        setAutoLogoffMinutes(data.auto_logoff_minutes);
+      }
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+    }
+  };
+
+  // Auto logoff functionality
+  useEffect(() => {
+    if (!user) return;
+
+    let timeout: NodeJS.Timeout;
+    
+    const resetTimer = () => {
+      if (timeout) clearTimeout(timeout);
+      
+      // Set timeout based on user preference (convert minutes to milliseconds)
+      timeout = setTimeout(() => {
+        signOut();
+      }, autoLogoffMinutes * 60 * 1000);
+    };
+
+    // Reset timer on user activity
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initial timer
+    resetTimer();
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+      events.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user, autoLogoffMinutes]);
 
   const signIn = async (email: string, password: string) => {
     const { error, data } = await supabase.auth.signInWithPassword({
