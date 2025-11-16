@@ -36,9 +36,11 @@ export function ProjectsWidget() {
     }
   });
 
-  // Group projects by customer and project_name
+  // Group projects by customer and project_name and track all source IDs
   const allProjects = allProjectsRaw.reduce((acc: any[], project: any) => {
-    const existing = acc.find(p => p.customer === project.customer && p.project_name === project.project_name);
+    const existing = acc.find(
+      (p) => p.customer === project.customer && p.project_name === project.project_name
+    );
     if (existing) {
       // Add application and product if not already included
       if (project.application && !existing.applications?.includes(project.application)) {
@@ -46,6 +48,10 @@ export function ProjectsWidget() {
       }
       if (project.product && !existing.products?.includes(project.product)) {
         existing.products = [...(existing.products || []), project.product];
+      }
+      // Track all project ids that belong to this grouped project
+      if (!existing.sourceIds?.includes(project.id)) {
+        existing.sourceIds = [...(existing.sourceIds || []), project.id];
       }
       // Keep the earliest created_at date
       if (new Date(project.created_at) < new Date(existing.created_at)) {
@@ -55,7 +61,8 @@ export function ProjectsWidget() {
       acc.push({
         ...project,
         applications: project.application ? [project.application] : [],
-        products: project.product ? [project.product] : []
+        products: project.product ? [project.product] : [],
+        sourceIds: [project.id],
       });
     }
     return acc;
@@ -95,11 +102,23 @@ export function ProjectsWidget() {
   });
 
   // Get recently viewed projects with full data
-  const recentProjects = allProjects.filter((p: any) => recentHistory.some(rh => rh.project_id === p.id)).sort((a: any, b: any) => {
-    const aHistory = recentHistory.find(rh => rh.project_id === a.id);
-    const bHistory = recentHistory.find(rh => rh.project_id === b.id);
-    return new Date(bHistory?.viewed_at || 0).getTime() - new Date(aHistory?.viewed_at || 0).getTime();
-  });
+  const recentProjects = allProjects
+    .filter((p: any) =>
+      recentHistory.some((rh) => (p.sourceIds ? p.sourceIds.includes(rh.project_id) : rh.project_id === p.id))
+    )
+    .sort((a: any, b: any) => {
+      const aTime = Math.max(
+        ...recentHistory
+          .filter((rh) => (a.sourceIds ? a.sourceIds.includes(rh.project_id) : rh.project_id === a.id))
+          .map((rh) => new Date(rh.viewed_at).getTime())
+      );
+      const bTime = Math.max(
+        ...recentHistory
+          .filter((rh) => (b.sourceIds ? b.sourceIds.includes(rh.project_id) : rh.project_id === b.id))
+          .map((rh) => new Date(rh.viewed_at).getTime())
+      );
+      return bTime - aTime;
+    });
 
   // Get favorite projects with full data
   const favoriteProjects = allProjects.filter((p: any) => favoriteIds.includes(p.id));
