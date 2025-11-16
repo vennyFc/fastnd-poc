@@ -224,39 +224,52 @@ export function ProjectsWidget() {
               onClick={() => addToHistory(project.id)}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0 space-y-0.5">
+                <div className="flex-1 min-w-0 space-y-1">
                   <div className="font-medium text-sm truncate">{project.project_name}</div>
-                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
                     <Link 
                       to={`/projects?customer=${encodeURIComponent(project.customer)}`}
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline cursor-pointer"
                       onClick={(e) => e.stopPropagation()}
                     >
                       {project.customer}
                     </Link>
                     {project.applications && project.applications.length > 0 && (
-                      <span className="text-muted-foreground">•</span>
-                    )}
-                    {project.applications && project.applications.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {project.applications.map((appName: string, idx: number) => (
-                          <span key={idx}>
-                            <span className="text-primary hover:underline cursor-pointer">
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <div className="flex flex-wrap gap-1">
+                          {project.applications.map((appName: string, idx: number) => (
+                            <span key={idx} className="text-primary hover:underline cursor-pointer text-xs">
                               {appName}
+                              {idx < project.applications.length - 1 && ', '}
                             </span>
-                            {idx < project.applications.length - 1 && ', '}
-                          </span>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {project.products && project.products.length > 0 && (
+                      <>
+                        <span className="text-muted-foreground">•</span>
+                        <div className="flex flex-wrap gap-1">
+                          {project.products.map((productName: string, idx: number) => (
+                            <span key={idx} className="text-primary hover:underline cursor-pointer text-xs">
+                              {productName}
+                              {idx < project.products.length - 1 && ', '}
+                            </span>
+                          ))}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge 
                     variant={
-                      getOptimizationStatus(project) === 'Abgeschlossen' ? 'default' :
-                      getOptimizationStatus(project) === 'Validierung' ? 'secondary' :
-                      'outline'
+                      getOptimizationStatus(project) === 'Offen' ? 'outline' :
+                      getOptimizationStatus(project) === 'Neu' ? 'default' :
+                      getOptimizationStatus(project) === 'Prüfung' ? 'secondary' :
+                      getOptimizationStatus(project) === 'Validierung' ? 'default' :
+                      'secondary'
                     }
                     className="text-xs whitespace-nowrap"
                   >
