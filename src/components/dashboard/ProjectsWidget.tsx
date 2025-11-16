@@ -199,6 +199,21 @@ export function ProjectsWidget() {
       return mostRecent.viewed_at;
     };
     return <div className="space-y-1">
+        {/* Column Headers */}
+        <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
+          <div className="h-7 w-7" /> {/* Spacer for favorite button */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">Projekt / Kunde</div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="w-24 text-right">Status</span>
+                <span className="w-28 text-right">
+                  {showViewedTime ? 'Zuletzt angesehen' : 'Erstellt am'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
         {projects.slice(0, 5).map((project: any) => (
           <div key={project.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
             <Button
