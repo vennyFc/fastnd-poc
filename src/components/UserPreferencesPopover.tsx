@@ -19,6 +19,7 @@ export function UserPreferencesPopover() {
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [recentProjectsLimit, setRecentProjectsLimit] = useState<number>(10);
+  const [autoLogoffMinutes, setAutoLogoffMinutes] = useState<number>(30);
 
   // Fetch available applications
   const { data: applications } = useQuery({
@@ -89,12 +90,14 @@ export function UserPreferencesPopover() {
       setSelectedFamilies(preferences.product_families || []);
       setSelectedManufacturers(preferences.manufacturers || []);
       setRecentProjectsLimit(preferences.recent_projects_limit || 10);
+      setAutoLogoffMinutes(preferences.auto_logoff_minutes || 30);
     } else if (applications && productFamilies && manufacturers) {
       // Default: select all
       setSelectedApplications(applications);
       setSelectedFamilies(productFamilies);
       setSelectedManufacturers(manufacturers);
       setRecentProjectsLimit(10);
+      setAutoLogoffMinutes(30);
     }
   }, [preferences, applications, productFamilies, manufacturers]);
 
@@ -107,7 +110,7 @@ export function UserPreferencesPopover() {
         .from('user_preferences')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         await supabase
@@ -117,6 +120,7 @@ export function UserPreferencesPopover() {
             product_families: selectedFamilies,
             manufacturers: selectedManufacturers,
             recent_projects_limit: recentProjectsLimit,
+            auto_logoff_minutes: autoLogoffMinutes,
           })
           .eq('user_id', user.id);
       } else {
@@ -128,6 +132,7 @@ export function UserPreferencesPopover() {
             product_families: selectedFamilies,
             manufacturers: selectedManufacturers,
             recent_projects_limit: recentProjectsLimit,
+            auto_logoff_minutes: autoLogoffMinutes,
           });
       }
     },
@@ -381,8 +386,27 @@ export function UserPreferencesPopover() {
             </TabsContent>
 
             <TabsContent value="functions" className="space-y-4 mt-4">
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                Funktionseinstellungen folgen in Kürze
+              {/* Auto Logoff */}
+              <div>
+                <Label className="text-sm font-medium">Auto-Logoff Zeit</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Nach wie vielen Minuten ohne Aktivität sollen Sie automatisch abgemeldet werden?
+                </p>
+                <Select
+                  value={autoLogoffMinutes.toString()}
+                  onValueChange={(value) => setAutoLogoffMinutes(parseInt(value))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Zeit wählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 Minuten</SelectItem>
+                    <SelectItem value="10">10 Minuten</SelectItem>
+                    <SelectItem value="15">15 Minuten</SelectItem>
+                    <SelectItem value="30">30 Minuten</SelectItem>
+                    <SelectItem value="60">60 Minuten</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <button
