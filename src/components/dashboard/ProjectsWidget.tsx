@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Star, Package, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('new');
   const {
@@ -105,43 +107,179 @@ export function ProjectsWidget() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const newProjects = allProjects.filter((p: any) => new Date(p.created_at) > sevenDaysAgo);
 
+  // Fetch optimization records
+  const { data: optimizationRecords = [] } = useQuery({
+    queryKey: ['opps_optimization'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('opps_optimization')
+        .select('*');
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  const { isFavorite, toggleFavorite } = useFavorites('project');
+
   // Get projects to review (missing application or product info)
   const projectsToReview = allProjects.filter((p: any) => !p.applications || p.applications.length === 0 || !p.products || p.products.length === 0);
+  
+  // Calculate project optimization status
+  const calculateProjectStatus = (project: any) => {
+    const projectOptRecords = optimizationRecords.filter(
+      (rec: any) => rec.project_number === project.project_number
+    );
+    
+    if (projectOptRecords.length === 0) {
+      return 'Offen';
+    }
+    
+    // Registriert: Has at least one cross-sell or alternative with "Registriert" status
+    const hasRegistered = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_status === 'Registriert' || rec.alternative_status === 'Registriert'
+    );
+    if (hasRegistered) {
+      return 'Registriert';
+    }
+    
+    // Akzeptiert: Has at least one cross-sell or alternative with "Akzeptiert" status
+    const hasAccepted = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_status === 'Akzeptiert' || rec.alternative_status === 'Akzeptiert'
+    );
+    if (hasAccepted) {
+      return 'Akzeptiert';
+    }
+    
+    // Vorgeschlagen: Has at least one cross-sell or alternative with "Vorgeschlagen" status
+    const hasSuggested = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_status === 'Vorgeschlagen' || rec.alternative_status === 'Vorgeschlagen'
+    );
+    if (hasSuggested) {
+      return 'Vorgeschlagen';
+    }
+    
+    // Identifiziert: Has at least one cross-sell or alternative with "Identifiziert" status
+    const hasIdentified = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_status === 'Identifiziert' || rec.alternative_status === 'Identifiziert'
+    );
+    if (hasIdentified) {
+      return 'Identifiziert';
+    }
+    
+    // Neu: Has recently added cross-sell/alternative (within last 7 days)
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    const newestRecord = projectOptRecords
+      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
+      .sort((a: any, b: any) => {
+        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
+        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
+        return dateB.getTime() - dateA.getTime();
+      })[0];
+    
+    if (newestRecord) {
+      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
+      if (addedDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    // Default: Prüfung
+    return 'Prüfung';
+  };
+
   const renderProjectList = (projects: any[]) => {
     if (projects.length === 0) {
       return <div className="text-center py-8 text-muted-foreground text-sm">
           Keine Projekte gefunden
         </div>;
     }
-    return <div className="space-y-2">
-        {projects.slice(0, 5).map((project: any) => <Link key={project.id} to={`/projects?search=${encodeURIComponent(project.project_name)}`} className="block p-3 rounded-lg hover:bg-muted transition-colors" onClick={() => {
-        if (user) {
-          supabase.from('user_project_history').upsert([{
-            user_id: user.id,
-            project_id: project.id,
-            viewed_at: new Date().toISOString()
-          }], {
-            onConflict: 'user_id,project_id'
-          });
-        }
-      }}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{project.project_name}</div>
-                <div className="text-sm text-muted-foreground truncate">
-                  {project.customer}
+    return <div className="space-y-1">
+        {projects.slice(0, 5).map((project: any) => (
+          <div key={project.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(project.id);
+              }}
+            >
+              <Star
+                className={`h-3.5 w-3.5 ${
+                  isFavorite(project.id)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-muted-foreground'
+                }`}
+              />
+            </Button>
+            <Link 
+              to={`/projects?search=${encodeURIComponent(project.project_name)}`} 
+              className="flex-1 min-w-0"
+              onClick={() => {
+                if (user) {
+                  supabase.from('user_project_history').upsert([{
+                    user_id: user.id,
+                    project_id: project.id,
+                    viewed_at: new Date().toISOString()
+                  }], {
+                    onConflict: 'user_id,project_id'
+                  });
+                }
+              }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="font-medium text-sm truncate">{project.project_name}</div>
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    <Link 
+                      to={`/projects?customer=${encodeURIComponent(project.customer)}`}
+                      className="text-primary hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {project.customer}
+                    </Link>
+                    {project.applications && project.applications.length > 0 && (
+                      <span className="text-muted-foreground">•</span>
+                    )}
+                    {project.applications && project.applications.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {project.applications.map((appName: string, idx: number) => (
+                          <span key={idx}>
+                            <span className="text-primary hover:underline cursor-pointer">
+                              {appName}
+                            </span>
+                            {idx < project.applications.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge 
+                    variant={
+                      calculateProjectStatus(project) === 'Registriert' ? 'default' :
+                      calculateProjectStatus(project) === 'Akzeptiert' ? 'secondary' :
+                      'outline'
+                    }
+                    className="text-xs whitespace-nowrap"
+                  >
+                    {calculateProjectStatus(project)}
+                  </Badge>
+                  {project.created_at && (
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {format(new Date(project.created_at), 'dd.MM.yyyy')}
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground whitespace-nowrap">
-                {project.applications && project.applications.length > 0 && (
-                  <span className="font-medium text-base">
-                    App: {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}
-                  </span>
-                )}
-                {project.created_at && <span>{new Date(project.created_at).toLocaleDateString('de-DE')}</span>}
-              </div>
-            </div>
-          </Link>)}
+            </Link>
+          </div>
+        ))}
         {projects.length > 5 && <Link to="/projects" className="block text-center py-2 text-sm text-primary hover:underline">
             Alle {projects.length} Projekte anzeigen
           </Link>}
