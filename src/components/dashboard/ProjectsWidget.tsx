@@ -147,8 +147,8 @@ export function ProjectsWidget() {
   // Get projects to review (missing application or product info)
   const projectsToReview = allProjects.filter((p: any) => !p.applications || p.applications.length === 0 || !p.products || p.products.length === 0);
   
-  // Calculate project optimization status
-  const calculateProjectStatus = (project: any) => {
+  // Get optimization status for a project
+  const getOptimizationStatus = (project: any) => {
     const projectOptRecords = optimizationRecords.filter(
       (rec: any) => rec.project_number === project.project_number
     );
@@ -157,59 +157,22 @@ export function ProjectsWidget() {
       return 'Offen';
     }
     
-    // Registriert: Has at least one cross-sell or alternative with "Registriert" status
-    const hasRegistered = projectOptRecords.some((rec: any) => 
-      rec.cross_sell_status === 'Registriert' || rec.alternative_status === 'Registriert'
-    );
-    if (hasRegistered) {
-      return 'Registriert';
-    }
+    // Get the most advanced status from all records
+    const statusPriority: Record<string, number> = {
+      'Abgeschlossen': 5,
+      'Validierung': 4,
+      'Prüfung': 3,
+      'Offen': 2,
+      'Neu': 1
+    };
     
-    // Akzeptiert: Has at least one cross-sell or alternative with "Akzeptiert" status
-    const hasAccepted = projectOptRecords.some((rec: any) => 
-      rec.cross_sell_status === 'Akzeptiert' || rec.alternative_status === 'Akzeptiert'
-    );
-    if (hasAccepted) {
-      return 'Akzeptiert';
-    }
+    const highestStatus = projectOptRecords.reduce((highest, rec: any) => {
+      const currentPriority = statusPriority[rec.optimization_status] || 0;
+      const highestPriority = statusPriority[highest] || 0;
+      return currentPriority > highestPriority ? rec.optimization_status : highest;
+    }, 'Offen');
     
-    // Vorgeschlagen: Has at least one cross-sell or alternative with "Vorgeschlagen" status
-    const hasSuggested = projectOptRecords.some((rec: any) => 
-      rec.cross_sell_status === 'Vorgeschlagen' || rec.alternative_status === 'Vorgeschlagen'
-    );
-    if (hasSuggested) {
-      return 'Vorgeschlagen';
-    }
-    
-    // Identifiziert: Has at least one cross-sell or alternative with "Identifiziert" status
-    const hasIdentified = projectOptRecords.some((rec: any) => 
-      rec.cross_sell_status === 'Identifiziert' || rec.alternative_status === 'Identifiziert'
-    );
-    if (hasIdentified) {
-      return 'Identifiziert';
-    }
-    
-    // Neu: Has recently added cross-sell/alternative (within last 7 days)
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const newestRecord = projectOptRecords
-      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
-      .sort((a: any, b: any) => {
-        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
-        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
-        return dateB.getTime() - dateA.getTime();
-      })[0];
-    
-    if (newestRecord) {
-      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
-      if (addedDate > oneWeekAgo) {
-        return 'Neu';
-      }
-    }
-    
-    // Default: Prüfung
-    return 'Prüfung';
+    return highestStatus;
   };
 
   const renderProjectList = (projects: any[], showViewedTime: boolean = false) => {
@@ -291,13 +254,13 @@ export function ProjectsWidget() {
                 <div className="flex items-center gap-2 shrink-0">
                   <Badge 
                     variant={
-                      calculateProjectStatus(project) === 'Registriert' ? 'default' :
-                      calculateProjectStatus(project) === 'Akzeptiert' ? 'secondary' :
+                      getOptimizationStatus(project) === 'Abgeschlossen' ? 'default' :
+                      getOptimizationStatus(project) === 'Validierung' ? 'secondary' :
                       'outline'
                     }
                     className="text-xs whitespace-nowrap"
                   >
-                    {calculateProjectStatus(project)}
+                    {getOptimizationStatus(project)}
                   </Badge>
                   {showViewedTime && getViewedTime(project) ? (
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
