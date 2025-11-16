@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
+import { useProjectHistory } from '@/hooks/useProjectHistory';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('new');
   const {
@@ -18,6 +19,7 @@ export function ProjectsWidget() {
   const {
     favorites: favoriteIds
   } = useFavorites('project');
+  const { addToHistory } = useProjectHistory();
 
   // Fetch all projects
   const {
@@ -219,17 +221,7 @@ export function ProjectsWidget() {
             <Link 
               to={`/projects?search=${encodeURIComponent(project.project_name)}`} 
               className="flex-1 min-w-0"
-              onClick={() => {
-                if (user) {
-                  supabase.from('user_project_history').upsert([{
-                    user_id: user.id,
-                    project_id: project.id,
-                    viewed_at: new Date().toISOString()
-                  }], {
-                    onConflict: 'user_id,project_id'
-                  });
-                }
-              }}
+              onClick={() => addToHistory(project.id)}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-0.5">
