@@ -79,71 +79,65 @@ Deno.serve(async (req) => {
         effectiveTenantId = null
         console.log(`Super admin inviting super_admin: setting tenant_id to null`)
         
+        // --- START: Invite-or-Promote Logic ---
         // Check if user already exists
-        const { data: existingUserData, error: userError } = await supabaseAdmin.auth.admin.listUsers()
+        const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers()
         
-        let existingUser = null
-        if (!userError && existingUserData) {
-          existingUser = existingUserData.users.find(u => u.email === email)
+        if (listError) {
+          console.error('Error listing users:', listError)
+          return new Response(
+            JSON.stringify({ error: 'Fehler beim Prüfen bestehender Benutzer' }),
+            { 
+              status: 500, 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          )
         }
 
-        if (!existingUser) {
-          // Case A: User does not exist - send invite
-          const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            data: { 
-              tenant_id: null,
-              role: 'super_admin' 
-            }
-          })
+        const existingUser = usersData.users.find(u => u.email === email)
 
-          if (error) {
-            console.error('Error inviting new super admin:', error)
+        if (!existingUser) {
+          // Fall A: Benutzer existiert NICHT -> Einladen
+          console.log(`Neuer Super Admin wird eingeladen: ${email}`)
+          const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+            data: { tenant_id: null, role: 'super_admin' },
+          })
+          if (inviteError) {
+            console.error('Error inviting new super admin:', inviteError)
             return new Response(
-              JSON.stringify({ error: error.message }),
+              JSON.stringify({ error: inviteError.message }),
               { 
                 status: 400, 
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
               }
             )
           }
-
-          // Assign role to the new user
-          if (data.user) {
-            const { error: roleError } = await supabaseAdmin
-              .from('user_roles')
-              .insert({
-                user_id: data.user.id,
-                role: 'super_admin'
-              })
-
-            if (roleError) {
-              console.error('Error assigning super_admin role:', roleError)
-            }
-          }
-
           return new Response(
             JSON.stringify({ 
-              data,
+              data: inviteData,
               message: 'Einladung für neuen Super Admin gesendet'
             }),
             { 
+              status: 200,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             }
           )
-        } else {
-          // Case B: User exists - promote to super_admin
-          const userId = existingUser.id
 
-          // Check if user already has super_admin role
-          const { data: roleData, error: roleCheckError } = await supabaseAdmin
+        } else {
+          // Fall B: Benutzer EXISTIERT -> Befördern
+          const userId = existingUser.id
+          console.log(`Bestehender Benutzer ${userId} wird zum Super Admin befördert`)
+
+          // 1. Prüfen, ob er die Rolle schon hat
+          const { data: existingRole, error: roleError } = await supabaseAdmin
             .from('user_roles')
-            .select('*')
+            .select()
             .eq('user_id', userId)
             .eq('role', 'super_admin')
             .maybeSingle()
 
-          if (roleCheckError) {
-            console.error('Error checking existing role:', roleCheckError)
+          if (roleError) {
+            console.error('Error checking existing role:', roleError)
             return new Response(
               JSON.stringify({ error: 'Fehler beim Prüfen der Benutzerrolle' }),
               { 
@@ -152,13 +146,13 @@ Deno.serve(async (req) => {
               }
             )
           }
-
-          if (roleData) {
+          
+          if (existingRole) {
             return new Response(
               JSON.stringify({ 
-                message: 'Benutzer ist bereits Super Admin',
+                error: 'Benutzer ist bereits Super Admin',
                 userExists: true
-              }),
+              }), 
               { 
                 status: 409,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -166,14 +160,28 @@ Deno.serve(async (req) => {
             )
           }
 
-          // Add super_admin role
+          // 2. Profil aktualisieren (tenant_id auf null setzen)
+          const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ tenant_id: null })
+            .eq('id', userId)
+          
+          if (profileError) {
+            console.error('Error updating profile:', profileError)
+            return new Response(
+              JSON.stringify({ error: 'Fehler beim Aktualisieren des Profils' }),
+              { 
+                status: 500, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+
+          // 3. Neue Rolle hinzufügen
           const { error: insertRoleError } = await supabaseAdmin
             .from('user_roles')
-            .insert({
-              user_id: userId,
-              role: 'super_admin'
-            })
-
+            .insert({ user_id: userId, role: 'super_admin' })
+          
           if (insertRoleError) {
             console.error('Error adding super_admin role:', insertRoleError)
             return new Response(
@@ -185,28 +193,18 @@ Deno.serve(async (req) => {
             )
           }
 
-          // Set tenant_id to null in profiles
-          const { error: updateProfileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ tenant_id: null })
-            .eq('id', userId)
-
-          if (updateProfileError) {
-            console.error('Error updating profile tenant_id:', updateProfileError)
-            // Continue anyway, role was added successfully
-          }
-
           return new Response(
             JSON.stringify({ 
               message: 'Bestehender Benutzer zu Super Admin befördert',
               userId: userId
-            }),
+            }), 
             { 
               status: 200,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             }
           )
         }
+        // --- END: Invite-or-Promote Logic ---
       } else if (!effectiveTenantId) {
         // Non-super_admin invites require a tenant_id
         return new Response(
