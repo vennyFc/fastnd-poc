@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Shield, Plus, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Shield, Plus, Upload, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +27,12 @@ export default function SuperAdmin() {
     parsedData: [],
     fileName: '',
   });
+  const [inviteDialog, setInviteDialog] = useState<{
+    open: boolean;
+    tenantId: string;
+    tenantName: string;
+  } | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
   const queryClient = useQueryClient();
 
   // Fetch all tenants
@@ -166,6 +174,70 @@ export default function SuperAdmin() {
     });
   };
 
+  // Invite tenant admin mutation
+  const inviteUserMutation = useMutation({
+    mutationFn: async ({ email, tenantId }: { email: string; tenantId: string }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('invite-user', {
+        body: { 
+          email, 
+          tenantId,
+          role: 'tenant_admin' 
+        },
+      });
+
+      if (response.error) {
+        const errorData = response.data;
+        if (errorData?.error) {
+          const error = new Error(errorData.error);
+          (error as any).userExists = errorData.userExists;
+          throw error;
+        }
+        throw new Error(response.error.message || 'Einladung fehlgeschlagen');
+      }
+      
+      return response.data;
+    },
+    onSuccess: (data: any) => {
+      if (data?.userExists) {
+        toast.info(data.message || 'Benutzer ist bereits registriert');
+      } else {
+        toast.success('Tenant-Admin erfolgreich eingeladen');
+      }
+      setInviteEmail('');
+      setInviteDialog(null);
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+    },
+    onError: (error: any) => {
+      console.error('Invite error:', error);
+      const errorMessage = error.message || 'Einladung fehlgeschlagen';
+      toast.error('Fehler beim Einladen', {
+        description: errorMessage,
+      });
+    },
+  });
+
+  const handleInviteAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!inviteEmail.trim() || !inviteDialog) {
+      toast.error('Bitte geben Sie eine E-Mail-Adresse ein');
+      return;
+    }
+
+    if (!inviteEmail.includes('@')) {
+      toast.error('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+      return;
+    }
+
+    inviteUserMutation.mutate({ 
+      email: inviteEmail.trim(), 
+      tenantId: inviteDialog.tenantId 
+    });
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -248,6 +320,7 @@ export default function SuperAdmin() {
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Erstellt am</TableHead>
+                  <TableHead className="text-right">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,6 +340,20 @@ export default function SuperAdmin() {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setInviteDialog({
+                          open: true,
+                          tenantId: tenant.id,
+                          tenantName: tenant.name,
+                        })}
+                      >
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Admin einladen
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -292,6 +379,58 @@ export default function SuperAdmin() {
           fileName={uploadDialog.fileName}
         />
       )}
+
+      {/* Invite Tenant Admin Dialog */}
+      <Dialog 
+        open={inviteDialog?.open || false} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setInviteDialog(null);
+            setInviteEmail('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tenant-Admin einladen</DialogTitle>
+            <DialogDescription>
+              Laden Sie einen Administrator für den Mandanten "{inviteDialog?.tenantName}" ein.
+              Der eingeladene Benutzer erhält Admin-Rechte für diesen Mandanten.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleInviteAdmin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="invite-email">E-Mail-Adresse</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="admin@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setInviteDialog(null);
+                  setInviteEmail('');
+                }}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                type="submit"
+                disabled={inviteUserMutation.isPending}
+              >
+                {inviteUserMutation.isPending ? 'Lädt ein...' : 'Einladung senden'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
