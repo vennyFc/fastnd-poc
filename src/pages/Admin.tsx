@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
-  const { isAdmin, user } = useAuth();
+  const { isSuperAdmin, user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -228,7 +228,7 @@ export default function Admin() {
   }) || [];
 
   // Redirect if not admin (using useEffect to avoid hook ordering issues)
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     navigate('/');
     return null;
   }
