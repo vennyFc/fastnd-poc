@@ -130,11 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     
     if (!error && data.user) {
-      // Track login event
+      // Track login event (without PII)
       await supabase.from('user_access_logs').insert({
         user_id: data.user.id,
         event_type: 'login',
-        event_data: { email },
+        event_data: null,
         user_agent: navigator.userAgent,
       });
       
