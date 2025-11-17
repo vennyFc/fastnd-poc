@@ -71,7 +71,7 @@ export default function Products() {
     }
   }, [searchParams]);
 
-  const { data: products, isLoading } = useQuery({
+  const { data: tenantProducts, isLoading: isTenantProductsLoading } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       // @ts-ignore - Supabase types not yet updated
@@ -85,6 +85,28 @@ export default function Products() {
       return data as any[];
     },
   });
+
+  const { data: globalProducts, isLoading: isGlobalProductsLoading } = useQuery({
+    queryKey: ['global_products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('global_products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Combine tenant and global products
+  const allProducts = React.useMemo(() => {
+    const tProducts = tenantProducts || [];
+    const gProducts = globalProducts || [];
+    return [...tProducts, ...gProducts];
+  }, [tenantProducts, globalProducts]);
+
+  const isLoading = isTenantProductsLoading || isGlobalProductsLoading;
 
   // Fetch user preferences
   const { data: userPreferences } = useQuery({
@@ -124,11 +146,11 @@ export default function Products() {
 
   // Get unique product families and manufacturers
   const uniqueProductFamilies = Array.from(
-    new Set(products?.map((p: any) => p.product_family).filter(Boolean) || [])
+    new Set(allProducts?.map((p: any) => p.product_family).filter(Boolean) || [])
   ).sort();
 
   const uniqueManufacturers = Array.from(
-    new Set(products?.map((p: any) => p.manufacturer).filter(Boolean) || [])
+    new Set(allProducts?.map((p: any) => p.manufacturer).filter(Boolean) || [])
   ).sort();
 
   // Fetch product alternatives
@@ -155,7 +177,7 @@ export default function Products() {
       .filter((alt: any) => alt.base_product === productName);
     
     return alternatives.map((alt: any) => {
-      const product = products?.find((p: any) => p.product === alt.alternative_product);
+      const product = allProducts?.find((p: any) => p.product === alt.alternative_product);
       return product ? { ...product, similarity: alt.similarity } : null;
     }).filter(Boolean);
   };
@@ -249,7 +271,7 @@ export default function Products() {
     },
   });
 
-  const filteredProducts = products?.filter((product: any) => {
+  const filteredProducts = allProducts?.filter((product: any) => {
     // Search filter
     const matchesSearch = searchQuery.length < 2 ? true :
       product.product?.toLowerCase().includes(searchQuery.toLowerCase()) ||
