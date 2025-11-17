@@ -623,6 +623,7 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -630,6 +631,7 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -637,9 +639,18 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       removed_cross_sells: {
         Row: {
