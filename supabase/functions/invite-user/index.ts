@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get the email and tenantId from the request body
-    const { email, tenantId } = await req.json()
+    // Get the email, tenantId, and optional role from the request body
+    const { email, tenantId, role } = await req.json()
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return new Response(
         JSON.stringify({ error: 'Valid email required' }),
@@ -66,6 +66,10 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Validate role if provided
+    const allowedRoles = ['user', 'tenant_admin', 'super_admin']
+    const userRole = role && allowedRoles.includes(role) ? role : 'user'
+
     // Create admin client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -80,6 +84,19 @@ Deno.serve(async (req) => {
       console.error(`User ${user.id} with role ${adminInfo.role} attempted to invite user to tenant ${tenantId}, but has no permission`)
       return new Response(
         JSON.stringify({ error: 'Not authorized to invite users for this tenant' }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Check if admin can set the requested role
+    // Only super_admins can set roles other than 'user'
+    if (userRole !== 'user' && adminInfo.role !== 'super_admin') {
+      console.error(`User ${user.id} with role ${adminInfo.role} attempted to set role ${userRole}`)
+      return new Response(
+        JSON.stringify({ error: 'Not authorized to assign this role' }),
         { 
           status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -108,9 +125,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Invite the user using admin client with tenant metadata
+    // Invite the user using admin client with tenant metadata and role
     const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: { tenant_id: tenantId }
+      data: { 
+        tenant_id: tenantId,
+        role: userRole 
+      }
     })
 
     if (error) {
