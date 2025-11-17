@@ -44,11 +44,14 @@ export function ProjectsWidget() {
     );
     if (existing) {
       // Add application and product if not already included
-      if (project.application && !existing.applications?.includes(project.application)) {
-        existing.applications = [...(existing.applications || []), project.application];
+      // Ensure we extract string value in case application is an object
+      const appValue = typeof project.application === 'object' ? project.application?.application : project.application;
+      if (appValue && !existing.applications?.includes(appValue)) {
+        existing.applications = [...(existing.applications || []), String(appValue)];
       }
-      if (project.product && !existing.products?.includes(project.product)) {
-        existing.products = [...(existing.products || []), project.product];
+      const prodValue = typeof project.product === 'object' ? project.product?.product : project.product;
+      if (prodValue && !existing.products?.includes(prodValue)) {
+        existing.products = [...(existing.products || []), String(prodValue)];
       }
       // Track all project ids that belong to this grouped project
       if (!existing.sourceIds?.includes(project.id)) {
@@ -59,10 +62,13 @@ export function ProjectsWidget() {
         existing.created_at = project.created_at;
       }
     } else {
+      // Ensure we extract string values in case they are objects
+      const appValue = typeof project.application === 'object' ? project.application?.application : project.application;
+      const prodValue = typeof project.product === 'object' ? project.product?.product : project.product;
       acc.push({
         ...project,
-        applications: project.application ? [project.application] : [],
-        products: project.product ? [project.product] : [],
+        applications: appValue ? [String(appValue)] : [],
+        products: prodValue ? [String(prodValue)] : [],
         sourceIds: [project.id],
       });
     }
