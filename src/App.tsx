@@ -5,7 +5,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AdminRoute } from "./components/AdminRoute";
+import { TenantAdminRoute } from "./components/TenantAdminRoute";
+import { SuperAdminRoute } from "./components/SuperAdminRoute";
 import { MainLayout } from "./components/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import DataHub from "./pages/DataHub";
@@ -16,6 +17,7 @@ import Applications from "./pages/Applications";
 import Collections from "./pages/Collections";
 import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
+import SuperAdmin from "./pages/SuperAdmin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import AccessLogs from "./pages/AccessLogs";
@@ -112,21 +114,31 @@ const App = () => (
             <Route
               path="/admin"
               element={
-                <AdminRoute>
+                <TenantAdminRoute>
                   <MainLayout>
                     <Admin />
                   </MainLayout>
-                </AdminRoute>
+                </TenantAdminRoute>
+              }
+            />
+            <Route
+              path="/super-admin"
+              element={
+                <SuperAdminRoute>
+                  <MainLayout>
+                    <SuperAdmin />
+                  </MainLayout>
+                </SuperAdminRoute>
               }
             />
             <Route
               path="/access-logs"
               element={
-                <AdminRoute>
+                <SuperAdminRoute>
                   <MainLayout>
                     <AccessLogs />
                   </MainLayout>
-                </AdminRoute>
+                </SuperAdminRoute>
               }
             />
           <Route path="*" element={<NotFound />} />

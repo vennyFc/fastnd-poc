@@ -30,7 +30,7 @@ const adminMenuItems = [
 ];
 
 export function AppSidebar() {
-  const { signOut, isSuperAdmin } = useAuth();
+  const { signOut, isSuperAdmin, isTenantAdmin } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   
@@ -43,9 +43,13 @@ export function AppSidebar() {
     { title: t('nav.reports'), url: '/reports', icon: BarChart3 },
   ];
 
-  const adminMenuItems = [
+  const tenantAdminMenuItems = [
     { title: t('nav.admin'), url: '/admin', icon: Shield },
     { title: t('nav.dataHub'), url: '/data-hub', icon: Upload },
+  ];
+
+  const superAdminMenuItems = [
+    { title: 'Super Admin', url: '/super-admin', icon: Shield },
     { title: 'Access Logs', url: '/access-logs', icon: Activity },
   ];
 
@@ -79,12 +83,35 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {isTenantAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Tenant Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {tenantAdminMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={location.pathname === item.url || (item.url !== '/' && location.pathname.startsWith(item.url))} className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground">
+                      <NavLink
+                        to={item.url}
+                        end={item.url === '/'}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         {isSuperAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel>{t('nav.administration')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {adminMenuItems.map((item) => (
+                {superAdminMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={location.pathname === item.url || (item.url !== '/' && location.pathname.startsWith(item.url))} className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground">
                       <NavLink
