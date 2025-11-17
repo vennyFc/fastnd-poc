@@ -6,11 +6,14 @@ import { useNavigate } from 'react-router-dom';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  isAdmin: boolean;
+  tenantId: string | null;
+  isSuperAdmin: boolean;
+  isTenantAdmin: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  loadUserContext: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,7 +21,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoLogoffMinutes, setAutoLogoffMinutes] = useState<number>(30);
   const navigate = useNavigate();
@@ -30,14 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check admin status and load preferences
-        if (session?.user) {
+        // Load user context and preferences
+        if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(() => {
-            checkAdminStatus(session.user.id);
+            loadUserContext(session.user.id);
             loadUserPreferences(session.user.id);
           }, 0);
-        } else {
-          setIsAdmin(false);
+        } else if (event === 'SIGNED_OUT') {
+          setTenantId(null);
+          setIsSuperAdmin(false);
+          setIsTenantAdmin(false);
         }
       }
     );
@@ -48,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        checkAdminStatus(session.user.id);
+        loadUserContext(session.user.id);
         loadUserPreferences(session.user.id);
       }
       setLoading(false);
@@ -57,21 +64,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId: string) => {
+  const loadUserContext = async (userId: string) => {
     try {
       // @ts-ignore - Supabase types not yet updated after migration
       const { data, error } = await supabase
         // @ts-ignore
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'super_admin')
-        .maybeSingle();
+        .from('profiles')
+        .select('tenant_id, user_roles(role)')
+        .eq('id', userId)
+        .single();
       
-      setIsAdmin(!!data && !error);
+      if (error) {
+        console.error('Error loading user context:', error);
+        setTenantId(null);
+        setIsSuperAdmin(false);
+        setIsTenantAdmin(false);
+        return;
+      }
+
+      setTenantId(data?.tenant_id || null);
+      
+      const roles = data?.user_roles || [];
+      setIsSuperAdmin(roles.some((r: any) => r.role === 'super_admin'));
+      setIsTenantAdmin(roles.some((r: any) => r.role === 'tenant_admin'));
     } catch (error) {
-      console.error('Error checking admin status:', error);
-      setIsAdmin(false);
+      console.error('Error loading user context:', error);
+      setTenantId(null);
+      setIsSuperAdmin(false);
+      setIsTenantAdmin(false);
     }
   };
 
@@ -180,7 +200,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      tenantId, 
+      isSuperAdmin, 
+      isTenantAdmin, 
+      loading, 
+      signIn, 
+      signUp, 
+      signOut,
+      loadUserContext 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -30,7 +30,7 @@ const adminMenuItems = [
 ];
 
 export function AppSidebar() {
-  const { signOut, isAdmin } = useAuth();
+  const { signOut, isSuperAdmin } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   
@@ -79,7 +79,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
+        {isSuperAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel>{t('nav.administration')}</SidebarGroupLabel>
             <SidebarGroupContent>

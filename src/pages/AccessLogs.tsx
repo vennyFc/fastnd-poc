@@ -46,7 +46,7 @@ type SortField = 'created_at' | 'event_type' | 'email' | 'page_path';
 type SortDirection = 'asc' | 'desc';
 
 export default function AccessLogs() {
-  const { isAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [logs, setLogs] = useState<AccessLog[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -272,7 +272,7 @@ export default function AccessLogs() {
     </div>
   );
 
-  if (!isAdmin) {
+  if (!isSuperAdmin) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-muted-foreground">Keine Berechtigung</p>
