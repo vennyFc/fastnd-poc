@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +50,7 @@ export default function Applications() {
     }
   }, [searchParams]);
 
-  const { data: applications, isLoading } = useQuery({
+  const { data: tenantApplications, isLoading: isTenantApplicationsLoading } = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,6 +62,28 @@ export default function Applications() {
       return data as any[];
     },
   });
+
+  const { data: globalApplications, isLoading: isGlobalApplicationsLoading } = useQuery({
+    queryKey: ['global_applications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('global_applications')
+        .select('*')
+        .order('application', { ascending: true });
+      
+      if (error) throw error;
+      return data as any[];
+    },
+  });
+
+  // Combine tenant and global applications
+  const allApplications = React.useMemo(() => {
+    const tApps = tenantApplications || [];
+    const gApps = globalApplications || [];
+    return [...tApps, ...gApps];
+  }, [tenantApplications, globalApplications]);
+
+  const isLoading = isTenantApplicationsLoading || isGlobalApplicationsLoading;
 
   // Fetch application insights
   const { data: appInsights = [] } = useQuery({
@@ -76,7 +98,7 @@ export default function Applications() {
     },
   });
 
-  const filteredApplications = applications?.filter((app: any) => {
+  const filteredApplications = allApplications?.filter((app: any) => {
     if (searchQuery.length < 2) return true;
     return (
       app.application?.toLowerCase().includes(searchQuery.toLowerCase()) ||

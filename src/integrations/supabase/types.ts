@@ -531,6 +531,38 @@ export type Database = {
           },
         ]
       }
+      global_applications: {
+        Row: {
+          application: string
+          created_at: string
+          id: string
+          related_product: string
+          upload_id: string | null
+        }
+        Insert: {
+          application: string
+          created_at?: string
+          id?: string
+          related_product: string
+          upload_id?: string | null
+        }
+        Update: {
+          application?: string
+          created_at?: string
+          id?: string
+          related_product?: string
+          upload_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_applications_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "upload_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_products: {
         Row: {
           created_at: string
