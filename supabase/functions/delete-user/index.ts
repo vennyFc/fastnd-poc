@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.0";
+import { getAdminRoleAndTenant, hasPermissionForTenant, verifyUserBelongsToTenant } from '../_shared/admin.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,46 +72,12 @@ serve(async (req) => {
       );
     }
 
-    // Get admin roles and profile
-    const { data: adminRoles, error: rolesError } = await supabaseAdmin
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id);
+    // Get admin role and tenant information
+    const adminInfo = await getAdminRoleAndTenant(supabaseAdmin, user.id);
 
-    if (rolesError || !adminRoles || adminRoles.length === 0) {
-      console.error('Error fetching admin roles:', rolesError);
-      return new Response(
-        JSON.stringify({ error: 'Keine Admin-Berechtigung' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const isSuperAdmin = adminRoles.some(r => r.role === 'super_admin');
-    const isTenantAdmin = adminRoles.some(r => r.role === 'tenant_admin');
-
-    // Get admin's tenant
-    const { data: adminProfile, error: adminProfileError } = await supabaseAdmin
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', user.id)
-      .single();
-
-    if (adminProfileError || !adminProfile) {
-      console.error('Error fetching admin profile:', adminProfileError);
-      return new Response(
-        JSON.stringify({ error: 'Profil des Admins nicht gefunden' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Check if super_admin or tenant_admin for the correct tenant
-    if (!isSuperAdmin && (!isTenantAdmin || adminProfile.tenant_id !== tenantId)) {
+    // Check if admin has permission for this tenant
+    if (!hasPermissionForTenant(adminInfo, tenantId)) {
+      console.error(`User ${user.id} with role ${adminInfo.role} attempted to delete user from tenant ${tenantId}, but has no permission`);
       return new Response(
         JSON.stringify({ error: 'Keine Berechtigung für diesen Mandanten' }),
         { 
@@ -121,24 +88,10 @@ serve(async (req) => {
     }
 
     // Verify the user to be deleted belongs to this tenant
-    const { data: userProfile, error: userProfileError } = await supabaseAdmin
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', userId)
-      .single();
-
-    if (userProfileError || !userProfile) {
-      console.error('Error fetching user profile:', userProfileError);
-      return new Response(
-        JSON.stringify({ error: 'Benutzer-Profil nicht gefunden' }),
-        { 
-          status: 404, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    if (userProfile.tenant_id !== tenantId) {
+    const userBelongsToTenant = await verifyUserBelongsToTenant(supabaseAdmin, userId, tenantId);
+    
+    if (!userBelongsToTenant) {
+      console.error(`User ${userId} does not belong to tenant ${tenantId}`);
       return new Response(
         JSON.stringify({ error: 'Benutzer gehört nicht zu diesem Mandanten' }),
         { 
