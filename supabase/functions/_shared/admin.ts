@@ -24,10 +24,12 @@ export async function getAdminRoleAndTenant(
     throw new Error('Could not fetch user roles');
   }
 
-  // Determine the highest role
+  // Determine the highest role - prioritize super_admin
   let role: 'super_admin' | 'tenant_admin' | 'user' | null = null;
   if (roles && roles.length > 0) {
-    if (roles.some(r => r.role === 'super_admin')) {
+    // Always prioritize super_admin if present
+    const isSuperAdmin = roles.some(r => r.role === 'super_admin');
+    if (isSuperAdmin) {
       role = 'super_admin';
     } else if (roles.some(r => r.role === 'tenant_admin')) {
       role = 'tenant_admin';
