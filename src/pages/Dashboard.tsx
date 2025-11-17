@@ -32,7 +32,7 @@ export default function Dashboard() {
       if (!user) return false;
       
       const { data } = await supabase
-        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
+        .rpc('has_role', { _user_id: user.id, _role: 'super_admin' });
       
       return data || false;
     },

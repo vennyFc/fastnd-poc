@@ -975,7 +975,7 @@ export type Database = {
       access_event_type: "login" | "logout" | "page_view" | "action"
       action_item_priority: "low" | "medium" | "high"
       action_item_status: "open" | "in_progress" | "completed"
-      app_role: "admin" | "user"
+      app_role: "super_admin" | "tenant_admin" | "user"
       collection_visibility: "private" | "selected" | "organization"
       optimization_status:
         | "Neu"
@@ -1129,7 +1129,7 @@ export const Constants = {
       access_event_type: ["login", "logout", "page_view", "action"],
       action_item_priority: ["low", "medium", "high"],
       action_item_status: ["open", "in_progress", "completed"],
-      app_role: ["admin", "user"],
+      app_role: ["super_admin", "tenant_admin", "user"],
       collection_visibility: ["private", "selected", "organization"],
       optimization_status: [
         "Neu",
