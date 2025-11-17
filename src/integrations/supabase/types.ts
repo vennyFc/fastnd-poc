@@ -531,6 +531,66 @@ export type Database = {
           },
         ]
       }
+      global_products: {
+        Row: {
+          created_at: string
+          id: string
+          manufacturer: string | null
+          manufacturer_link: string | null
+          product: string
+          product_description: string | null
+          product_family: string | null
+          product_inventory: number | null
+          product_lead_time: number | null
+          product_lifecycle:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new: string | null
+          product_price: number | null
+          product_top: string | null
+          updated_at: string
+          upload_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manufacturer?: string | null
+          manufacturer_link?: string | null
+          product: string
+          product_description?: string | null
+          product_family?: string | null
+          product_inventory?: number | null
+          product_lead_time?: number | null
+          product_lifecycle?:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new?: string | null
+          product_price?: number | null
+          product_top?: string | null
+          updated_at?: string
+          upload_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manufacturer?: string | null
+          manufacturer_link?: string | null
+          product?: string
+          product_description?: string | null
+          product_family?: string | null
+          product_inventory?: number | null
+          product_lead_time?: number | null
+          product_lifecycle?:
+            | Database["public"]["Enums"]["product_lifecycle_status"]
+            | null
+          product_new?: string | null
+          product_price?: number | null
+          product_top?: string | null
+          updated_at?: string
+          upload_id?: string | null
+        }
+        Relationships: []
+      }
       opps_optimization: {
         Row: {
           alternative_date_added: string | null
