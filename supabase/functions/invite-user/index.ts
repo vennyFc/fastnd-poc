@@ -104,6 +104,13 @@ Deno.serve(async (req) => {
       )
     }
 
+    // If inviting a super_admin, tenant_id must be null
+    let effectiveTenantId = tenantId
+    if (userRole === 'super_admin') {
+      effectiveTenantId = null
+      console.log(`Inviting super_admin: setting tenant_id to null`)
+    }
+
     // First, check if user already exists
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
     
@@ -128,7 +135,7 @@ Deno.serve(async (req) => {
     // Invite the user using admin client with tenant metadata and role
     const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
       data: { 
-        tenant_id: tenantId,
+        tenant_id: effectiveTenantId,
         role: userRole 
       }
     })

@@ -16,6 +16,7 @@ import * as XLSX from 'xlsx';
 
 export default function SuperAdmin() {
   const [newTenantName, setNewTenantName] = useState('');
+  const [newSuperAdminEmail, setNewSuperAdminEmail] = useState('');
   const [uploadDialog, setUploadDialog] = useState<{
     open: boolean;
     dataType: { id: string; title: string; fields: string[] } | null;
@@ -238,12 +239,98 @@ export default function SuperAdmin() {
     });
   };
 
+  // Invite super admin mutation
+  const inviteSuperAdminMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('invite-user', {
+        body: { 
+          email, 
+          tenantId: null,
+          role: 'super_admin' 
+        },
+      });
+
+      if (response.error) {
+        const errorData = response.data;
+        if (errorData?.error) {
+          const error = new Error(errorData.error);
+          (error as any).userExists = errorData.userExists;
+          throw error;
+        }
+        throw new Error(response.error.message || 'Einladung fehlgeschlagen');
+      }
+      
+      return response.data;
+    },
+    onSuccess: (data: any) => {
+      if (data?.userExists) {
+        toast.info(data.message || 'Benutzer ist bereits registriert');
+      } else {
+        toast.success('Super-Admin erfolgreich eingeladen');
+      }
+      setNewSuperAdminEmail('');
+    },
+    onError: (error: any) => {
+      console.error('Invite super admin error:', error);
+      const errorMessage = error.message || 'Einladung fehlgeschlagen';
+      toast.error('Fehler beim Einladen', {
+        description: errorMessage,
+      });
+    },
+  });
+
+  const handleInviteSuperAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newSuperAdminEmail.trim()) {
+      toast.error('Bitte geben Sie eine E-Mail-Adresse ein');
+      return;
+    }
+
+    if (!newSuperAdminEmail.includes('@')) {
+      toast.error('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+      return;
+    }
+
+    inviteSuperAdminMutation.mutate(newSuperAdminEmail.trim());
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
         <Shield className="h-8 w-8 text-primary" />
         <h1 className="text-3xl font-bold">Super Admin</h1>
       </div>
+
+      {/* Invite Super Admin */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Super-Admin einladen
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleInviteSuperAdmin} className="flex gap-4">
+            <Input
+              type="email"
+              placeholder="super-admin@example.com"
+              value={newSuperAdminEmail}
+              onChange={(e) => setNewSuperAdminEmail(e.target.value)}
+              className="max-w-md"
+            />
+            <Button 
+              type="submit" 
+              disabled={inviteSuperAdminMutation.isPending}
+            >
+              {inviteSuperAdminMutation.isPending ? 'Lädt ein...' : 'Super-Admin einladen'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Create New Tenant */}
       <Card>
