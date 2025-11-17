@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Admin() {
-  const { isSuperAdmin, user } = useAuth();
+  const { isSuperAdmin, user, tenantId } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -26,15 +26,18 @@ export default function Admin() {
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch all users with their profiles and roles
+  // Fetch users in the same tenant
   const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
+    queryKey: ['admin-users', tenantId],
     queryFn: async () => {
+      if (!tenantId) return [];
+
       // @ts-ignore
       const { data: profiles, error: profilesError } = await supabase
         // @ts-ignore
         .from('profiles')
         .select('*')
+        .eq('tenant_id', tenantId)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -53,6 +56,7 @@ export default function Admin() {
         roles: roles?.filter((r: any) => r.user_id === profile.id) || [],
       })) || [];
     },
+    enabled: !!tenantId,
   });
 
   // Invite user mutation
@@ -60,9 +64,10 @@ export default function Admin() {
     mutationFn: async (email: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      if (!tenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email },
+        body: { email, tenantId },
       });
 
       // Check for errors - the error object contains the actual error response
@@ -136,9 +141,10 @@ export default function Admin() {
     mutationFn: async (email: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      if (!tenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email },
+        body: { email, tenantId },
       });
 
       if (response.error) {
@@ -160,9 +166,10 @@ export default function Admin() {
     mutationFn: async (userId: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
+      if (!tenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('delete-user', {
-        body: { userId },
+        body: { userId, tenantId },
       });
 
       if (response.error) {
