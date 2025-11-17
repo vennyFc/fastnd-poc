@@ -175,7 +175,7 @@ export default function FileUploadDialog({
 }: FileUploadDialogProps) {
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
-  const { user } = useAuth();
+  const { user, tenantId } = useAuth();
 
   // Collect all unique columns from all rows, not just the first one
   const fileColumns = parsedData.length > 0 
@@ -233,6 +233,14 @@ export default function FileUploadDialog({
       return;
     }
 
+    if (!tenantId) {
+      console.error('No tenant ID found for user');
+      toast.error('Fehler: Kein Mandant zugeordnet', {
+        description: 'Der Upload kann nicht durchgeführt werden, da kein Mandant zugeordnet ist.',
+      });
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -264,11 +272,12 @@ export default function FileUploadDialog({
       }
       const uploadId = uploadHistoryData.id;
 
-      // Transform data according to mapping and add upload_id
+      // Transform data according to mapping and add upload_id and tenant_id
       const transformedData = parsedData.map(row => {
         const transformed: Record<string, any> = { 
           user_id: session.user.id,
-          upload_id: uploadId 
+          upload_id: uploadId,
+          tenant_id: tenantId
         };
         dataType.fields.forEach(field => {
           const sourceColumn = columnMapping[field];
