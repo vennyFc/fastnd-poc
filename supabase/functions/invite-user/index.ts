@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.76.0'
 import { corsHeaders } from '../_shared/cors.ts'
+import { getAdminRoleAndTenant, hasPermissionForTenant } from '../_shared/admin.ts'
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -31,32 +32,13 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Verify the user is authenticated and is an admin
+    // Verify the user is authenticated
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { 
           status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    // Check if user has admin role
-    const { data: roles, error: rolesError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle()
-
-    if (rolesError || !roles) {
-      console.error('Role check error:', rolesError)
-      return new Response(
-        JSON.stringify({ error: 'Forbidden: Admin access required' }),
-        { 
-          status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -84,45 +66,18 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Verify admin has permission for this tenant
-    const { data: adminProfile, error: profileError } = await supabaseClient
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', user.id)
-      .single()
+    // Create admin client with service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    if (profileError || !adminProfile) {
-      console.error('Error fetching admin profile:', profileError)
-      return new Response(
-        JSON.stringify({ error: 'Could not verify admin tenant' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
+    // Get admin role and tenant information
+    const adminInfo = await getAdminRoleAndTenant(supabaseAdmin, user.id)
 
-    // Check if admin is super_admin or tenant_admin for this tenant
-    const { data: adminRoles, error: adminRolesError } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-
-    if (adminRolesError) {
-      console.error('Error fetching admin roles:', adminRolesError)
-      return new Response(
-        JSON.stringify({ error: 'Could not verify admin roles' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    const isSuperAdmin = adminRoles?.some(r => r.role === 'super_admin')
-    const isTenantAdmin = adminRoles?.some(r => r.role === 'tenant_admin')
-
-    if (!isSuperAdmin && (!isTenantAdmin || adminProfile.tenant_id !== tenantId)) {
+    // Check if admin has permission for this tenant
+    if (!hasPermissionForTenant(adminInfo, tenantId)) {
+      console.error(`User ${user.id} with role ${adminInfo.role} attempted to invite user to tenant ${tenantId}, but has no permission`)
       return new Response(
         JSON.stringify({ error: 'Not authorized to invite users for this tenant' }),
         { 
@@ -131,12 +86,6 @@ Deno.serve(async (req) => {
         }
       )
     }
-
-    // Create admin client with service role key
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
 
     // First, check if user already exists
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers()
