@@ -7,6 +7,91 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { z } from 'zod';
+
+// Validation schemas for each data type
+const customerProjectSchema = z.object({
+  customer: z.string().trim().min(1, 'Customer name required').max(255, 'Customer name too long'),
+  project_name: z.string().trim().min(1, 'Project name required').max(255, 'Project name too long'),
+  application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
+  product: z.string().trim().min(1, 'Product required').max(255, 'Product too long'),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const customerSchema = z.object({
+  customer_name: z.string().trim().min(1, 'Customer name required').max(255, 'Customer name too long'),
+  industry: z.string().trim().max(255, 'Industry too long').nullable(),
+  country: z.string().trim().max(100, 'Country too long').nullable(),
+  city: z.string().trim().max(100, 'City too long').nullable(),
+  customer_category: z.string().trim().max(100, 'Category too long').nullable(),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const applicationSchema = z.object({
+  application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
+  related_product: z.string().trim().min(1, 'Related product required').max(255, 'Related product too long'),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const productSchema = z.object({
+  product: z.string().trim().min(1, 'Product name required').max(255, 'Product name too long'),
+  product_family: z.string().trim().max(100, 'Product family too long').nullable(),
+  product_description: z.string().trim().max(2000, 'Description too long (max 2000 chars)').nullable(),
+  manufacturer: z.string().trim().max(255, 'Manufacturer too long').nullable(),
+  product_price: z.number().nonnegative('Price must be positive').nullable(),
+  product_inventory: z.number().int('Inventory must be integer').nonnegative('Inventory must be positive').nullable(),
+  product_lead_time: z.number().int('Lead time must be integer').nonnegative('Lead time must be positive').nullable(),
+  product_lifecycle: z.enum(['Coming Soon', 'Active', 'NFND', 'Discontinued']).nullable(),
+  product_new: z.string().max(10).nullable(),
+  product_top: z.string().max(10).nullable(),
+  manufacturer_link: z.string().trim().url('Invalid URL format').max(500, 'URL too long').or(z.literal('')).nullable(),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const crossSellSchema = z.object({
+  application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
+  base_product: z.string().trim().min(1, 'Base product required').max(255, 'Base product too long'),
+  cross_sell_product: z.string().trim().min(1, 'Cross-sell product required').max(255, 'Cross-sell product too long'),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const productAlternativeSchema = z.object({
+  base_product: z.string().trim().min(1, 'Base product required').max(255, 'Base product too long'),
+  alternative_product: z.string().trim().min(1, 'Alternative product required').max(255, 'Alternative product too long'),
+  similarity: z.number().min(0, 'Similarity must be 0-1').max(1, 'Similarity must be 0-1').nullable(),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const appInsightSchema = z.object({
+  application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
+  application_description: z.string().trim().max(2000, 'Description too long (max 2000 chars)').nullable(),
+  application_block_diagram: z.string().trim().max(5000, 'Block diagram too long').nullable(),
+  application_trends: z.string().trim().max(2000, 'Trends too long (max 2000 chars)').nullable(),
+  industry: z.string().trim().max(255, 'Industry too long').nullable(),
+  product_family_1: z.string().trim().max(100, 'Product family too long').nullable(),
+  product_family_2: z.string().trim().max(100, 'Product family too long').nullable(),
+  product_family_3: z.string().trim().max(100, 'Product family too long').nullable(),
+  product_family_4: z.string().trim().max(100, 'Product family too long').nullable(),
+  product_family_5: z.string().trim().max(100, 'Product family too long').nullable(),
+  user_id: z.string().uuid(),
+  upload_id: z.string().uuid(),
+}).passthrough();
+
+const schemaMap: Record<string, z.ZodSchema> = {
+  'customer_projects': customerProjectSchema,
+  'customers': customerSchema,
+  'applications': applicationSchema,
+  'products': productSchema,
+  'cross_sells': crossSellSchema,
+  'product_alternatives': productAlternativeSchema,
+  'app_insights': appInsightSchema,
+};
 
 // Calculate similarity between two strings (0-1, where 1 is identical)
 const calculateSimilarity = (str1: string, str2: string): number => {
@@ -225,7 +310,42 @@ export default function FileUploadDialog({
         return transformed;
       });
 
-      // Handle products table with upsert logic
+      // Validate transformed data using appropriate schema
+      const schema = schemaMap[dataType.id];
+      if (!schema) {
+        throw new Error(`No validation schema found for ${dataType.id}`);
+      }
+
+      const validationErrors: string[] = [];
+      const validatedData = transformedData.map((item, index) => {
+        try {
+          return schema.parse(item);
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            const rowNum = index + 1;
+            const fieldErrors = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+            validationErrors.push(`Row ${rowNum}: ${fieldErrors}`);
+          }
+          return null;
+        }
+      }).filter(item => item !== null);
+
+      // If there are validation errors, show them and abort
+      if (validationErrors.length > 0) {
+        const errorMessage = validationErrors.length > 5 
+          ? `${validationErrors.length} validation errors found. First 5:\n${validationErrors.slice(0, 5).join('\n')}`
+          : `Validation errors:\n${validationErrors.join('\n')}`;
+        
+        toast.error('Data validation failed', {
+          description: errorMessage,
+          duration: 10000,
+        });
+        setIsUploading(false);
+        return;
+      }
+
+      // Use validated data for insertion
+      const dataToInsert = validatedData;
       if (dataType.id === 'products') {
         // Fetch existing products for the user
         const { data: existingProducts, error: fetchError } = await supabase
@@ -246,7 +366,7 @@ export default function FileUploadDialog({
         const toUpdate: any[] = [];
 
         // Separate data into inserts and updates
-        transformedData.forEach(item => {
+        dataToInsert.forEach(item => {
           const key = `${item.product?.toLowerCase() || ''}_${item.manufacturer?.toLowerCase() || ''}`;
           const existingId = existingMap.get(key);
           
@@ -299,7 +419,7 @@ export default function FileUploadDialog({
           // @ts-ignore
           .from(dataType.id)
           // @ts-ignore
-          .insert(transformedData);
+          .insert(dataToInsert);
 
         if (error) throw error;
 
