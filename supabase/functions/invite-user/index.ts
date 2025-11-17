@@ -56,16 +56,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    if (!tenantId) {
-      return new Response(
-        JSON.stringify({ error: 'Tenant ID required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
     // Validate role if provided
     const allowedRoles = ['user', 'tenant_admin', 'super_admin']
     const userRole = role && allowedRoles.includes(role) ? role : 'user'
