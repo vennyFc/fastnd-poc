@@ -108,11 +108,11 @@ export default function Admin() {
           .from('user_roles')
           .delete()
           .eq('user_id', userId)
-          .eq('role', 'admin');
+          .eq('role', 'super_admin');
         if (error) throw error;
       } else {
         // Add admin role
-        const roleData: any = { user_id: userId, role: 'admin' };
+        const roleData: any = { user_id: userId, role: 'super_admin' };
         // @ts-ignore
         const { error } = await supabase
           // @ts-ignore
