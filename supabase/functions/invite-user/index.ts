@@ -62,13 +62,71 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Get the email from the request body
-    const { email } = await req.json()
+    // Get the email and tenantId from the request body
+    const { email, tenantId } = await req.json()
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return new Response(
         JSON.stringify({ error: 'Valid email required' }),
         { 
           status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    if (!tenantId) {
+      return new Response(
+        JSON.stringify({ error: 'Tenant ID required' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Verify admin has permission for this tenant
+    const { data: adminProfile, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('tenant_id')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !adminProfile) {
+      console.error('Error fetching admin profile:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Could not verify admin tenant' }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    // Check if admin is super_admin or tenant_admin for this tenant
+    const { data: adminRoles, error: adminRolesError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+
+    if (adminRolesError) {
+      console.error('Error fetching admin roles:', adminRolesError)
+      return new Response(
+        JSON.stringify({ error: 'Could not verify admin roles' }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    const isSuperAdmin = adminRoles?.some(r => r.role === 'super_admin')
+    const isTenantAdmin = adminRoles?.some(r => r.role === 'tenant_admin')
+
+    if (!isSuperAdmin && (!isTenantAdmin || adminProfile.tenant_id !== tenantId)) {
+      return new Response(
+        JSON.stringify({ error: 'Not authorized to invite users for this tenant' }),
+        { 
+          status: 403, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -101,8 +159,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Invite the user using admin client
-    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email)
+    // Invite the user using admin client with tenant metadata
+    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      data: { tenant_id: tenantId }
+    })
 
     if (error) {
       console.error('Error inviting user:', error)
@@ -131,6 +191,21 @@ Deno.serve(async (req) => {
     }
 
     console.log('User invited successfully:', email)
+
+    // Assign 'user' role to the new user (not admin)
+    if (data.user) {
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: data.user.id,
+          role: 'user'
+        })
+
+      if (roleError) {
+        console.error('Error assigning user role:', roleError)
+        // Don't fail the invitation, but log the error
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
