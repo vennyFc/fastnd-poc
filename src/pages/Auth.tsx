@@ -28,12 +28,15 @@ const nameSchema = z.string()
   .max(100, 'Name darf maximal 100 Zeichen lang sein');
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgotPassword'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
+
+  const isLogin = authMode === 'login';
+  const isForgotPassword = authMode === 'forgotPassword';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,22 +89,95 @@ export default function Auth() {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Validate email
+      const emailValidation = emailSchema.safeParse(email);
+      if (!emailValidation.success) {
+        toast.error(emailValidation.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase.auth.resetPasswordForEmail(emailValidation.data, {
+        redirectTo: `${window.location.origin}/update-password`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Passwort-Reset-Link wurde an Ihre E-Mail gesendet');
+        setEmail('');
+      }
+    } catch (error: any) {
+      toast.error('Ein Fehler ist aufgetreten');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center mb-4">
-            <img src={fastndLogo} alt="FASTND Logo" className="h-10" />
-          </div>
-          <CardTitle className="text-2xl">
-            {isLogin ? 'Anmelden' : 'Registrieren'}
-          </CardTitle>
-          <CardDescription>
-            {isLogin
-              ? 'Geben Sie Ihre Anmeldedaten ein'
-              : 'Erstellen Sie ein neues Konto'}
-          </CardDescription>
-        </CardHeader>
+      {isForgotPassword ? (
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center mb-4">
+              <img src={fastndLogo} alt="FASTND Logo" className="h-10" />
+            </div>
+            <CardTitle className="text-2xl">Passwort zurücksetzen</CardTitle>
+            <CardDescription>
+              Geben Sie Ihre E-Mail-Adresse ein, um einen Reset-Link zu erhalten
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">E-Mail</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="ihre.email@beispiel.de"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Reset-Link senden
+              </Button>
+            </form>
+            <div className="mt-4 text-center text-sm">
+              <button
+                onClick={() => setAuthMode('login')}
+                className="text-primary hover:underline"
+                disabled={loading}
+              >
+                Zurück zur Anmeldung
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center mb-4">
+              <img src={fastndLogo} alt="FASTND Logo" className="h-10" />
+            </div>
+            <CardTitle className="text-2xl">
+              {isLogin ? 'Anmelden' : 'Registrieren'}
+            </CardTitle>
+            <CardDescription>
+              {isLogin
+                ? 'Geben Sie Ihre Anmeldedaten ein'
+                : 'Erstellen Sie ein neues Konto'}
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
@@ -149,19 +225,33 @@ export default function Auth() {
               {isLogin ? 'Anmelden' : 'Registrieren'}
             </Button>
           </form>
+          {isLogin && (
+            <div className="mt-3 text-center text-sm">
+              <button
+                type="button"
+                onClick={() => setAuthMode('forgotPassword')}
+                className="text-primary hover:underline"
+                disabled={loading}
+              >
+                Passwort vergessen?
+              </button>
+            </div>
+          )}
           <div className="mt-4 text-center text-sm">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => setAuthMode(isLogin ? 'signup' : 'login')}
               className="text-primary hover:underline"
+              disabled={loading}
             >
               {isLogin
                 ? 'Noch kein Konto? Jetzt registrieren'
-                : 'Bereits registriert? Anmelden'}
+                : 'Bereits ein Konto? Anmelden'}
             </button>
           </div>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

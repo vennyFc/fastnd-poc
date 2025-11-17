@@ -19,6 +19,7 @@ import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
 import Auth from "./pages/Auth";
+import UpdatePassword from "./pages/UpdatePassword";
 import NotFound from "./pages/NotFound";
 import AccessLogs from "./pages/AccessLogs";
 
@@ -31,6 +32,7 @@ const App = () => (
         <LanguageProvider>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/update-password" element={<UpdatePassword />} />
           <Route
             path="/"
             element={
