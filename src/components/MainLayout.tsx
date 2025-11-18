@@ -1,7 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, ArrowRight, Building2 } from 'lucide-react';
+import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -14,6 +14,7 @@ import { NotificationPopover } from './NotificationPopover';
 import { useAccessTracking } from '@/hooks/useAccessTracking';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -27,6 +28,9 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Show warning if Super Admin has no tenant selected
+  const showTenantWarning = isSuperAdmin && !activeTenant;
   
   const getInitials = () => {
     if (!user?.email) return 'U';
@@ -230,21 +234,16 @@ export function MainLayout({ children }: MainLayoutProps) {
               {isSuperAdmin ? (
                 <div className="w-[200px]">
                   <Select
-                    value={activeTenant?.id || "all"}
+                    value={activeTenant?.id || ""}
                     onValueChange={(value) => {
-                      if (value === "all") {
-                        setActiveTenant(null);
-                      } else {
-                        const tenant = allTenants?.find(t => t.id === value);
-                        if (tenant) setActiveTenant(tenant);
-                      }
+                      const tenant = allTenants?.find(t => t.id === value);
+                      if (tenant) setActiveTenant(tenant);
                     }}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Global View" />
+                    <SelectTrigger className={!activeTenant ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Mandant auswählen..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">🌐 Globale Ansicht</SelectItem>
                       {allTenants?.map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.id}>
                           {tenant.name}
@@ -472,7 +471,19 @@ export function MainLayout({ children }: MainLayoutProps) {
           </header>
 
           <main className="flex-1 overflow-auto">
-            {children}
+            {showTenantWarning ? (
+              <div className="p-6">
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Kein Mandant ausgewählt</AlertTitle>
+                  <AlertDescription>
+                    Bitte wählen Sie einen Mandanten aus, um das Dashboard und andere Funktionen nutzen zu können.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            ) : (
+              children
+            )}
           </main>
         </div>
       </div>
