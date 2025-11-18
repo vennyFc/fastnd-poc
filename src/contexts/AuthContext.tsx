@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   tenantId: string | null;
+  activeTenant: { id: string; name: string } | null;
   isSuperAdmin: boolean;
   isTenantAdmin: boolean;
   loading: boolean;
@@ -14,6 +15,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loadUserContext: (userId: string) => Promise<void>;
+  setActiveTenant: (tenant: { id: string; name: string } | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [activeTenant, setActiveTenant] = useState<{ id: string; name: string } | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,13 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         // @ts-ignore
         .from('profiles')
-        .select('tenant_id, user_roles(role)')
+        .select('tenant_id, tenant:tenants(id, name), user_roles(role)')
         .eq('id', userId)
         .single();
       
       if (error) {
         console.error('Error loading user context:', error);
         setTenantId(null);
+        setActiveTenant(null);
         setIsSuperAdmin(false);
         setIsTenantAdmin(false);
         return;
@@ -84,12 +88,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setTenantId(data?.tenant_id || null);
       
+      // Set active tenant for non-super-admin users
+      if (data?.tenant) {
+        // @ts-ignore
+        setActiveTenant(data.tenant);
+      } else {
+        setActiveTenant(null);
+      }
+      
       const roles = data?.user_roles || [];
       setIsSuperAdmin(roles.some((r: any) => r.role === 'super_admin'));
       setIsTenantAdmin(roles.some((r: any) => r.role === 'tenant_admin'));
     } catch (error) {
       console.error('Error loading user context:', error);
       setTenantId(null);
+      setActiveTenant(null);
       setIsSuperAdmin(false);
       setIsTenantAdmin(false);
     }
@@ -203,14 +216,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{ 
       user, 
       session, 
-      tenantId, 
+      tenantId,
+      activeTenant,
       isSuperAdmin, 
       isTenantAdmin, 
       loading, 
       signIn, 
       signUp, 
       signOut,
-      loadUserContext 
+      loadUserContext,
+      setActiveTenant
     }}>
       {children}
     </AuthContext.Provider>
