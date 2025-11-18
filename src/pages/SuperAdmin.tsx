@@ -6,28 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Shield, Plus, Upload, UserPlus } from 'lucide-react';
+import { Shield, Plus, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
-import GlobalFileUploadDialog from '@/components/GlobalFileUploadDialog';
-import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
 
 export default function SuperAdmin() {
   const [newTenantName, setNewTenantName] = useState('');
   const [newSuperAdminEmail, setNewSuperAdminEmail] = useState('');
-  const [uploadDialog, setUploadDialog] = useState<{
-    open: boolean;
-    dataType: { id: string; title: string; fields: string[] } | null;
-    parsedData: any[];
-    fileName: string;
-  }>({
-    open: false,
-    dataType: null,
-    parsedData: [],
-    fileName: '',
-  });
   const [inviteDialog, setInviteDialog] = useState<{
     open: boolean;
     tenantId: string;
@@ -83,96 +69,6 @@ export default function SuperAdmin() {
     }
 
     createTenantMutation.mutate(newTenantName.trim());
-  };
-
-  const handleFileUpload = (tableName: 'global_products' | 'global_applications') => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv,.xlsx,.xls';
-    
-    input.onchange = async (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const fileName = file.name;
-      const fileExtension = fileName.split('.').pop()?.toLowerCase();
-
-      try {
-        let parsedData: any[] = [];
-
-        if (fileExtension === 'csv') {
-          Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-              parsedData = results.data;
-              openUploadDialog(tableName, parsedData, fileName);
-            },
-            error: (error) => {
-              toast.error('Fehler beim Parsen der CSV-Datei', {
-                description: error.message,
-              });
-            },
-          });
-        } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-          const data = await file.arrayBuffer();
-          const workbook = XLSX.read(data);
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          parsedData = XLSX.utils.sheet_to_json(firstSheet);
-          openUploadDialog(tableName, parsedData, fileName);
-        } else {
-          toast.error('Nicht unterstütztes Dateiformat', {
-            description: 'Bitte laden Sie eine CSV- oder Excel-Datei hoch',
-          });
-        }
-      } catch (error: any) {
-        toast.error('Fehler beim Lesen der Datei', {
-          description: error.message,
-        });
-      }
-    };
-
-    input.click();
-  };
-
-  const openUploadDialog = (tableName: string, parsedData: any[], fileName: string) => {
-    const dataTypes = {
-      global_products: {
-        id: 'global_products',
-        title: 'Globale Produkte',
-        fields: [
-          'product',
-          'product_family',
-          'product_description',
-          'manufacturer',
-          'manufacturer_link',
-          'product_price',
-          'product_inventory',
-          'product_lead_time',
-          'product_lifecycle',
-          'product_new',
-          'product_top',
-        ],
-      },
-      global_applications: {
-        id: 'global_applications',
-        title: 'Globale Applikationen',
-        fields: ['application', 'related_product'],
-      },
-    };
-
-    const dataType = dataTypes[tableName as keyof typeof dataTypes];
-    if (!dataType) {
-      toast.error('Unbekannter Datentyp');
-      return;
-    }
-
-    setUploadDialog({
-      open: true,
-      dataType,
-      parsedData,
-      fileName,
-    });
   };
 
   // Invite tenant admin mutation
@@ -358,32 +254,6 @@ export default function SuperAdmin() {
         </CardContent>
       </Card>
 
-      {/* Global Data Upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Globale Daten hochladen
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex gap-4">
-          <Button
-            onClick={() => handleFileUpload('global_products')}
-            variant="outline"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Globale Produkte hochladen
-          </Button>
-          <Button
-            onClick={() => handleFileUpload('global_applications')}
-            variant="outline"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Globale Applikationen hochladen
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Tenants List */}
       <Card>
         <CardHeader>
@@ -453,19 +323,6 @@ export default function SuperAdmin() {
           )}
         </CardContent>
       </Card>
-
-      {/* Upload Dialog */}
-      {uploadDialog.dataType && (
-        <GlobalFileUploadDialog
-          open={uploadDialog.open}
-          onOpenChange={(open) =>
-            setUploadDialog((prev) => ({ ...prev, open }))
-          }
-          dataType={uploadDialog.dataType}
-          parsedData={uploadDialog.parsedData}
-          fileName={uploadDialog.fileName}
-        />
-      )}
 
       {/* Invite Tenant Admin Dialog */}
       <Dialog 
