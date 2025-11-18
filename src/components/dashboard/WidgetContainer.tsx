@@ -7,9 +7,11 @@ interface WidgetContainerProps {
   children: ReactNode;
   onDragStart: (e: React.DragEvent, index: number) => void;
   onDragEnter: (e: React.DragEvent, index: number) => void;
+  onDragLeave: (e: React.DragEvent, index: number) => void;
   onDragEnd: (e: React.DragEvent) => void;
   index: number;
   isDragging: boolean;
+  isDropTarget?: boolean;
   size?: WidgetSize;
 }
 
@@ -23,9 +25,11 @@ export function WidgetContainer({
   children,
   onDragStart,
   onDragEnter,
+  onDragLeave,
   onDragEnd,
   index,
   isDragging,
+  isDropTarget = false,
   size = 'full',
 }: WidgetContainerProps) {
   return (
@@ -33,10 +37,22 @@ export function WidgetContainer({
       draggable
       onDragStart={(e) => onDragStart(e, index)}
       onDragEnter={(e) => onDragEnter(e, index)}
+      onDragLeave={(e) => onDragLeave(e, index)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => e.preventDefault()}
       className={`relative group ${isDragging ? 'opacity-50 scale-95' : ''} ${sizeClasses[size]} transition-all duration-200`}
     >
+      {/* Drop Zone Indicator */}
+      {isDropTarget && !isDragging && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <div className="h-full w-full rounded-lg border-2 border-primary border-dashed bg-primary/5 animate-pulse flex items-center justify-center">
+            <div className="text-primary font-medium text-sm bg-background/90 px-3 py-1 rounded-full shadow-lg">
+              Widget hier platzieren
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="absolute -left-6 top-4 opacity-30 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10 bg-background/80 backdrop-blur-sm rounded p-1">
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
