@@ -34,12 +34,13 @@ export function WidgetContainer({
       onDragStart={(e) => onDragStart(e, index)}
       onDragEnter={(e) => onDragEnter(e, index)}
       onDragEnd={onDragEnd}
-      className={`relative group ${isDragging ? 'opacity-50' : ''} ${sizeClasses[size]}`}
+      onDragOver={(e) => e.preventDefault()}
+      className={`relative group ${isDragging ? 'opacity-50 scale-95' : ''} ${sizeClasses[size]} transition-all duration-200`}
     >
-      <div className="absolute -left-8 top-4 opacity-0 group-hover:opacity-100 transition-opacity cursor-move z-10">
-        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      <div className="absolute -left-6 top-4 opacity-30 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing z-10 bg-background/80 backdrop-blur-sm rounded p-1">
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
-      <div className="h-full">
+      <div className={`h-full rounded-lg border transition-all ${isDragging ? 'border-primary border-dashed' : 'border-transparent'}`}>
         {children}
       </div>
     </div>
