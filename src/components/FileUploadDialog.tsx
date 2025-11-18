@@ -190,7 +190,7 @@ export default function FileUploadDialog({
 
   // Auto-map columns when dialog opens or data changes
   useEffect(() => {
-    if (open && fileColumns.length > 0 && dataType.fields.length > 0) {
+    if (open && fileColumns.length > 0 && dataType && dataType.fields.length > 0) {
       console.log('🔧 FileUploadDialog - Auto-mapping columns');
       console.log('📁 File columns:', fileColumns);
       console.log('📝 Required fields:', dataType.fields);
@@ -224,9 +224,15 @@ export default function FileUploadDialog({
         console.warn('⚠️ Unmapped required fields:', unmappedFields);
       }
     }
-  }, [open, fileColumns.length, dataType.fields]);
+  }, [open, fileColumns.length, dataType?.fields]);
 
   const handleUpload = async () => {
+    // Guard clause: Ensure dataType exists
+    if (!dataType || !dataType.fields) {
+      toast.error('Fehler: Datentyp nicht korrekt initialisiert');
+      return;
+    }
+
     // Validate all required fields are mapped
     const unmappedFields = dataType.fields.filter(field => !columnMapping[field]);
     if (unmappedFields.length > 0) {
@@ -455,49 +461,57 @@ export default function FileUploadDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Spalten zuordnen - {dataType.title}</DialogTitle>
-          <DialogDescription>
-            Ordnen Sie die Spalten aus Ihrer Datei den erwarteten Feldern zu
-          </DialogDescription>
-        </DialogHeader>
+        {!dataType ? (
+          <div className="p-4">
+            <p className="text-muted-foreground">Datentyp wird geladen...</p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Spalten zuordnen - {dataType.title}</DialogTitle>
+              <DialogDescription>
+                Ordnen Sie die Spalten aus Ihrer Datei den erwarteten Feldern zu
+              </DialogDescription>
+            </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {dataType.fields.map((field) => (
-            <div key={field} className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor={field} className="text-right font-semibold">
-                {field}
-              </Label>
-              <Select
-                value={columnMapping[field] || ''}
-                onValueChange={(value) =>
-                  setColumnMapping({ ...columnMapping, [field]: value })
-                }
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Spalte auswählen..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {fileColumns.map((col) => (
-                    <SelectItem key={col} value={col}>
-                      {col}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-4 py-4">
+              {dataType.fields.map((field) => (
+                <div key={field} className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor={field} className="text-right font-semibold">
+                    {field}
+                  </Label>
+                  <Select
+                    value={columnMapping[field] || ''}
+                    onValueChange={(value) =>
+                      setColumnMapping({ ...columnMapping, [field]: value })
+                    }
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Spalte auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fileColumns.map((col) => (
+                        <SelectItem key={col} value={col}>
+                          {col}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Abbrechen
-          </Button>
-          <Button onClick={handleUpload} disabled={isUploading}>
-            {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Hochladen
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Abbrechen
+              </Button>
+              <Button onClick={handleUpload} disabled={isUploading}>
+                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Hochladen
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
