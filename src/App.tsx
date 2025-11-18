@@ -113,16 +113,16 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-            <Route
-              path="/admin"
-              element={
-                <TenantAdminRoute>
-                  <MainLayout>
-                    <Admin />
-                  </MainLayout>
-                </TenantAdminRoute>
-              }
-            />
+          <Route
+            path="/admin/:tenantId?"
+            element={
+              <TenantAdminRoute>
+                <MainLayout>
+                  <Admin />
+                </MainLayout>
+              </TenantAdminRoute>
+            }
+          />
             <Route
               path="/super-admin"
               element={

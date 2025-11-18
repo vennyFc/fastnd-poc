@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function TenantAdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, isTenantAdmin } = useAuth();
+  const { user, loading, isTenantAdmin, isSuperAdmin } = useAuth();
 
   if (loading) {
     return (
@@ -17,7 +17,7 @@ export function TenantAdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!isTenantAdmin) {
+  if (!isTenantAdmin && !isSuperAdmin) {
     return <Navigate to="/" replace />;
   }
 
