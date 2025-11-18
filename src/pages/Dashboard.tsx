@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   
   const { widgets, toggleWidget, reorderWidgets, resetWidgets, setWidgetSize } = useWidgets();
   const { user } = useAuth();
@@ -133,13 +134,22 @@ export default function Dashboard() {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
     
+    setDragOverIndex(index);
     reorderWidgets(draggedIndex, index);
     setDraggedIndex(index);
+  };
+
+  const handleDragLeave = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragOverIndex === index) {
+      setDragOverIndex(null);
+    }
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
     e.preventDefault();
     setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const renderWidget = (widget: typeof widgets[0], index: number) => {
@@ -151,8 +161,10 @@ export default function Dashboard() {
             id="search"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -173,8 +185,10 @@ export default function Dashboard() {
             id="projects"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -188,8 +202,10 @@ export default function Dashboard() {
             id="action-items"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -203,8 +219,10 @@ export default function Dashboard() {
             id="statistics"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -222,8 +240,10 @@ export default function Dashboard() {
             id="npi-products"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -237,8 +257,10 @@ export default function Dashboard() {
             id="optimization-status"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -254,8 +276,10 @@ export default function Dashboard() {
             id="login-activity"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -271,8 +295,10 @@ export default function Dashboard() {
             id="access-stats"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -286,8 +312,10 @@ export default function Dashboard() {
             id="added-products"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
@@ -301,8 +329,10 @@ export default function Dashboard() {
             id="getting-started"
             index={index}
             isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
           >
