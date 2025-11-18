@@ -26,7 +26,7 @@ type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price'
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
-  const { activeTenant, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, activeTenant } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);

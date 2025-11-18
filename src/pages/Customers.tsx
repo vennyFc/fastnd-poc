@@ -31,7 +31,7 @@ type SortField = 'customer_name' | 'industry' | 'country' | 'city' | 'customer_c
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Customers() {
-  const { activeTenant, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, activeTenant } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
