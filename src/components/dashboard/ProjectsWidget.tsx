@@ -246,8 +246,8 @@ export function ProjectsWidget() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="font-medium text-sm truncate">{project.project_name}</div>
-                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                  <div className="font-medium text-base truncate">{project.project_name}</div>
+                  <div className="flex items-center gap-2 flex-wrap text-sm">
                     <Link 
                       to={`/projects?customer=${encodeURIComponent(project.customer)}`}
                       className="text-primary hover:underline"
@@ -279,19 +279,19 @@ export function ProjectsWidget() {
                       getOptimizationStatus(project) === 'Validierung' ? 'secondary' :
                       'outline'
                     }
-                    className="text-xs whitespace-nowrap"
+                    className="text-sm whitespace-nowrap"
                   >
                     {getOptimizationStatus(project)}
                   </Badge>
                   {showViewedTime && getViewedTime(project) ? (
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
                       {formatDistanceToNow(new Date(getViewedTime(project)!), { 
                         addSuffix: true, 
                         locale: de 
                       })}
                     </span>
                   ) : project.created_at && !showViewedTime ? (
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
                       {format(new Date(project.created_at), 'dd.MM.yyyy')}
                     </span>
                   ) : null}
