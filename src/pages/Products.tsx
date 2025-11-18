@@ -168,12 +168,19 @@ export default function Products() {
 
   // Fetch product alternatives
   const { data: productAlternatives = [] } = useQuery({
-    queryKey: ['product_alternatives'],
+    queryKey: ['product_alternatives', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('product_alternatives')
         .select('base_product, alternative_product, similarity');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
 
+      const { data, error } = await query;
+      
       if (error) throw error;
       return data || [];
     },
