@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
         console.log(`Super admin inviting super_admin: setting tenant_id to null`)
         
         // --- START: Invite-or-Promote Logic ---
-        // Check if user already exists
+        // Prüfen, ob der Benutzer bereits existiert
         const { data: usersData, error: listError } = await supabaseAdmin.auth.admin.listUsers()
         
         if (listError) {
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
         const existingUser = usersData.users.find(u => u.email === email)
 
         if (!existingUser) {
-          // Fall A: Benutzer existiert NICHT -> Einladen
+          // Fall A: Benutzer existiert NICHT -> Einladen (Standard-Flow)
           console.log(`Neuer Super Admin wird eingeladen: ${email}`)
           const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
             data: { tenant_id: null, role: 'super_admin' },
@@ -160,7 +160,7 @@ Deno.serve(async (req) => {
             )
           }
 
-          // 2. Profil aktualisieren (tenant_id auf null setzen)
+          // 2. Profil aktualisieren (tenant_id auf null setzen, da Super Admins global sind)
           const { error: profileError } = await supabaseAdmin
             .from('profiles')
             .update({ tenant_id: null })
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
 
           return new Response(
             JSON.stringify({ 
-              message: 'Bestehender Benutzer zu Super Admin befördert',
+              message: 'Bestehender Benutzer erfolgreich zum Super Admin befördert',
               userId: userId
             }), 
             { 
