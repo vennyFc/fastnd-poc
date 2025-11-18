@@ -125,6 +125,7 @@ export default function Dashboard() {
     },
   });
 
+  // Drag and Drop handlers for widget reordering
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
