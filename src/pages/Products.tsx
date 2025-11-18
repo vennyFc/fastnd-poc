@@ -134,13 +134,18 @@ export default function Products() {
 
   // Fetch applications
   const { data: applications = [] } = useQuery({
-    queryKey: ['applications'],
+    queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore
-      const { data, error } = await supabase
-        // @ts-ignore
+      let query = supabase
         .from('applications')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data || [];
