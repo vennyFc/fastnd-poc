@@ -183,11 +183,18 @@ export default function Projects() {
 
   // Fetch cross-sells
   const { data: crossSells = [] } = useQuery({
-    queryKey: ['cross_sells'],
+    queryKey: ['cross_sells', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('cross_sells')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
@@ -196,11 +203,18 @@ export default function Projects() {
 
   // Fetch product details
   const { data: productDetails = [] } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
@@ -209,11 +223,18 @@ export default function Projects() {
 
   // Fetch product alternatives
   const { data: productAlternatives = [] } = useQuery({
-    queryKey: ['product_alternatives'],
+    queryKey: ['product_alternatives', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('product_alternatives')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
@@ -222,11 +243,18 @@ export default function Projects() {
 
   // Fetch application insights
   const { data: appInsights = [], isLoading: appInsightsLoading } = useQuery({
-    queryKey: ['app_insights'],
+    queryKey: ['app_insights', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('app_insights')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
