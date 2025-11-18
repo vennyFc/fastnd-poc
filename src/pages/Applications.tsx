@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,6 +27,7 @@ type SortField = 'application' | 'related_product';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Applications() {
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -51,12 +53,18 @@ export default function Applications() {
   }, [searchParams]);
 
   const { data: tenantApplications, isLoading: isTenantApplicationsLoading } = useQuery({
-    queryKey: ['applications'],
+    queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('applications')
-        .select('*')
-        .order('application', { ascending: true });
+        .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query.order('application', { ascending: true });
       
       if (error) throw error;
       return data as any[];
@@ -87,11 +95,18 @@ export default function Applications() {
 
   // Fetch application insights
   const { data: appInsights = [] } = useQuery({
-    queryKey: ['app_insights'],
+    queryKey: ['app_insights', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('app_insights')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
