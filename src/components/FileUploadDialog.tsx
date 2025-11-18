@@ -164,7 +164,7 @@ interface FileUploadDialogProps {
   };
   parsedData: any[];
   fileName: string;
-  forcedTenantId?: string;
+  targetTenantId?: string | null;
 }
 
 export default function FileUploadDialog({
@@ -173,12 +173,15 @@ export default function FileUploadDialog({
   dataType,
   parsedData,
   fileName,
-  forcedTenantId,
+  targetTenantId,
 }: FileUploadDialogProps) {
   const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
   const { user, tenantId } = useAuth();
-  const effectiveTenantId = forcedTenantId || tenantId;
+  
+  // If targetTenantId is explicitly provided (even if null for global), use it
+  // Otherwise fall back to the user's tenant
+  const effectiveTenantId = targetTenantId !== undefined ? targetTenantId : tenantId;
 
   // Collect all unique columns from all rows, not just the first one
   const fileColumns = parsedData.length > 0 
@@ -236,7 +239,9 @@ export default function FileUploadDialog({
       return;
     }
 
-    if (!tenantId && !forcedTenantId) {
+    // Only validate tenant requirement if targetTenantId was not explicitly set
+    // (targetTenantId can be null for global uploads)
+    if (targetTenantId === undefined && !tenantId) {
       console.error('No tenant ID found for user');
       toast.error('Fehler: Kein Mandant zugeordnet', {
         description: 'Der Upload kann nicht durchgeführt werden, da kein Mandant zugeordnet ist.',

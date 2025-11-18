@@ -7,7 +7,6 @@ import { supabase } from '@/integrations/supabase/client';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import FileUploadDialog from '@/components/FileUploadDialog';
-import GlobalFileUploadDialog from '@/components/GlobalFileUploadDialog';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -25,7 +24,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const dataTypes = [
+// Pure tenant-specific data types (no global option)
+const tenantOnlyDataTypes = [
   {
     id: 'customer_projects',
     title: 'Kundenprojekte',
@@ -40,6 +40,17 @@ const dataTypes = [
     fields: ['customer_name', 'industry', 'country', 'city', 'customer_category'],
     icon: FileSpreadsheet,
   },
+  {
+    id: 'app_insights',
+    title: 'App Insights',
+    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry, Product_Family_1-5',
+    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
+    icon: FileSpreadsheet,
+  },
+];
+
+// Data types that can be uploaded either for a tenant OR globally
+const mixedDataTypes = [
   {
     id: 'applications',
     title: 'Applikationen',
@@ -68,14 +79,10 @@ const dataTypes = [
     fields: ['base_product', 'alternative_product', 'similarity'],
     icon: FileSpreadsheet,
   },
-  {
-    id: 'app_insights',
-    title: 'App Insights',
-    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry, Product_Family_1-5',
-    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
-    icon: FileSpreadsheet,
-  },
 ];
+
+// All data types combined (for regular tenant admins)
+const dataTypes = [...tenantOnlyDataTypes, ...mixedDataTypes];
 
 export default function DataHub() {
   const { isSuperAdmin } = useAuth();
@@ -93,8 +100,6 @@ export default function DataHub() {
   // Super Admin specific states
   const [uploadScope, setUploadScope] = useState<'tenant' | 'global'>('tenant');
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
-  const [showGlobalUpload, setShowGlobalUpload] = useState(false);
-  const [globalUploadTable, setGlobalUploadTable] = useState<'global_products' | 'global_applications'>('global_products');
 
   // Fetch tenants for Super Admin
   const { data: tenants } = useQuery({
@@ -339,66 +344,6 @@ export default function DataHub() {
     }
   };
 
-  const handleGlobalFileSelect = (tableName: 'global_products' | 'global_applications') => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv,.xlsx,.xls';
-    
-    input.onchange = async (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const fileName = file.name;
-      const fileExtension = fileName.split('.').pop()?.toLowerCase();
-
-      try {
-        let parsedData: any[] = [];
-
-        if (fileExtension === 'csv') {
-          Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-              parsedData = results.data;
-              setGlobalUploadTable(tableName);
-              setParsedData(parsedData);
-              setFileName(fileName);
-              setShowGlobalUpload(true);
-            },
-            error: (error) => {
-              toast.error('Fehler beim Parsen der CSV-Datei', {
-                description: error.message,
-              });
-            },
-          });
-        } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const data = new Uint8Array(e.target?.result as ArrayBuffer);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            parsedData = XLSX.utils.sheet_to_json(firstSheet);
-            
-            setGlobalUploadTable(tableName);
-            setParsedData(parsedData);
-            setFileName(fileName);
-            setShowGlobalUpload(true);
-          };
-          reader.readAsArrayBuffer(file);
-        } else {
-          toast.error('Ungültiges Dateiformat', {
-            description: 'Bitte verwenden Sie CSV- oder Excel-Dateien.',
-          });
-        }
-      } catch (error) {
-        console.error('Error reading file:', error);
-        toast.error('Fehler beim Lesen der Datei');
-      }
-    };
-    
-    input.click();
-  };
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -453,7 +398,7 @@ export default function DataHub() {
             {selectedTenantId && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {dataTypes.map((dataType) => (
+                  {[...tenantOnlyDataTypes, ...mixedDataTypes].map((dataType) => (
                     <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
                       <CardHeader>
                         <div className="flex items-center gap-3 mb-2">
@@ -492,52 +437,41 @@ export default function DataHub() {
           </TabsContent>
 
           <TabsContent value="global" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="shadow-card hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Database className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-lg">Globale Produkte</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Laden Sie die globale Produktdatenbank hoch
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    onClick={() => handleGlobalFileSelect('global_products')}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    XLS/CSV hochladen
-                  </Button>
-                </CardContent>
-              </Card>
+            <Card className="shadow-card mb-6">
+              <CardHeader>
+                <CardTitle>Globale Daten hochladen</CardTitle>
+                <CardDescription>
+                  Laden Sie Daten hoch, die für alle Mandanten verfügbar sein sollen (tenant_id = null)
+                </CardDescription>
+              </CardHeader>
+            </Card>
 
-              <Card className="shadow-card hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Database className="h-5 w-5 text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mixedDataTypes.map((dataType) => (
+                <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <dataType.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-lg">🌐 {dataType.title}</CardTitle>
                     </div>
-                    <CardTitle className="text-lg">Globale Applikationen</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Laden Sie die globale Applikationsdatenbank hoch
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    onClick={() => handleGlobalFileSelect('global_applications')}
-                    className="w-full"
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    XLS/CSV hochladen
-                  </Button>
-                </CardContent>
-              </Card>
+                    <CardDescription className="text-sm">
+                      {dataType.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 mt-auto">
+                    <Button
+                      onClick={() => handleFileSelect(dataType)}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      Global hochladen
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>
@@ -677,24 +611,12 @@ export default function DataHub() {
         dataType={selectedDataType}
         parsedData={parsedData}
         fileName={fileName}
-        forcedTenantId={selectedTenantId || undefined}
+        targetTenantId={
+          isSuperAdmin 
+            ? (uploadScope === 'global' ? null : selectedTenantId || undefined)
+            : undefined
+        }
       />
-
-      {showGlobalUpload && (
-        <GlobalFileUploadDialog
-          open={showGlobalUpload}
-          onOpenChange={setShowGlobalUpload}
-          dataType={{
-            id: globalUploadTable,
-            title: globalUploadTable === 'global_products' ? 'Globale Produkte' : 'Globale Applikationen',
-            fields: globalUploadTable === 'global_products' 
-              ? ['product', 'product_family', 'product_description', 'manufacturer', 'product_price', 'product_inventory', 'product_lead_time', 'product_lifecycle', 'product_new', 'product_top', 'manufacturer_link']
-              : ['application', 'related_product']
-          }}
-          parsedData={parsedData}
-          fileName={fileName}
-        />
-      )}
 
       <AlertDialog open={deleteTableDialogOpen} onOpenChange={setDeleteTableDialogOpen}>
         <AlertDialogContent>
