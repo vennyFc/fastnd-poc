@@ -228,37 +228,38 @@ export function MainLayout({ children }: MainLayoutProps) {
               
               {/* Tenant Selector / Display */}
               {isSuperAdmin ? (
-                <Select
-                  value={activeTenant?.id || "all"}
-                  onValueChange={(value) => {
-                    if (value === "all") {
-                      setActiveTenant(null);
-                    } else {
-                      const tenant = allTenants?.find(t => t.id === value);
-                      if (tenant) {
-                        setActiveTenant(tenant);
+                <div className="w-[200px]">
+                  <Select
+                    value={activeTenant?.id || "all"}
+                    onValueChange={(value) => {
+                      if (value === "all") {
+                        setActiveTenant(null);
+                      } else {
+                        const tenant = allTenants?.find(t => t.id === value);
+                        if (tenant) setActiveTenant(tenant);
                       }
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[200px] bg-background">
-                    <Building2 className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Global View" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card z-50">
-                    <SelectItem value="all">Global View</SelectItem>
-                    {allTenants?.map((tenant) => (
-                      <SelectItem key={tenant.id} value={tenant.id}>
-                        {tenant.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : activeTenant && (
-                <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1">
-                  <Building2 className="h-3 w-3" />
-                  {activeTenant.name}
-                </Badge>
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Global View" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">🌐 Globale Ansicht</SelectItem>
+                      {allTenants?.map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id}>
+                          {tenant.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                activeTenant && (
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground px-2 border-l border-border">
+                    <Building2 className="h-4 w-4" />
+                    <span>{activeTenant.name}</span>
+                  </div>
+                )
               )}
               
               <div className="relative w-[576px] max-w-2xl" ref={searchRef}>
