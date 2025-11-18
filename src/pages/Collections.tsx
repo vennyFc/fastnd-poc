@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function Collections() {
-  const { activeTenant, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, activeTenant } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [open, setOpen] = useState(false);

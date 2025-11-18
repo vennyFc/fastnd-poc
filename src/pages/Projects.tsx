@@ -36,7 +36,7 @@ type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'op
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
-  const { activeTenant, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, activeTenant } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
