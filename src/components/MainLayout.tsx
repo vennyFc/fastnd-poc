@@ -5,6 +5,7 @@ import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle } from 'lucide
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
@@ -28,9 +29,14 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
-  // Show warning if Super Admin has no tenant selected
-  const showTenantWarning = isSuperAdmin && !activeTenant;
+  // Admin routes that should always be accessible
+  const adminRoutes = ['/super-admin', '/access-logs', '/admin'];
+  const isAdminRoute = adminRoutes.some(route => location.pathname.startsWith(route));
+
+  // Show warning if Super Admin has no tenant selected AND it's not an admin route
+  const showTenantWarning = isSuperAdmin && !activeTenant && !isAdminRoute;
   
   const getInitials = () => {
     if (!user?.email) return 'U';
