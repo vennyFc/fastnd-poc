@@ -18,6 +18,7 @@ import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 
 export default function Dashboard() {
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -48,49 +49,77 @@ export default function Dashboard() {
 
   // Fetch all data for search
   const { data: projects } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
       // @ts-ignore
-      const { data } = await supabase
+      let query = supabase
         // @ts-ignore
         .from('customer_projects')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
   });
 
   const { data: products } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
       // @ts-ignore
-      const { data } = await supabase
+      let query = supabase
         // @ts-ignore
         .from('products')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
   });
 
   const { data: applications } = useQuery({
-    queryKey: ['applications'],
+    queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
       // @ts-ignore
-      const { data } = await supabase
+      let query = supabase
         // @ts-ignore
         .from('applications')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
   });
 
   const { data: crossSells } = useQuery({
-    queryKey: ['cross_sells'],
+    queryKey: ['cross_sells', activeTenant?.id],
     queryFn: async () => {
       // @ts-ignore
-      const { data } = await supabase
+      let query = supabase
         // @ts-ignore
         .from('cross_sells')
         .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
   });

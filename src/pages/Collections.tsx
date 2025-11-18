@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function Collections() {
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [open, setOpen] = useState(false);
@@ -38,18 +40,24 @@ export default function Collections() {
 
   // Fetch collections
   const { data: collections = [], isLoading } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ['collections', activeTenant?.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('collections')
         .select(`
           *,
           collection_products(count)
-        `)
-        .order('updated_at', { ascending: false });
+        `);
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query.order('updated_at', { ascending: false });
 
       if (error) throw error;
       

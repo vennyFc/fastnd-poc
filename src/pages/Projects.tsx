@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'op
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -161,12 +163,18 @@ export default function Projects() {
   }, [searchParams]);
 
   const { data: projects, isLoading, refetch: refetchProjects } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('customer_projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as any[];

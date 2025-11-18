@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ type SortField = 'customer_name' | 'industry' | 'country' | 'city' | 'customer_c
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Customers() {
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +60,7 @@ export default function Customers() {
 
   useEffect(() => {
     loadCustomers();
-  }, []);
+  }, [activeTenant?.id]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -127,17 +129,31 @@ export default function Customers() {
       setIsLoading(true);
       
       // Load customers
-      const { data: customersData, error: customersError } = await supabase
+      let customersQuery = supabase
         .from('customers')
-        .select('*')
+        .select('*');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        customersQuery = customersQuery.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data: customersData, error: customersError } = await customersQuery
         .order('customer_name', { ascending: true });
 
       if (customersError) throw customersError;
 
       // Load projects to calculate counts and last activity
-      const { data: projectsData, error: projectsError } = await supabase
+      let projectsQuery = supabase
         .from('customer_projects')
         .select('customer, project_name, created_at');
+      
+      // Filter by tenant if super admin has selected a specific tenant
+      if (isSuperAdmin && activeTenant) {
+        projectsQuery = projectsQuery.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data: projectsData, error: projectsError } = await projectsQuery;
 
       if (projectsError) throw projectsError;
 
