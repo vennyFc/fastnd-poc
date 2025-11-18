@@ -6,7 +6,8 @@ interface WidgetContainerProps {
   id: string;
   children: ReactNode;
   onDragStart: (e: React.DragEvent, index: number) => void;
-  onDragEnter: (e: React.DragEvent, index: number) => void;
+  onDragOver: (e: React.DragEvent, index: number) => void;
+  onDrop: (e: React.DragEvent, index: number) => void;
   onDragLeave: (e: React.DragEvent, index: number) => void;
   onDragEnd: (e: React.DragEvent) => void;
   index: number;
@@ -24,7 +25,8 @@ export function WidgetContainer({
   id,
   children,
   onDragStart,
-  onDragEnter,
+  onDragOver,
+  onDrop,
   onDragLeave,
   onDragEnd,
   index,
@@ -36,10 +38,10 @@ export function WidgetContainer({
     <div
       draggable
       onDragStart={(e) => onDragStart(e, index)}
-      onDragEnter={(e) => onDragEnter(e, index)}
+      onDragOver={(e) => onDragOver(e, index)}
+      onDrop={(e) => onDrop(e, index)}
       onDragLeave={(e) => onDragLeave(e, index)}
       onDragEnd={onDragEnd}
-      onDragOver={(e) => e.preventDefault()}
       className={`relative group ${isDragging ? 'opacity-50 scale-95' : ''} ${sizeClasses[size]} transition-all duration-200`}
     >
       {/* Drop Zone Indicator */}

@@ -128,21 +128,41 @@ export default function Dashboard() {
   const handleDragStart = (e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', ''); // Required for Firefox
   };
 
-  const handleDragEnter = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
     if (draggedIndex === null || draggedIndex === index) return;
     
-    setDragOverIndex(index);
+    // Only update if we're hovering over a different widget
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedIndex === null || draggedIndex === index) return;
+    
     reorderWidgets(draggedIndex, index);
-    setDraggedIndex(index);
   };
 
   const handleDragLeave = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    if (dragOverIndex === index) {
-      setDragOverIndex(null);
+    // Only clear if we're actually leaving this widget (not entering a child)
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+      if (dragOverIndex === index) {
+        setDragOverIndex(null);
+      }
     }
   };
 
@@ -163,7 +183,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -187,7 +208,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -204,7 +226,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -221,7 +244,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -242,7 +266,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -259,7 +284,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -278,7 +304,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -297,7 +324,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -314,7 +342,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
@@ -331,7 +360,8 @@ export default function Dashboard() {
             isDragging={draggedIndex === index}
             isDropTarget={dragOverIndex === index}
             onDragStart={handleDragStart}
-            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             onDragLeave={handleDragLeave}
             onDragEnd={handleDragEnd}
             size={widget.size}
