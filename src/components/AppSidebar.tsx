@@ -83,7 +83,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isTenantAdmin && (
+        {(isTenantAdmin || isSuperAdmin) && (
           <SidebarGroup>
             <SidebarGroupLabel>Tenant Admin</SidebarGroupLabel>
             <SidebarGroupContent>
