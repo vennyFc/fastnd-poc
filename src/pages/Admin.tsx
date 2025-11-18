@@ -9,16 +9,20 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserPlus, Mail, Shield, User, Trash2, Search } from 'lucide-react';
+import { UserPlus, Mail, Shield, User, Trash2, Search, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 
 export default function Admin() {
   const { isSuperAdmin, user, tenantId } = useAuth();
   const navigate = useNavigate();
+  const { tenantId: urlTenantId } = useParams();
+  
+  // Super-Admins können Mandanten über URL wählen, sonst eigenen Mandanten
+  const effectiveTenantId = (isSuperAdmin && urlTenantId) ? urlTenantId : tenantId;
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -28,16 +32,16 @@ export default function Admin() {
 
   // Fetch users in the same tenant
   const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users', tenantId],
+    queryKey: ['admin-users', effectiveTenantId],
     queryFn: async () => {
-      if (!tenantId) return [];
+      if (!effectiveTenantId) return [];
 
       // @ts-ignore
       const { data: profiles, error: profilesError } = await supabase
         // @ts-ignore
         .from('profiles')
         .select('*')
-        .eq('tenant_id', tenantId)
+        .eq('tenant_id', effectiveTenantId)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
@@ -56,7 +60,7 @@ export default function Admin() {
         roles: roles?.filter((r: any) => r.user_id === profile.id) || [],
       })) || [];
     },
-    enabled: !!tenantId,
+    enabled: !!effectiveTenantId,
   });
 
   // Invite user mutation
@@ -64,10 +68,10 @@ export default function Admin() {
     mutationFn: async (email: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-      if (!tenantId) throw new Error('No tenant ID');
+      if (!effectiveTenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email, tenantId },
+        body: { email, tenantId: effectiveTenantId },
       });
 
       // Check for errors - the error object contains the actual error response
@@ -234,19 +238,21 @@ export default function Admin() {
     );
   }) || [];
 
-  // Redirect if not admin (using useEffect to avoid hook ordering issues)
-  if (!isSuperAdmin) {
-    navigate('/');
-    return null;
-  }
-
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6 space-y-8">
+      {isSuperAdmin && (
+        <Link to="/super-admin">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Zurück zum Super-Admin Dashboard
+          </Button>
+        </Link>
+      )}
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Benutzerverwaltung und Einladungen
+          <h1 className="text-3xl font-bold tracking-tight">Benutzerverwaltung</h1>
+          <p className="text-muted-foreground mt-2">
+            Verwalten Sie Benutzer und deren Rollen
           </p>
         </div>
         <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>

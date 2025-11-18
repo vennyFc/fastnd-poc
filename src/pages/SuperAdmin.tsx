@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Shield, Plus, UserPlus } from 'lucide-react';
+import { Shield, Plus, UserPlus, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 export default function SuperAdmin() {
+  const navigate = useNavigate();
   const [newTenantName, setNewTenantName] = useState('');
   const [newSuperAdminEmail, setNewSuperAdminEmail] = useState('');
   const [inviteDialog, setInviteDialog] = useState<{
@@ -299,18 +301,28 @@ export default function SuperAdmin() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setInviteDialog({
-                          open: true,
-                          tenantId: tenant.id,
-                          tenantName: tenant.name,
-                        })}
-                      >
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Admin einladen
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => navigate(`/admin/${tenant.id}`)}
+                        >
+                          <Users className="mr-2 h-4 w-4" />
+                          Benutzer verwalten
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setInviteDialog({
+                            open: true,
+                            tenantId: tenant.id,
+                            tenantName: tenant.name,
+                          })}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Admin einladen
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
