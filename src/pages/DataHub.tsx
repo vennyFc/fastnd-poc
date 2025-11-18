@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import { Upload, FileSpreadsheet, Trash2, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -100,6 +101,7 @@ export default function DataHub() {
   // Super Admin specific states
   const [uploadScope, setUploadScope] = useState<'tenant' | 'global'>('tenant');
   const [selectedTenantId, setSelectedTenantId] = useState<string>('');
+  const [targetTenantId, setTargetTenantId] = useState<string | null | undefined>(undefined);
 
   // Fetch tenants for Super Admin
   const { data: tenants } = useQuery({
@@ -135,7 +137,10 @@ export default function DataHub() {
     setUploadHistory(data || []);
   };
 
-  const handleFileSelect = (dataType: any) => {
+  const handleFileSelect = (dataType: any, targetTenant?: string | null) => {
+    // Set the target tenant before opening dialog
+    setTargetTenantId(targetTenant);
+    
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xls,.xlsx';
@@ -380,18 +385,26 @@ export default function DataHub() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Mandant auswählen..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tenants?.map((tenant) => (
-                      <SelectItem key={tenant.id} value={tenant.id}>
-                        {tenant.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label>Ziel-Mandant</Label>
+                  <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Mandant auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tenants?.map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id}>
+                          {tenant.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!selectedTenantId && (
+                    <p className="text-sm text-muted-foreground">
+                      Bitte wählen Sie einen Mandanten aus, um Daten hochzuladen
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -413,7 +426,7 @@ export default function DataHub() {
                       </CardHeader>
                       <CardContent className="space-y-2 mt-auto">
                         <Button
-                          onClick={() => handleFileSelect(dataType)}
+                          onClick={() => handleFileSelect(dataType, selectedTenantId)}
                           className="w-full"
                           variant="outline"
                         >
@@ -462,7 +475,7 @@ export default function DataHub() {
                   </CardHeader>
                   <CardContent className="space-y-2 mt-auto">
                     <Button
-                      onClick={() => handleFileSelect(dataType)}
+                      onClick={() => handleFileSelect(dataType, null)}
                       className="w-full"
                       variant="outline"
                     >
@@ -611,11 +624,7 @@ export default function DataHub() {
         dataType={selectedDataType}
         parsedData={parsedData}
         fileName={fileName}
-        targetTenantId={
-          isSuperAdmin 
-            ? (uploadScope === 'global' ? null : selectedTenantId || undefined)
-            : undefined
-        }
+        targetTenantId={targetTenantId}
       />
 
       <AlertDialog open={deleteTableDialogOpen} onOpenChange={setDeleteTableDialogOpen}>
