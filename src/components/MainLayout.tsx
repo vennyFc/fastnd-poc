@@ -1,7 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, ArrowRight } from 'lucide-react';
+import { Search, HelpCircle, ArrowRight, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -12,6 +12,8 @@ import { UserPreferencesPopover } from './UserPreferencesPopover';
 import { LanguageSelector } from './LanguageSelector';
 import { NotificationPopover } from './NotificationPopover';
 import { useAccessTracking } from '@/hooks/useAccessTracking';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -19,7 +21,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   useAccessTracking();
-  const { user } = useAuth();
+  const { user, activeTenant, setActiveTenant, isSuperAdmin, isTenantAdmin } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +32,16 @@ export function MainLayout({ children }: MainLayoutProps) {
     if (!user?.email) return 'U';
     return user.email.substring(0, 2).toUpperCase();
   };
+
+  // Fetch all tenants for super admin
+  const { data: allTenants } = useQuery({
+    queryKey: ['all_tenants'],
+    queryFn: async () => {
+      const { data } = await supabase.from('tenants').select('id, name').order('name');
+      return data || [];
+    },
+    enabled: isSuperAdmin,
+  });
 
   // Fetch data for search
   const { data: projects } = useQuery({
@@ -213,6 +225,42 @@ export function MainLayout({ children }: MainLayoutProps) {
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="h-8 w-8" />
+              
+              {/* Tenant Selector / Display */}
+              {isSuperAdmin ? (
+                <Select
+                  value={activeTenant?.id || "all"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setActiveTenant(null);
+                    } else {
+                      const tenant = allTenants?.find(t => t.id === value);
+                      if (tenant) {
+                        setActiveTenant(tenant);
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-[200px] bg-background">
+                    <Building2 className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Global View" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card z-50">
+                    <SelectItem value="all">Global View</SelectItem>
+                    {allTenants?.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {tenant.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : activeTenant && (
+                <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1">
+                  <Building2 className="h-3 w-3" />
+                  {activeTenant.name}
+                </Badge>
+              )}
+              
               <div className="relative w-[576px] max-w-2xl" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
