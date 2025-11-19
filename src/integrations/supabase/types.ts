@@ -1268,6 +1268,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: never; Returns: boolean }
       user_can_view_collection: {
         Args: { _collection_id: string; _user_id: string }
         Returns: boolean
