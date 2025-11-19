@@ -133,9 +133,9 @@ export default function Customers() {
         .from('customers')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        customersQuery = customersQuery.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        customersQuery = customersQuery.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data: customersData, error: customersError } = await customersQuery
@@ -147,6 +147,11 @@ export default function Customers() {
       let projectsQuery = supabase
         .from('customer_projects')
         .select('customer, project_name, created_at');
+      
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        projectsQuery = projectsQuery.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      }
       
       // Filter by tenant if super admin has selected a specific tenant
       if (isSuperAdmin && activeTenant) {

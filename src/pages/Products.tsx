@@ -73,7 +73,7 @@ export default function Products() {
     }
   }, [searchParams]);
 
-  const { data: tenantProducts, isLoading: isTenantProductsLoading } = useQuery({
+  const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
       // @ts-ignore - Supabase types not yet updated
@@ -82,9 +82,9 @@ export default function Products() {
         .from('products')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -93,28 +93,6 @@ export default function Products() {
       return data as any[];
     },
   });
-
-  const { data: globalProducts, isLoading: isGlobalProductsLoading } = useQuery({
-    queryKey: ['global_products'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('global_products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as any[];
-    },
-  });
-
-  // Combine tenant and global products
-  const allProducts = React.useMemo(() => {
-    const tProducts = tenantProducts || [];
-    const gProducts = globalProducts || [];
-    return [...tProducts, ...gProducts];
-  }, [tenantProducts, globalProducts]);
-
-  const isLoading = isTenantProductsLoading || isGlobalProductsLoading;
 
   // Fetch user preferences
   const { data: userPreferences } = useQuery({
@@ -140,9 +118,9 @@ export default function Products() {
         .from('applications')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
