@@ -6,9 +6,11 @@ import { Sparkles } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import AutoScroll from 'embla-carousel-auto-scroll';
 import { useRef } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
+  const { tenantId, isSuperAdmin } = useAuth();
   const autoScrollPlugin = useRef(
     AutoScroll({ 
       speed: 1,
@@ -19,16 +21,23 @@ export function NPIProductsWidget() {
   );
 
   const { data: npiProducts = [], isLoading } = useQuery({
-    queryKey: ['npi-products'],
+    queryKey: ['npi-products', tenantId],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
-        .ilike('product_new', 'Y')
-        .order('created_at', { ascending: false });
+        .ilike('product_new', 'Y');
+
+      // Non-super-admins see only their tenant's products + global products
+      if (!isSuperAdmin && tenantId) {
+        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      }
+
+      const { data } = await query.order('created_at', { ascending: false });
 
       return data || [];
     },
+    enabled: isSuperAdmin || !!tenantId
   });
 
   // Get only first 10 for carousel
