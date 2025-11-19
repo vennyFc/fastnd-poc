@@ -276,6 +276,7 @@ export default function FileUploadDialog({
           data_type: dataType.title,
           row_count: parsedData.length,
           status: 'success',
+          tenant_id: effectiveTenantId,
         })
         .select()
         .single();
