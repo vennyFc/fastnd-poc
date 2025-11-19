@@ -15,26 +15,36 @@ import { useProjectHistory } from '@/hooks/useProjectHistory';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('new');
   const {
-    user
+    user,
+    tenantId,
+    isSuperAdmin
   } = useAuth();
   const {
     favorites: favoriteIds
   } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
 
-  // Fetch all projects
+  // Fetch all projects (filtered by tenant for non-super-admins)
   const {
     data: allProjectsRaw = []
   } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', tenantId],
     queryFn: async () => {
+      let query = supabase.from('customer_projects').select('*');
+      
+      // Non-super-admins can only see their tenant's projects
+      if (!isSuperAdmin && tenantId) {
+        query = query.eq('tenant_id', tenantId);
+      }
+      
       const {
         data
-      } = await supabase.from('customer_projects').select('*').order('created_at', {
+      } = await query.order('created_at', {
         ascending: false
       });
       return data || [];
-    }
+    },
+    enabled: isSuperAdmin || !!tenantId
   });
 
   // Group projects by customer and project_name and track all source IDs
