@@ -41,6 +41,7 @@ export default function SuperAdmin() {
     tenantId: string;
     tenantName: string;
   } | null>(null);
+  const [addUserEmail, setAddUserEmail] = useState('');
   const queryClient = useQueryClient();
 
   // Fetch all tenants
@@ -339,6 +340,73 @@ export default function SuperAdmin() {
       });
     },
   });
+
+  // Add user to tenant mutation
+  const addUserToTenantMutation = useMutation({
+    mutationFn: async ({ email, tenantId }: { email: string; tenantId: string }) => {
+      // Search for user by email
+      const { data: profiles, error: searchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email.toLowerCase().trim())
+        .maybeSingle();
+      
+      if (searchError) throw searchError;
+      if (!profiles) throw new Error('Benutzer nicht gefunden');
+      
+      // Update tenant_id
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ tenant_id: tenantId })
+        .eq('id', profiles.id);
+      
+      if (updateError) throw updateError;
+      
+      // Check if user already has a role
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', profiles.id)
+        .maybeSingle();
+      
+      // Create role entry if none exists
+      if (!existingRole) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: profiles.id, role: 'user' });
+        
+        if (roleError) throw roleError;
+      }
+      
+      return profiles;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-users', detailSheet?.tenantId] });
+      setAddUserEmail('');
+      toast.success('Benutzer erfolgreich zum Mandanten hinzugefügt');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Hinzufügen des Benutzers', {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleAddUserToTenant = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!addUserEmail.trim()) {
+      toast.error('Bitte geben Sie eine E-Mail-Adresse ein');
+      return;
+    }
+
+    if (!detailSheet?.tenantId) return;
+
+    addUserToTenantMutation.mutate({
+      email: addUserEmail.trim(),
+      tenantId: detailSheet.tenantId,
+    });
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -675,6 +743,29 @@ export default function SuperAdmin() {
               Benutzer und deren Rollen in diesem Mandanten
             </SheetDescription>
           </SheetHeader>
+          
+          {/* Add User Section */}
+          <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+            <h3 className="text-sm font-semibold mb-3">Benutzer hinzufügen</h3>
+            <form onSubmit={handleAddUserToTenant} className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="benutzer@example.com"
+                value={addUserEmail}
+                onChange={(e) => setAddUserEmail(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                type="submit"
+                disabled={addUserToTenantMutation.isPending}
+              >
+                {addUserToTenantMutation.isPending ? 'Lädt...' : 'Hinzufügen'}
+              </Button>
+            </form>
+            <p className="text-xs text-muted-foreground mt-2">
+              Geben Sie die E-Mail-Adresse eines existierenden Benutzers ein, um ihn diesem Mandanten zuzuweisen.
+            </p>
+          </div>
           
           <div className="mt-6">
             {usersLoading ? (
