@@ -44,59 +44,7 @@ export default function SuperAdmin() {
     tenantName: string;
   } | null>(null);
   const [addUserEmail, setAddUserEmail] = useState('');
-  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const queryClient = useQueryClient();
-
-  // Check if user has super_admin role
-  useEffect(() => {
-    const checkSuperAdminAccess = async () => {
-      if (!user?.id) {
-        toast.error('Zugriff verweigert');
-        navigate('/');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase.rpc('has_role', {
-          _user_id: user.id,
-          _role: 'super_admin'
-        });
-
-        if (error) throw error;
-
-        if (!data) {
-          toast.error('Zugriff verweigert');
-          navigate('/');
-          return;
-        }
-
-        setIsCheckingAccess(false);
-      } catch (error) {
-        console.error('Error checking super admin access:', error);
-        toast.error('Zugriff verweigert');
-        navigate('/');
-      }
-    };
-
-    checkSuperAdminAccess();
-  }, [user, navigate]);
-
-  // Show loading state while checking access
-  if (isCheckingAccess) {
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <Shield className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Super Admin</h1>
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </div>
-    );
-  }
 
   // Fetch all tenants
   const { data: tenants, isLoading, error } = useQuery({
