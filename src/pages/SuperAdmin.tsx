@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Shield, Plus, UserPlus, Users, Pencil, Trash } from 'lucide-react';
+import { Shield, Plus, UserPlus, Users, Pencil, Trash, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
@@ -30,6 +32,11 @@ export default function SuperAdmin() {
   } | null>(null);
   const [editTenantName, setEditTenantName] = useState('');
   const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    tenantId: string;
+    tenantName: string;
+  } | null>(null);
+  const [detailSheet, setDetailSheet] = useState<{
     open: boolean;
     tenantId: string;
     tenantName: string;
@@ -278,6 +285,61 @@ export default function SuperAdmin() {
     }
   };
 
+  // Fetch tenant users
+  const { data: tenantUsers, isLoading: usersLoading } = useQuery({
+    queryKey: ['tenant-users', detailSheet?.tenantId],
+    queryFn: async () => {
+      if (!detailSheet?.tenantId) return [];
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('tenant_id', detailSheet.tenantId);
+      
+      if (profilesError) throw profilesError;
+      
+      // Fetch roles for each user
+      const usersWithRoles = await Promise.all(
+        profiles.map(async (profile) => {
+          const { data: roles } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.id);
+          
+          return {
+            ...profile,
+            role: roles?.[0]?.role || 'user'
+          };
+        })
+      );
+      
+      return usersWithRoles;
+    },
+    enabled: !!detailSheet?.tenantId,
+  });
+
+  // Update user role mutation
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async ({ userId, newRole }: { userId: string; newRole: 'user' | 'tenant_admin' | 'super_admin' }) => {
+      // Update the role in user_roles table
+      const { error } = await supabase
+        .from('user_roles')
+        .update({ role: newRole })
+        .eq('user_id', userId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenant-users', detailSheet?.tenantId] });
+      toast.success('Rolle erfolgreich aktualisiert');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Aktualisieren der Rolle', {
+        description: error.message,
+      });
+    },
+  });
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -385,6 +447,20 @@ export default function SuperAdmin() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setDetailSheet({
+                              open: true,
+                              tenantId: tenant.id,
+                              tenantName: tenant.name,
+                            });
+                          }}
+                        >
+                          <Info className="mr-2 h-4 w-4" />
+                          Details
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -582,6 +658,81 @@ export default function SuperAdmin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Tenant Details Sheet */}
+      <Sheet 
+        open={detailSheet?.open || false} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetailSheet(null);
+          }
+        }}
+      >
+        <SheetContent className="w-[600px] sm:max-w-[600px] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{detailSheet?.tenantName}</SheetTitle>
+            <SheetDescription>
+              Benutzer und deren Rollen in diesem Mandanten
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="mt-6">
+            {usersLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            ) : tenantUsers && tenantUsers.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>E-Mail</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Rolle</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tenantUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.email}
+                      </TableCell>
+                      <TableCell>
+                        {user.full_name || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.role}
+                          onValueChange={(newRole: 'user' | 'tenant_admin' | 'super_admin') => {
+                            updateUserRoleMutation.mutate({
+                              userId: user.id,
+                              newRole,
+                            });
+                          }}
+                          disabled={updateUserRoleMutation.isPending}
+                        >
+                          <SelectTrigger className="w-[150px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">
+                Keine Benutzer in diesem Mandanten
+              </p>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
