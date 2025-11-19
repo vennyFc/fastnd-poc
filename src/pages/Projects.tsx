@@ -169,9 +169,9 @@ export default function Projects() {
         .from('customer_projects')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -189,9 +189,9 @@ export default function Projects() {
         .from('cross_sells')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -209,9 +209,9 @@ export default function Projects() {
         .from('products')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -229,9 +229,9 @@ export default function Projects() {
         .from('product_alternatives')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -248,6 +248,11 @@ export default function Projects() {
       let query = supabase
         .from('app_insights')
         .select('*');
+      
+      if (activeTenant) {
+        // Show tenant-specific data AND global data (tenant_id IS NULL)
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      }
       
       // Filter by tenant if super admin has selected a specific tenant
       if (isSuperAdmin && activeTenant) {
