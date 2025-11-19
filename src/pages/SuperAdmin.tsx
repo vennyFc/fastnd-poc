@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Shield, Plus, UserPlus, Users } from 'lucide-react';
+import { Shield, Plus, UserPlus, Users, Pencil, Trash } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
@@ -22,6 +23,17 @@ export default function SuperAdmin() {
     tenantName: string;
   } | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
+  const [editDialog, setEditDialog] = useState<{
+    open: boolean;
+    tenantId: string;
+    tenantName: string;
+  } | null>(null);
+  const [editTenantName, setEditTenantName] = useState('');
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    tenantId: string;
+    tenantName: string;
+  } | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch all tenants
@@ -196,6 +208,76 @@ export default function SuperAdmin() {
     inviteSuperAdminMutation.mutate(newSuperAdminEmail.trim());
   };
 
+  // Update tenant mutation
+  const updateTenantMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data, error } = await supabase
+        .from('tenants')
+        .update({ name })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      setEditDialog(null);
+      setEditTenantName('');
+      toast.success('Mandant erfolgreich aktualisiert');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Aktualisieren des Mandanten', {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleUpdateTenant = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editTenantName.trim()) {
+      toast.error('Bitte geben Sie einen Mandantennamen ein');
+      return;
+    }
+
+    if (editDialog) {
+      updateTenantMutation.mutate({
+        id: editDialog.tenantId,
+        name: editTenantName.trim(),
+      });
+    }
+  };
+
+  // Delete tenant mutation
+  const deleteTenantMutation = useMutation({
+    mutationFn: async (tenantId: string) => {
+      const { error } = await supabase
+        .from('tenants')
+        .delete()
+        .eq('id', tenantId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      setDeleteDialog(null);
+      toast.success('Mandant erfolgreich gelöscht');
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Löschen des Mandanten', {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleDeleteTenant = () => {
+    if (deleteDialog) {
+      deleteTenantMutation.mutate(deleteDialog.tenantId);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -279,6 +361,7 @@ export default function SuperAdmin() {
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Erstellt am</TableHead>
+                  <TableHead>Verwaltung</TableHead>
                   <TableHead className="text-right">Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
@@ -300,8 +383,8 @@ export default function SuperAdmin() {
                         minute: '2-digit',
                       })}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
+                    <TableCell>
+                      <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -321,6 +404,37 @@ export default function SuperAdmin() {
                         >
                           <UserPlus className="mr-2 h-4 w-4" />
                           Admin einladen
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditDialog({
+                              open: true,
+                              tenantId: tenant.id,
+                              tenantName: tenant.name,
+                            });
+                            setEditTenantName(tenant.name);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setDeleteDialog({
+                              open: true,
+                              tenantId: tenant.id,
+                              tenantName: tenant.name,
+                            });
+                          }}
+                        >
+                          <Trash className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     </TableCell>
@@ -387,6 +501,87 @@ export default function SuperAdmin() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Tenant Dialog */}
+      <Dialog 
+        open={editDialog?.open || false} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditDialog(null);
+            setEditTenantName('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mandant bearbeiten</DialogTitle>
+            <DialogDescription>
+              Ändern Sie den Namen des Mandanten "{editDialog?.tenantName}".
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateTenant} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-tenant-name">Mandantenname</Label>
+              <Input
+                id="edit-tenant-name"
+                type="text"
+                value={editTenantName}
+                onChange={(e) => setEditTenantName(e.target.value)}
+                placeholder="Firmenname"
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEditDialog(null);
+                  setEditTenantName('');
+                }}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                type="submit"
+                disabled={updateTenantMutation.isPending}
+              >
+                {updateTenantMutation.isPending ? 'Speichert...' : 'Speichern'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Tenant Confirmation */}
+      <AlertDialog 
+        open={deleteDialog?.open || false} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteDialog(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mandant wirklich löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie den Mandanten "{deleteDialog?.tenantName}" wirklich löschen? 
+              Diese Aktion kann nicht rückgängig gemacht werden und alle zugehörigen Daten werden ebenfalls gelöscht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTenant}
+              disabled={deleteTenantMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteTenantMutation.isPending ? 'Löscht...' : 'Löschen'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
