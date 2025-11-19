@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
           // Fall A: Benutzer existiert NICHT -> Einladen (Standard-Flow)
           console.log(`Neuer Super Admin wird eingeladen: ${email}`)
           const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            data: { tenant_id: null, role: 'super_admin' },
+            data: { role: 'super_admin' },
           })
           if (inviteError) {
             console.error('Error inviting new super admin:', inviteError)
@@ -238,11 +238,12 @@ Deno.serve(async (req) => {
       }
 
       // Invite the user
+      const inviteMetadata: Record<string, any> = { role: inviteRole };
+      if (effectiveTenantId !== null) {
+        inviteMetadata.tenant_id = effectiveTenantId;
+      }
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        data: { 
-          tenant_id: effectiveTenantId,
-          role: inviteRole 
-        }
+        data: inviteMetadata
       })
 
       if (error) {
