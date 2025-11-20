@@ -147,15 +147,22 @@ export function ProjectsWidget() {
 
   // Fetch optimization records
   const { data: optimizationRecords = [] } = useQuery({
-    queryKey: ['opps_optimization'],
+    queryKey: ['opps_optimization', tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
         .select('*');
+      
+      if (!isSuperAdmin && tenantId) {
+        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: isSuperAdmin || !!tenantId,
   });
 
   const { isFavorite, toggleFavorite } = useFavorites('project');

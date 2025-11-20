@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar } from 'lucide-react';
 import { subMonths } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 type TimeRange = '1' | '3' | '6' | '12';
 
@@ -33,18 +34,26 @@ const statusLabels: Record<string, string> = {
 
 export function OptimizationStatusWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
+  const { tenantId, isSuperAdmin } = useAuth();
 
   // Fetch opps_optimization data
   const { data: optimizationData = [], isLoading } = useQuery({
-    queryKey: ['opps_optimization'],
+    queryKey: ['opps_optimization', tenantId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
         .select('*');
+      
+      if (!isSuperAdmin && tenantId) {
+        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
     },
+    enabled: isSuperAdmin || !!tenantId,
   });
 
   // Calculate date threshold based on selected time range
