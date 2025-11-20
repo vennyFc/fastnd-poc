@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
-  const { tenantId, isSuperAdmin } = useAuth();
+  const { activeTenant } = useAuth();
   const autoScrollPlugin = useRef(
     AutoScroll({ 
       speed: 1,
@@ -21,23 +21,22 @@ export function NPIProductsWidget() {
   );
 
   const { data: npiProducts = [], isLoading } = useQuery({
-    queryKey: ['npi-products', tenantId],
+    queryKey: ['npi-products', activeTenant?.id],
     queryFn: async () => {
       let query = supabase
         .from('products')
         .select('*')
         .ilike('product_new', 'Y');
 
-      // Non-super-admins see only their tenant's products + global products
-      if (!isSuperAdmin && tenantId) {
-        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      // Filter by tenant if a tenant is selected, or include global products
+      if (activeTenant?.id) {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
 
       const { data } = await query.order('created_at', { ascending: false });
 
       return data || [];
     },
-    enabled: isSuperAdmin || !!tenantId
   });
 
   // Get only first 10 for carousel

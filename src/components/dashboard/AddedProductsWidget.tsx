@@ -35,18 +35,19 @@ const statusOrder = ['Identifiziert', 'Vorgeschlagen', 'Akzeptiert', 'Registrier
 
 export function AddedProductsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
-  const { tenantId, isSuperAdmin } = useAuth();
+  const { activeTenant } = useAuth();
 
   // Fetch opps_optimization data
   const { data: optimizationData = [], isLoading } = useQuery({
-    queryKey: ['opps_optimization', tenantId],
+    queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
       let query = supabase
         .from('opps_optimization')
         .select('*');
       
-      if (!isSuperAdmin && tenantId) {
-        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -54,7 +55,6 @@ export function AddedProductsWidget() {
       if (error) throw error;
       return data;
     },
-    enabled: isSuperAdmin || !!tenantId,
   });
 
   // Calculate date threshold based on selected time range

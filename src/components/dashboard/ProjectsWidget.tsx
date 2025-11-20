@@ -16,7 +16,7 @@ export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('new');
   const {
     user,
-    tenantId,
+    activeTenant,
     isSuperAdmin
   } = useAuth();
   const {
@@ -24,17 +24,17 @@ export function ProjectsWidget() {
   } = useFavorites('project');
   const { addToHistory } = useProjectHistory();
 
-  // Fetch all projects (filtered by tenant for non-super-admins)
+  // Fetch all projects (filtered by tenant when a tenant is selected)
   const {
     data: allProjectsRaw = []
   } = useQuery({
-    queryKey: ['customer_projects', tenantId],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
       let query = supabase.from('customer_projects').select('*');
       
-      // Non-super-admins can only see their tenant's projects
-      if (!isSuperAdmin && tenantId) {
-        query = query.eq('tenant_id', tenantId);
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.eq('tenant_id', activeTenant.id);
       }
       
       const {
@@ -44,7 +44,7 @@ export function ProjectsWidget() {
       });
       return data || [];
     },
-    enabled: isSuperAdmin || !!tenantId
+    enabled: isSuperAdmin || !!activeTenant?.id
   });
 
   // Group projects by customer and project_name and track all source IDs
@@ -147,14 +147,15 @@ export function ProjectsWidget() {
 
   // Fetch optimization records
   const { data: optimizationRecords = [] } = useQuery({
-    queryKey: ['opps_optimization', tenantId],
+    queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
       let query = supabase
         .from('opps_optimization')
         .select('*');
       
-      if (!isSuperAdmin && tenantId) {
-        query = query.or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -162,7 +163,7 @@ export function ProjectsWidget() {
       if (error) throw error;
       return data as any[];
     },
-    enabled: isSuperAdmin || !!tenantId,
+    enabled: isSuperAdmin || !!activeTenant?.id,
   });
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
