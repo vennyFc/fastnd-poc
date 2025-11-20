@@ -371,11 +371,20 @@ export default function FileUploadDialog({
       // Use validated data for insertion
       const dataToInsert = validatedData;
       if (dataType.id === 'products') {
-        // Fetch existing products for the user
-        const { data: existingProducts, error: fetchError } = await supabase
+        // Fetch existing products for the tenant (not user)
+        let existingQuery = supabase
           .from('products')
-          .select('id, product, manufacturer')
-          .eq('user_id', session.user.id);
+          .select('id, product, manufacturer');
+        
+        // Filter by tenant_id to find duplicates within the tenant
+        if (effectiveTenantId) {
+          existingQuery = existingQuery.eq('tenant_id', effectiveTenantId);
+        } else {
+          // For global uploads, check against global products (tenant_id IS NULL)
+          existingQuery = existingQuery.is('tenant_id', null);
+        }
+        
+        const { data: existingProducts, error: fetchError } = await existingQuery;
 
         if (fetchError) throw fetchError;
 
