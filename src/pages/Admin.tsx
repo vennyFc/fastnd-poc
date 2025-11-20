@@ -20,10 +20,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 export default function Admin() {
   const { isSuperAdmin, user, activeTenant } = useAuth();
   const navigate = useNavigate();
-  const { tenantId: urlTenantId } = useParams();
   
-  // Super-Admins können Mandanten über URL wählen, sonst eigenen Mandanten
-  const effectiveTenantId = (isSuperAdmin && urlTenantId) ? urlTenantId : activeTenant?.id;
+  // Immer den aktiven Mandanten verwenden
+  const effectiveTenantId = activeTenant?.id;
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteFirstName, setInviteFirstName] = useState('');
@@ -270,6 +269,39 @@ export default function Admin() {
           </Button>
         </Link>
       )}
+      
+      {/* Tenant Context Banner */}
+      {activeTenant && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Verwaltung für Mandant
+                </p>
+                <p className="text-lg font-bold text-primary">
+                  {activeTenant.name}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!activeTenant && (
+        <Card className="bg-destructive/5 border-destructive/20">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-destructive" />
+              <p className="text-sm font-medium text-destructive">
+                Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten in der Seitenleiste aus.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Benutzerverwaltung</h1>
