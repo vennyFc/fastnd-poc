@@ -726,11 +726,18 @@ export default function Projects() {
       }
 
       // Get project_number and application from customer_projects
-      const { data: projectData, error: projectError } = await supabase
+      let projectQuery = supabase
         .from('customer_projects')
         .select('project_number, application')
         .eq('customer', project.customer)
-        .eq('project_name', project.project_name)
+        .eq('project_name', project.project_name);
+      
+      // Filter by tenant_id for non-super-admins
+      if (!isSuperAdmin && activeTenant?.id) {
+        projectQuery = projectQuery.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data: projectData, error: projectError } = await projectQuery
         .limit(1)
         .maybeSingle();
 
@@ -756,6 +763,7 @@ export default function Projects() {
         .from('customer_projects')
         .insert({
           user_id: user.id,
+          tenant_id: activeTenant?.id || null,
           customer: project.customer,
           project_name: project.project_name,
           application: projectData.application,
@@ -932,11 +940,18 @@ export default function Projects() {
       }
 
       // Get project_number and application from customer_projects
-      const { data: projectData, error: projectError } = await supabase
+      let projectQuery = supabase
         .from('customer_projects')
         .select('project_number, application')
         .eq('customer', project.customer)
-        .eq('project_name', project.project_name)
+        .eq('project_name', project.project_name);
+      
+      // Filter by tenant_id for non-super-admins
+      if (!isSuperAdmin && activeTenant?.id) {
+        projectQuery = projectQuery.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data: projectData, error: projectError } = await projectQuery
         .limit(1)
         .maybeSingle();
 
@@ -955,6 +970,7 @@ export default function Projects() {
         .from('customer_projects')
         .insert({
           user_id: user.id,
+          tenant_id: activeTenant?.id || null,
           customer: project.customer,
           project_name: project.project_name,
           application: projectData.application,
@@ -1064,11 +1080,17 @@ export default function Projects() {
         console.log(`🔄 Processing project number: ${projectNumber}`);
 
         // Try to update ALL existing rows for this project number
-        const { data: updatedRows, error: updateError } = await supabase
+        let updateQuery = supabase
           .from('opps_optimization')
           .update({ optimization_status: dbStatus })
-          .eq('project_number', projectNumber)
-          .select('id');
+          .eq('project_number', projectNumber);
+        
+        // Filter by tenant_id for non-super-admins
+        if (!isSuperAdmin && activeTenant?.id) {
+          updateQuery = updateQuery.eq('tenant_id', activeTenant.id);
+        }
+        
+        const { data: updatedRows, error: updateError } = await updateQuery.select('id');
 
         if (updateError) {
           console.error('❌ Update error:', updateError);
