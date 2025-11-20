@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UserPlus, Mail, Shield, User, Trash2, Search, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,14 +18,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 
 export default function Admin() {
-  const { isSuperAdmin, user, tenantId } = useAuth();
+  const { isSuperAdmin, user, activeTenant } = useAuth();
   const navigate = useNavigate();
   const { tenantId: urlTenantId } = useParams();
   
   // Super-Admins können Mandanten über URL wählen, sonst eigenen Mandanten
-  const effectiveTenantId = (isSuperAdmin && urlTenantId) ? urlTenantId : tenantId;
+  const effectiveTenantId = (isSuperAdmin && urlTenantId) ? urlTenantId : activeTenant?.id;
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteFirstName, setInviteFirstName] = useState('');
+  const [inviteLastName, setInviteLastName] = useState('');
+  const [inviteRole, setInviteRole] = useState<'user' | 'tenant_admin'>('user');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
@@ -65,13 +69,19 @@ export default function Admin() {
 
   // Invite user mutation
   const inviteUserMutation = useMutation({
-    mutationFn: async (email: string) => {
+    mutationFn: async ({ email, firstName, lastName, role }: { email: string; firstName: string; lastName: string; role: string }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
       if (!effectiveTenantId) throw new Error('No tenant ID');
 
+      const fullName = `${firstName} ${lastName}`.trim();
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email, tenantId: effectiveTenantId },
+        body: { 
+          email, 
+          tenantId: effectiveTenantId,
+          role,
+          fullName: fullName || undefined
+        },
       });
 
       // Check for errors - the error object contains the actual error response
@@ -96,6 +106,9 @@ export default function Admin() {
         toast.success(data?.message || 'Einladung erfolgreich versendet');
       }
       setInviteEmail('');
+      setInviteFirstName('');
+      setInviteLastName('');
+      setInviteRole('user');
       setInviteDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
@@ -145,10 +158,10 @@ export default function Admin() {
     mutationFn: async (email: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-      if (!tenantId) throw new Error('No tenant ID');
+      if (!effectiveTenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('invite-user', {
-        body: { email, tenantId },
+        body: { email, tenantId: effectiveTenantId },
       });
 
       if (response.error) {
@@ -170,10 +183,10 @@ export default function Admin() {
     mutationFn: async (userId: string) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-      if (!tenantId) throw new Error('No tenant ID');
+      if (!effectiveTenantId) throw new Error('No tenant ID');
 
       const response = await supabase.functions.invoke('delete-user', {
-        body: { userId, tenantId },
+        body: { userId, tenantId: effectiveTenantId },
       });
 
       if (response.error) {
@@ -198,7 +211,16 @@ export default function Admin() {
       toast.error('Bitte geben Sie eine gültige E-Mail-Adresse ein');
       return;
     }
-    inviteUserMutation.mutate(inviteEmail);
+    if (!inviteFirstName || !inviteLastName) {
+      toast.error('Bitte geben Sie Vor- und Nachname ein');
+      return;
+    }
+    inviteUserMutation.mutate({ 
+      email: inviteEmail, 
+      firstName: inviteFirstName, 
+      lastName: inviteLastName,
+      role: inviteRole
+    });
   };
 
   const handleToggleAdmin = (userId: string, isCurrentlyAdmin: boolean) => {
@@ -270,6 +292,27 @@ export default function Admin() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Vorname</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="Max"
+                    value={inviteFirstName}
+                    onChange={(e) => setInviteFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Nachname</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Mustermann"
+                    value={inviteLastName}
+                    onChange={(e) => setInviteLastName(e.target.value)}
+                  />
+                </div>
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="email">E-Mail-Adresse</Label>
                 <Input
@@ -280,6 +323,29 @@ export default function Admin() {
                   onChange={(e) => setInviteEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleInviteUser()}
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="role">Rolle</Label>
+                <Select value={inviteRole} onValueChange={(value: 'user' | 'tenant_admin') => setInviteRole(value)}>
+                  <SelectTrigger id="role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>Benutzer</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="tenant_admin">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        <span>Tenant Admin</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Show existing users */}

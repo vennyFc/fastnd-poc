@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     }
 
     // Get the email, tenantId, and optional role from the request body
-    const { email, tenantId, role } = await req.json()
+    const { email, tenantId, role, fullName } = await req.json()
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return new Response(
         JSON.stringify({ error: 'Valid email required' }),
@@ -99,8 +99,12 @@ Deno.serve(async (req) => {
         if (!existingUser) {
           // Fall A: Benutzer existiert NICHT -> Einladen (Standard-Flow)
           console.log(`Neuer Super Admin wird eingeladen: ${email}`)
+          const inviteMetadata: Record<string, any> = { role: 'super_admin' };
+          if (fullName) {
+            inviteMetadata.full_name = fullName;
+          }
           const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            data: { role: 'super_admin' },
+            data: inviteMetadata,
           })
           if (inviteError) {
             console.error('Error inviting new super admin:', inviteError)
@@ -242,6 +246,9 @@ Deno.serve(async (req) => {
       if (effectiveTenantId !== null) {
         inviteMetadata.tenant_id = effectiveTenantId;
       }
+      if (fullName) {
+        inviteMetadata.full_name = fullName;
+      }
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
         data: inviteMetadata
       })
@@ -320,10 +327,10 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Tenant admins can only invite regular users
-      if (userRole !== 'user') {
+      // Tenant admins can invite regular users or tenant_admins
+      if (userRole !== 'user' && userRole !== 'tenant_admin') {
         return new Response(
-          JSON.stringify({ error: 'Tenant admins can only invite regular users' }),
+          JSON.stringify({ error: 'Tenant admins can only invite regular users or tenant admins' }),
           { 
             status: 403, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -353,11 +360,15 @@ Deno.serve(async (req) => {
       }
 
       // Invite the user
+      const inviteMetadata: Record<string, any> = { 
+        tenant_id: tenantId,
+        role: userRole 
+      };
+      if (fullName) {
+        inviteMetadata.full_name = fullName;
+      }
       const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        data: { 
-          tenant_id: tenantId,
-          role: 'user' 
-        }
+        data: inviteMetadata
       })
 
       if (error) {
@@ -387,13 +398,13 @@ Deno.serve(async (req) => {
 
       console.log('User invited successfully by tenant_admin:', email)
 
-      // Assign 'user' role to the new user
+      // Assign role to the new user
       if (data.user) {
         const { error: roleError } = await supabaseAdmin
           .from('user_roles')
           .insert({
             user_id: data.user.id,
-            role: 'user'
+            role: userRole
           })
 
         if (roleError) {
