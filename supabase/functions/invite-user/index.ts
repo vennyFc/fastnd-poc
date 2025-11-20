@@ -227,11 +227,65 @@ Deno.serve(async (req) => {
         const existingUser = existingUsers.users.find(u => u.email === email)
         
         if (existingUser) {
+          console.log(`Existing user found: ${email}, adding to tenant ${effectiveTenantId}`)
+          
+          // Update user's tenant_id in profiles table
+          const { error: updateProfileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ tenant_id: effectiveTenantId })
+            .eq('id', existingUser.id)
+          
+          if (updateProfileError) {
+            console.error('Error updating profile tenant:', updateProfileError)
+            return new Response(
+              JSON.stringify({ error: 'Fehler beim Zuordnen des Benutzers zum Mandanten' }),
+              { 
+                status: 500, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // Update or insert user role
+          const { data: existingRole, error: roleCheckError } = await supabaseAdmin
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', existingUser.id)
+            .single()
+          
+          if (roleCheckError && roleCheckError.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error checking user role:', roleCheckError)
+          }
+          
+          if (!existingRole) {
+            // Insert new role
+            const { error: insertRoleError } = await supabaseAdmin
+              .from('user_roles')
+              .insert({
+                user_id: existingUser.id,
+                role: inviteRole
+              })
+            
+            if (insertRoleError) {
+              console.error('Error inserting user role:', insertRoleError)
+            }
+          } else if (existingRole.role !== inviteRole) {
+            // Update existing role if different
+            const { error: updateRoleError } = await supabaseAdmin
+              .from('user_roles')
+              .update({ role: inviteRole })
+              .eq('user_id', existingUser.id)
+            
+            if (updateRoleError) {
+              console.error('Error updating user role:', updateRoleError)
+            }
+          }
+          
           return new Response(
             JSON.stringify({ 
-              message: 'Benutzer mit dieser E-Mail ist bereits registriert',
-              userExists: true,
-              userId: existingUser.id
+              message: 'Bestehender Benutzer erfolgreich dem Mandanten zugeordnet',
+              userId: existingUser.id,
+              updated: true
             }),
             { 
               status: 200,
@@ -345,11 +399,65 @@ Deno.serve(async (req) => {
         const existingUser = existingUsers.users.find(u => u.email === email)
         
         if (existingUser) {
+          console.log(`Existing user found: ${email}, adding to tenant ${tenantId}`)
+          
+          // Update user's tenant_id in profiles table
+          const { error: updateProfileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ tenant_id: tenantId })
+            .eq('id', existingUser.id)
+          
+          if (updateProfileError) {
+            console.error('Error updating profile tenant:', updateProfileError)
+            return new Response(
+              JSON.stringify({ error: 'Fehler beim Zuordnen des Benutzers zum Mandanten' }),
+              { 
+                status: 500, 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            )
+          }
+          
+          // Update or insert user role
+          const { data: existingRole, error: roleCheckError } = await supabaseAdmin
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', existingUser.id)
+            .single()
+          
+          if (roleCheckError && roleCheckError.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error checking user role:', roleCheckError)
+          }
+          
+          if (!existingRole) {
+            // Insert new role
+            const { error: insertRoleError } = await supabaseAdmin
+              .from('user_roles')
+              .insert({
+                user_id: existingUser.id,
+                role: userRole
+              })
+            
+            if (insertRoleError) {
+              console.error('Error inserting user role:', insertRoleError)
+            }
+          } else if (existingRole.role !== userRole) {
+            // Update existing role if different
+            const { error: updateRoleError } = await supabaseAdmin
+              .from('user_roles')
+              .update({ role: userRole })
+              .eq('user_id', existingUser.id)
+            
+            if (updateRoleError) {
+              console.error('Error updating user role:', updateRoleError)
+            }
+          }
+          
           return new Response(
             JSON.stringify({ 
-              message: 'Benutzer mit dieser E-Mail ist bereits registriert',
-              userExists: true,
-              userId: existingUser.id
+              message: 'Bestehender Benutzer erfolgreich dem Mandanten zugeordnet',
+              userId: existingUser.id,
+              updated: true
             }),
             { 
               status: 200,
