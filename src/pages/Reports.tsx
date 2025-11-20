@@ -59,8 +59,10 @@ export default function Reports() {
 
   // Fetch removed cross-sells
   const { data: removedCrossSells = [], isLoading } = useQuery({
-    queryKey: ['removed_cross_sells'],
+    queryKey: ['removed_cross_sells', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data, error } = await supabase
         .from('removed_cross_sells')
         .select('*')
@@ -69,53 +71,59 @@ export default function Reports() {
       if (error) throw error;
       return data;
     },
+    enabled: !!activeTenant?.id,
   });
 
   // Fetch added products (opps_optimization)
   const { data: addedProducts = [], isLoading: isLoadingAdded } = useQuery({
     queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant?.id) return [];
+      
+      const { data, error } = await supabase
         .from('opps_optimization')
         .select('*')
+        .eq('tenant_id', activeTenant.id)
         .order('created_at', { ascending: false });
-      
-      if (!isSuperAdmin && activeTenant?.id) {
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
       
       if (error) throw error;
       return data;
     },
-    enabled: isSuperAdmin || !!activeTenant?.id,
+    enabled: !!activeTenant?.id,
   });
 
   // Fetch customer projects for joining
   const { data: customerProjects = [] } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data, error } = await supabase
         .from('customer_projects')
-        .select('*');
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data;
     },
+    enabled: !!activeTenant?.id,
   });
 
   // Fetch products for product family
   const { data: products = [] } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data, error } = await supabase
         .from('products')
-        .select('product, product_family');
+        .select('product, product_family')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data;
     },
+    enabled: !!activeTenant?.id,
   });
 
   const handleRestore = async (id: string, productName: string) => {
