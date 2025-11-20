@@ -86,7 +86,7 @@ const mixedDataTypes = [
 const dataTypes = [...tenantOnlyDataTypes, ...mixedDataTypes];
 
 export default function DataHub() {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, activeTenant } = useAuth();
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDataType, setSelectedDataType] = useState<any>(null);
@@ -369,128 +369,50 @@ export default function DataHub() {
         </Button>
       </div>
 
-      {isSuperAdmin ? (
-        <Tabs value={uploadScope} onValueChange={(v) => setUploadScope(v as 'tenant' | 'global')} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="tenant">Mandanten-Daten</TabsTrigger>
-            <TabsTrigger value="global">Globale Daten</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="tenant" className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Mandanten auswählen</CardTitle>
-                <CardDescription>
-                  Wählen Sie einen Mandanten aus, um dessen Daten zu verwalten
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label>Ziel-Mandant</Label>
-                  <Select value={selectedTenantId} onValueChange={setSelectedTenantId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Mandant auswählen..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants?.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id}>
-                          {tenant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {!selectedTenantId && (
-                    <p className="text-sm text-muted-foreground">
-                      Bitte wählen Sie einen Mandanten aus, um Daten hochzuladen
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {selectedTenantId && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[...tenantOnlyDataTypes, ...mixedDataTypes].map((dataType) => (
-                    <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
-                      <CardHeader>
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <dataType.icon className="h-5 w-5 text-primary" />
-                          </div>
-                          <CardTitle className="text-lg">{dataType.title}</CardTitle>
-                        </div>
-                        <CardDescription className="text-sm">
-                          {dataType.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-2 mt-auto">
-                        <Button
-                          onClick={() => handleFileSelect(dataType, selectedTenantId)}
-                          className="w-full"
-                          variant="outline"
-                        >
-                          <Upload className="mr-2 h-4 w-4" />
-                          XLS/CSV hochladen
-                        </Button>
-                        <Button
-                          onClick={() => openDeleteTableDialog(dataType.id)}
-                          className="w-full transition-colors hover:bg-destructive hover:text-destructive-foreground"
-                          variant="outline"
-                        >
-                          <Database className="mr-2 h-4 w-4" />
-                          Tabelle leeren
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </>
+      {/* Super Admin Upload Scope Selector */}
+      {isSuperAdmin && (
+        <Card className="shadow-card border-primary/20">
+          <CardHeader>
+            <CardTitle>Upload-Ziel auswählen</CardTitle>
+            <CardDescription>
+              Wählen Sie, ob Daten für den aktuellen Mandanten oder global hochgeladen werden sollen
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={uploadScope} onValueChange={(v) => setUploadScope(v as 'tenant' | 'global')} className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="tenant">
+                  Upload für: {activeTenant?.name || 'Kein Mandant ausgewählt'}
+                </TabsTrigger>
+                <TabsTrigger value="global">
+                  Globaler Upload (Alle Mandanten)
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            {uploadScope === 'tenant' && !activeTenant && (
+              <p className="text-sm text-destructive mt-2">
+                Bitte wählen Sie einen Mandanten in der Seitenleiste aus
+              </p>
             )}
-          </TabsContent>
+          </CardContent>
+        </Card>
+      )}
 
-          <TabsContent value="global" className="space-y-6">
-            <Card className="shadow-card mb-6">
-              <CardHeader>
-                <CardTitle>Globale Daten hochladen</CardTitle>
-                <CardDescription>
-                  Laden Sie Daten hoch, die für alle Mandanten verfügbar sein sollen (tenant_id = null)
-                </CardDescription>
-              </CardHeader>
-            </Card>
+      {/* Data Upload Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {dataTypes.map((dataType) => {
+          // Determine target tenant ID based on upload scope
+          const getTargetTenantId = () => {
+            if (isSuperAdmin) {
+              return uploadScope === 'global' ? null : activeTenant?.id || null;
+            }
+            return activeTenant?.id || null;
+          };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mixedDataTypes.map((dataType) => (
-                <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <dataType.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <CardTitle className="text-lg">🌐 {dataType.title}</CardTitle>
-                    </div>
-                    <CardDescription className="text-sm">
-                      {dataType.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 mt-auto">
-                    <Button
-                      onClick={() => handleFileSelect(dataType, null)}
-                      className="w-full"
-                      variant="outline"
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      Global hochladen
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dataTypes.map((dataType) => (
+          const targetTenant = getTargetTenantId();
+          const canUpload = isSuperAdmin ? (uploadScope === 'tenant' ? !!activeTenant : true) : !!activeTenant;
+
+          return (
             <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
@@ -505,9 +427,10 @@ export default function DataHub() {
               </CardHeader>
               <CardContent className="space-y-2 mt-auto">
                 <Button
-                  onClick={() => handleFileSelect(dataType)}
+                  onClick={() => handleFileSelect(dataType, targetTenant)}
                   className="w-full"
                   variant="outline"
+                  disabled={!canUpload}
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   XLS/CSV hochladen
@@ -522,9 +445,9 @@ export default function DataHub() {
                 </Button>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
 
       {/* Upload History */}
       <Card className="shadow-card">
