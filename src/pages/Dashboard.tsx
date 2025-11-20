@@ -83,8 +83,8 @@ export default function Dashboard() {
         .from('customer_projects')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -102,8 +102,8 @@ export default function Dashboard() {
         .from('products')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -121,8 +121,8 @@ export default function Dashboard() {
         .from('applications')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -140,8 +140,8 @@ export default function Dashboard() {
         .from('cross_sells')
         .select('*');
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
