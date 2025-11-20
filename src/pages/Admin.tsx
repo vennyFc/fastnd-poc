@@ -99,7 +99,9 @@ export default function Admin() {
       return response.data;
     },
     onSuccess: (data: any) => {
-      if (data?.userExists) {
+      if (data?.updated) {
+        toast.success(data.message || 'Bestehender Benutzer erfolgreich dem Mandanten zugeordnet');
+      } else if (data?.userExists) {
         toast.info(data.message || 'Benutzer ist bereits registriert');
       } else {
         toast.success(data?.message || 'Einladung erfolgreich versendet');
