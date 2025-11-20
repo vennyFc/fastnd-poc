@@ -268,15 +268,22 @@ export default function Projects() {
 
   // Fetch optimization records
   const { data: optimizationRecords = [], refetch: refetchOptimization } = useQuery({
-    queryKey: ['opps_optimization'],
+    queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
         .select('*');
+      
+      if (!isSuperAdmin && activeTenant?.id) {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: isSuperAdmin || !!activeTenant?.id,
   });
 
   // Fetch removed cross-sells
@@ -769,6 +776,7 @@ export default function Projects() {
         .from('opps_optimization')
         .insert({
           user_id: user.id,
+          tenant_id: activeTenant?.id || null,
           project_number: projectData.project_number,
           cross_sell_product_name: crossSellProduct,
           cross_sell_date_added: new Date().toISOString(),
@@ -965,6 +973,7 @@ export default function Projects() {
         .from('opps_optimization')
         .insert({
           user_id: user.id,
+          tenant_id: activeTenant?.id || null,
           project_number: projectData.project_number,
           alternative_product_name: alternativeProduct,
           alternative_date_added: new Date().toISOString(),
@@ -1077,6 +1086,7 @@ export default function Projects() {
             .from('opps_optimization')
             .insert({
               user_id: user.id,
+              tenant_id: activeTenant?.id || null,
               project_number: projectNumber,
               optimization_status: dbStatus,
             });

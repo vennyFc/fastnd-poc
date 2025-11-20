@@ -639,6 +639,7 @@ export type Database = {
           id: string
           optimization_status: Database["public"]["Enums"]["optimization_status"]
           project_number: string
+          tenant_id: string | null
           updated_at: string
           user_id: string
         }
@@ -657,6 +658,7 @@ export type Database = {
           id?: string
           optimization_status?: Database["public"]["Enums"]["optimization_status"]
           project_number: string
+          tenant_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -675,10 +677,19 @@ export type Database = {
           id?: string
           optimization_status?: Database["public"]["Enums"]["optimization_status"]
           project_number?: string
+          tenant_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "opps_optimization_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_alternatives: {
         Row: {

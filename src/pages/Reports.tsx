@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 type ReportView = 'overview' | 'rejected-cross-sells' | 'added-products';
 
@@ -28,6 +29,7 @@ const removalReasonLabels: Record<string, string> = {
 
 export default function Reports() {
   const { t } = useLanguage();
+  const { activeTenant, isSuperAdmin } = useAuth();
   const [currentView, setCurrentView] = useState<ReportView>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [customerFilter, setCustomerFilter] = useState<string>('all');
@@ -71,16 +73,23 @@ export default function Reports() {
 
   // Fetch added products (opps_optimization)
   const { data: addedProducts = [], isLoading: isLoadingAdded } = useQuery({
-    queryKey: ['opps_optimization'],
+    queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
         .select('*')
         .order('created_at', { ascending: false });
       
+      if (!isSuperAdmin && activeTenant?.id) {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      }
+      
+      const { data, error } = await query;
+      
       if (error) throw error;
       return data;
     },
+    enabled: isSuperAdmin || !!activeTenant?.id,
   });
 
   // Fetch customer projects for joining
