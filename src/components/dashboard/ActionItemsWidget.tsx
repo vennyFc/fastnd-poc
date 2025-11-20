@@ -12,8 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function ActionItemsWidget() {
+  const { activeTenant } = useAuth();
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [assignmentType, setAssignmentType] = useState<'project' | 'customer'>('project');
@@ -33,12 +35,12 @@ export function ActionItemsWidget() {
 
   // Fetch action items
   const { data: actionItems = [], isLoading } = useQuery({
-    queryKey: ['action_items'],
+    queryKey: ['action_items', activeTenant?.id],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('action_items')
         .select(`
           *, 
@@ -47,6 +49,13 @@ export function ActionItemsWidget() {
         `)
         .or(`user_id.eq.${user.id},assigned_to.eq.${user.id}`)
         .order('created_at', { ascending: false });
+      
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -72,11 +81,18 @@ export function ActionItemsWidget() {
 
   // Fetch projects for dropdown
   const { data: projects = [] } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('customer_projects')
         .select('id, customer, project_name');
+      
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -84,12 +100,19 @@ export function ActionItemsWidget() {
 
   // Fetch unique customers
   const { data: customers = [] } = useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('customer_projects')
         .select('id, customer')
         .order('customer');
+      
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       
       // Get unique customers
@@ -102,12 +125,19 @@ export function ActionItemsWidget() {
 
   // Fetch all users for assignment
   const { data: users = [] } = useQuery({
-    queryKey: ['profiles'],
+    queryKey: ['profiles', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('profiles')
         .select('id, email, full_name')
         .order('email');
+      
+      // Filter by tenant if a tenant is selected
+      if (activeTenant?.id) {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
