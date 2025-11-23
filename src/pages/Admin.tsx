@@ -272,25 +272,6 @@ export default function Admin() {
           </Button>
         </Link>
       )}
-      
-      {/* Tenant Context Banner */}
-      {activeTenant && (
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Verwaltung für Mandant
-                </p>
-                <p className="text-lg font-bold text-primary">
-                  {activeTenant.name}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {!activeTenant && (
         <Card className="bg-destructive/5 border-destructive/20">
