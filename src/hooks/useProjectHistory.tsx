@@ -3,8 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useProjectHistory() {
-  const { user } = useAuth();
+  const { user, activeTenant } = useAuth();
   const queryClient = useQueryClient();
+
+  // Get effective tenant_id
+  const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global' 
+    ? activeTenant.id 
+    : null;
 
   const addToHistory = useMutation({
     mutationFn: async (projectId: string) => {
@@ -16,7 +21,7 @@ export function useProjectHistory() {
         .select('id')
         .eq('user_id', user.id)
         .eq('project_id', projectId)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         await supabase
@@ -26,7 +31,11 @@ export function useProjectHistory() {
       } else {
         await supabase
           .from('user_project_history')
-          .insert({ user_id: user.id, project_id: projectId });
+          .insert({ 
+            user_id: user.id, 
+            project_id: projectId,
+            tenant_id: effectiveTenantId
+          });
       }
     },
     onSuccess: () => {
@@ -35,6 +44,6 @@ export function useProjectHistory() {
   });
 
   return {
-    addToHistory: (projectId: string) => addToHistory.mutate(projectId),
+    addToHistory: (projectId: string) => addToHistory.mutateAsync(projectId),
   };
 }
