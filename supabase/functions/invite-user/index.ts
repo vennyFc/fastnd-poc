@@ -155,11 +155,12 @@ Deno.serve(async (req) => {
           if (existingRole) {
             return new Response(
               JSON.stringify({ 
-                error: 'Benutzer ist bereits Super Admin',
-                userExists: true
+                message: 'Benutzer ist bereits Super Admin',
+                userId: userId,
+                alreadyHasRole: true
               }), 
               { 
-                status: 409,
+                status: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
               }
             )
