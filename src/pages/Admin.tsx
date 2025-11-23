@@ -10,12 +10,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Mail, Shield, User, Trash2, Search, ArrowLeft } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserPlus, Mail, Shield, User, Trash2, Search, ArrowLeft, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { UserPreferencesViewer } from '@/components/UserPreferencesViewer';
 
 export default function Admin() {
   const { isSuperAdmin, user, activeTenant } = useAuth();
@@ -50,7 +52,7 @@ export default function Admin() {
       if (profilesError) throw profilesError;
 
       // @ts-ignore
-      const { data: roles, error: rolesError } = await supabase
+      const { data: roles, error: rolesError} = await supabase
         // @ts-ignore
         .from('user_roles')
         .select('*');
@@ -290,277 +292,300 @@ export default function Admin() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Benutzerverwaltung</h1>
           <p className="text-muted-foreground mt-2">
-            Verwalten Sie Benutzer und deren Rollen
+            Verwalten Sie Benutzer, deren Rollen und Einstellungen
           </p>
         </div>
-        <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Benutzer einladen
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Neuen Benutzer einladen</DialogTitle>
-              <DialogDescription>
-                Senden Sie eine Einladungs-E-Mail an einen neuen Benutzer
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">Vorname</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Max"
-                    value={inviteFirstName}
-                    onChange={(e) => setInviteFirstName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Nachname</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Mustermann"
-                    value={inviteLastName}
-                    onChange={(e) => setInviteLastName(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">E-Mail-Adresse</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="benutzer@beispiel.de"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleInviteUser()}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="role">Rolle</Label>
-                <Select value={inviteRole} onValueChange={(value: 'user' | 'tenant_admin') => setInviteRole(value)}>
-                  <SelectTrigger id="role">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        <span>Benutzer</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="tenant_admin">
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        <span>Tenant Admin</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      </div>
 
-              {/* Show existing users */}
-              {users && users.length > 0 && (
-                <div className="border rounded-lg p-4 bg-muted/50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <h4 className="text-sm font-medium">Bereits registrierte Benutzer ({users.length})</h4>
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList>
+          <TabsTrigger value="users">
+            <User className="mr-2 h-4 w-4" />
+            Benutzer
+          </TabsTrigger>
+          <TabsTrigger value="preferences">
+            <Settings className="mr-2 h-4 w-4" />
+            Benutzer-Einstellungen
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-8 mt-6">
+          {/* Invite Button */}
+          <div className="flex justify-end">
+            <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Benutzer einladen
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Neuen Benutzer einladen</DialogTitle>
+                  <DialogDescription>
+                    Senden Sie eine Einladungs-E-Mail an einen neuen Benutzer
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Vorname</Label>
+                      <Input
+                        id="firstName"
+                        placeholder="Max"
+                        value={inviteFirstName}
+                        onChange={(e) => setInviteFirstName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Nachname</Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Mustermann"
+                        value={inviteLastName}
+                        onChange={(e) => setInviteLastName(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div className="max-h-[200px] overflow-y-auto space-y-1">
-                    {users.map((user: any) => (
-                      <div 
-                        key={user.id} 
-                        className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-background"
-                      >
-                        <span className="text-foreground">{user.email}</span>
-                        {user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin') && (
-                          <Badge variant="default" className="h-5 text-xs">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Admin
-                          </Badge>
-                        )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">E-Mail-Adresse</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="benutzer@beispiel.de"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleInviteUser()}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Rolle</Label>
+                    <Select value={inviteRole} onValueChange={(value: 'user' | 'tenant_admin') => setInviteRole(value)}>
+                      <SelectTrigger id="role">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="user">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>Benutzer</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="tenant_admin">
+                          <div className="flex items-center gap-2">
+                            <Shield className="h-4 w-4" />
+                            <span>Tenant Admin</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Show existing users */}
+                  {users && users.length > 0 && (
+                    <div className="border rounded-lg p-4 bg-muted/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="text-sm font-medium">Bereits registrierte Benutzer ({users.length})</h4>
                       </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    💡 Diese E-Mail-Adressen sind bereits registriert
-                  </p>
+                      <div className="max-h-[200px] overflow-y-auto space-y-1">
+                        {users.map((user: any) => (
+                          <div 
+                            key={user.id} 
+                            className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-background"
+                          >
+                            <span className="text-foreground">{user.email}</span>
+                            {user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin') && (
+                              <Badge variant="default" className="h-5 text-xs">
+                                <Shield className="h-3 w-3 mr-1" />
+                                Admin
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-3">
+                        💡 Diese E-Mail-Adressen sind bereits registriert
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                    Abbrechen
+                  </Button>
+                  <Button onClick={handleInviteUser} disabled={inviteUserMutation.isPending}>
+                    {inviteUserMutation.isPending ? (
+                      <>
+                        <Mail className="mr-2 h-4 w-4 animate-spin" />
+                        Wird gesendet...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Einladung senden
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Benutzer gesamt</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
+                <p className="text-sm text-muted-foreground mt-1">Registrierte Benutzer</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Administratoren</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-primary">
+                  {users?.filter((u: any) => u.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin')).length || 0}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">Mit Admin-Rechten</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Aktive Benutzer</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
+                <p className="text-sm text-muted-foreground mt-1">Letzte 30 Tage</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Users Table */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Alle Benutzer</CardTitle>
+                  <CardDescription>
+                    Verwalten Sie Benutzer und deren Berechtigungen
+                  </CardDescription>
+                </div>
+                <div className="relative w-64">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Nach E-Mail oder Name suchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              ) : filteredUsers.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>E-Mail</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Rolle</TableHead>
+                      <TableHead>Registriert</TableHead>
+                      <TableHead className="w-[450px]">Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user: any) => {
+                      const isUserAdmin = user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin');
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.email}</TableCell>
+                          <TableCell>{user.full_name || '-'}</TableCell>
+                          <TableCell>
+                            {isUserAdmin ? (
+                              <Badge variant="default" className="gap-1">
+                                <Shield className="h-3 w-3" />
+                                Admin
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="gap-1">
+                                <User className="h-3 w-3" />
+                                Benutzer
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="grid grid-cols-[auto_auto_auto] gap-2 items-center">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleResendInvite(user.email)}
+                                disabled={resendInviteMutation.isPending}
+                                className="whitespace-nowrap"
+                              >
+                                <Mail className="h-4 w-4 mr-1" />
+                                Einladung
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
+                                disabled={toggleAdminMutation.isPending}
+                                className="whitespace-nowrap min-w-[160px]"
+                              >
+                                <Shield className="h-4 w-4 mr-1" />
+                                {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteClick(user.id, user.email)}
+                                disabled={deleteUserMutation.isPending}
+                                title="Benutzer löschen"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              ) : searchQuery ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  Keine Benutzer gefunden für "{searchQuery}"
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  Keine Benutzer vorhanden
                 </div>
               )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                Abbrechen
-              </Button>
-              <Button onClick={handleInviteUser} disabled={inviteUserMutation.isPending}>
-                {inviteUserMutation.isPending ? (
-                  <>
-                    <Mail className="mr-2 h-4 w-4 animate-spin" />
-                    Wird gesendet...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Einladung senden
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg">Benutzer gesamt</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
-            <p className="text-sm text-muted-foreground mt-1">Registrierte Benutzer</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg">Administratoren</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-primary">
-              {users?.filter((u: any) => u.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin')).length || 0}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">Mit Admin-Rechten</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg">Aktive Benutzer</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
-            <p className="text-sm text-muted-foreground mt-1">Letzte 30 Tage</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Users Table */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Alle Benutzer</CardTitle>
-              <CardDescription>
-                Verwalten Sie Benutzer und deren Berechtigungen
-              </CardDescription>
-            </div>
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Nach E-Mail oder Name suchen..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : filteredUsers.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>E-Mail</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Rolle</TableHead>
-                  <TableHead>Registriert</TableHead>
-                  <TableHead className="w-[450px]">Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user: any) => {
-                  const isUserAdmin = user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin');
-                  return (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.email}</TableCell>
-                      <TableCell>{user.full_name || '-'}</TableCell>
-                      <TableCell>
-                        {isUserAdmin ? (
-                          <Badge variant="default" className="gap-1">
-                            <Shield className="h-3 w-3" />
-                            Admin
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="gap-1">
-                            <User className="h-3 w-3" />
-                            Benutzer
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {user.created_at ? format(new Date(user.created_at), 'dd.MM.yyyy') : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="grid grid-cols-[auto_auto_auto] gap-2 items-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleResendInvite(user.email)}
-                            disabled={resendInviteMutation.isPending}
-                            className="whitespace-nowrap"
-                          >
-                            <Mail className="h-4 w-4 mr-1" />
-                            Einladung
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleToggleAdmin(user.id, isUserAdmin)}
-                            disabled={toggleAdminMutation.isPending}
-                            className="whitespace-nowrap min-w-[160px]"
-                          >
-                            <Shield className="h-4 w-4 mr-1" />
-                            {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteClick(user.id, user.email)}
-                            disabled={deleteUserMutation.isPending}
-                            title="Benutzer löschen"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          ) : searchQuery ? (
-            <div className="p-8 text-center text-muted-foreground">
-              Keine Benutzer gefunden für "{searchQuery}"
-            </div>
-          ) : (
-            <div className="p-8 text-center text-muted-foreground">
-              Keine Benutzer vorhanden
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <TabsContent value="preferences" className="mt-6">
+          <UserPreferencesViewer />
+        </TabsContent>
+      </Tabs>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
