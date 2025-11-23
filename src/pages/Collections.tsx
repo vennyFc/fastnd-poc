@@ -16,7 +16,7 @@ import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 
 export default function Collections() {
-  const { user, isSuperAdmin, activeTenant } = useAuth();
+  const { isSuperAdmin, activeTenant, tenantId } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [open, setOpen] = useState(false);
@@ -121,7 +121,7 @@ export default function Collections() {
       // Get effective tenant_id
       const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global' 
         ? activeTenant.id 
-        : null;
+        : tenantId;
 
       if (!effectiveTenantId) {
         throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');

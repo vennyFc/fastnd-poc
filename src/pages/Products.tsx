@@ -26,7 +26,7 @@ type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price'
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
-  const { user, isSuperAdmin, activeTenant } = useAuth();
+  const { user, isSuperAdmin, activeTenant, tenantId } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -212,7 +212,7 @@ export default function Products() {
 
       const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global'
         ? activeTenant.id
-        : null;
+        : tenantId;
 
       if (!effectiveTenantId) {
         throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');
@@ -248,7 +248,7 @@ export default function Products() {
     mutationFn: async ({ collectionId, productId }: { collectionId: string; productId: string }) => {
       const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global'
         ? activeTenant.id
-        : null;
+        : tenantId;
 
       if (!effectiveTenantId) {
         throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');
