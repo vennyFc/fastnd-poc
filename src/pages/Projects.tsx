@@ -46,6 +46,7 @@ export default function Projects() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent' | 'open'>('all');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
   const [draggedProductIndex, setDraggedProductIndex] = useState<number | null>(null);
   const [productQuickViewOpen, setProductQuickViewOpen] = useState(false);
@@ -457,6 +458,12 @@ export default function Projects() {
     if (quickFilter === 'open') {
       const status = calculateProjectStatus(project, false);
       if (status !== 'Offen') return false;
+    }
+    
+    // Status filter
+    if (statusFilter) {
+      const status = calculateProjectStatus(project, false);
+      if (status !== statusFilter) return false;
     }
 
     // Search filter
@@ -2336,11 +2343,14 @@ export default function Projects() {
       </Card>
 
       {/* Quick Filter Chips */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Badge
           variant={quickFilter === 'favorites' ? 'default' : 'outline'}
           className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites')}
+          onClick={() => {
+            setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites');
+            setStatusFilter(null);
+          }}
         >
           <Star className={`mr-1.5 h-3.5 w-3.5 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
           Favoriten
@@ -2348,16 +2358,65 @@ export default function Projects() {
         <Badge
           variant={quickFilter === 'recent' ? 'default' : 'outline'}
           className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent')}
+          onClick={() => {
+            setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent');
+            setStatusFilter(null);
+          }}
         >
           Zuletzt angesehen
         </Badge>
+        
+        <Separator orientation="vertical" className="h-6" />
+        
         <Badge
-          variant={quickFilter === 'open' ? 'default' : 'outline'}
+          variant={statusFilter === 'Neu' ? 'default' : 'outline'}
           className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-          onClick={() => setQuickFilter(quickFilter === 'open' ? 'all' : 'open')}
+          onClick={() => {
+            setStatusFilter(statusFilter === 'Neu' ? null : 'Neu');
+            setQuickFilter('all');
+          }}
+        >
+          Neu
+        </Badge>
+        <Badge
+          variant={statusFilter === 'Offen' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => {
+            setStatusFilter(statusFilter === 'Offen' ? null : 'Offen');
+            setQuickFilter('all');
+          }}
         >
           Offen
+        </Badge>
+        <Badge
+          variant={statusFilter === 'Prüfung' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => {
+            setStatusFilter(statusFilter === 'Prüfung' ? null : 'Prüfung');
+            setQuickFilter('all');
+          }}
+        >
+          Prüfung
+        </Badge>
+        <Badge
+          variant={statusFilter === 'Validierung' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => {
+            setStatusFilter(statusFilter === 'Validierung' ? null : 'Validierung');
+            setQuickFilter('all');
+          }}
+        >
+          Validierung
+        </Badge>
+        <Badge
+          variant={statusFilter === 'Abgeschlossen' ? 'default' : 'outline'}
+          className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+          onClick={() => {
+            setStatusFilter(statusFilter === 'Abgeschlossen' ? null : 'Abgeschlossen');
+            setQuickFilter('all');
+          }}
+        >
+          Abgeschlossen
         </Badge>
       </div>
 
