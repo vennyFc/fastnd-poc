@@ -403,8 +403,9 @@ export default function Projects() {
       return 'Offen';
     }
     
-    // Default: Viewed project without added products → Prüfung
-    return 'Prüfung';
+    // Viewed project: Check if products were added to determine status
+    // If products added → Prüfung, otherwise → Offen
+    return hasAddedProducts ? 'Prüfung' : 'Offen';
   };
 
 
