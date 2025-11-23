@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export function UserPreferencesPopover() {
-  const { user } = useAuth();
+  const { user, activeTenant } = useAuth();
   const queryClient = useQueryClient();
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
@@ -23,46 +23,52 @@ export function UserPreferencesPopover() {
 
   // Fetch available applications
   const { data: applications } = useQuery({
-    queryKey: ['applications'],
+    queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data } = await supabase
         .from('applications')
         .select('application')
-        .eq('user_id', user?.id);
+        .eq('tenant_id', activeTenant.id);
       const uniqueApps = [...new Set(data?.map(a => a.application) || [])];
       return uniqueApps.sort();
     },
-    enabled: !!user,
+    enabled: !!user && !!activeTenant,
   });
 
   // Fetch available product families
   const { data: productFamilies } = useQuery({
-    queryKey: ['product_families'],
+    queryKey: ['product_families', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data } = await supabase
         .from('products')
         .select('product_family')
-        .eq('user_id', user?.id)
+        .eq('tenant_id', activeTenant.id)
         .not('product_family', 'is', null);
       const uniqueFamilies = [...new Set(data?.map(p => p.product_family).filter(Boolean) || [])];
       return uniqueFamilies.sort();
     },
-    enabled: !!user,
+    enabled: !!user && !!activeTenant,
   });
 
   // Fetch available manufacturers
   const { data: manufacturers } = useQuery({
-    queryKey: ['manufacturers'],
+    queryKey: ['manufacturers', activeTenant?.id],
     queryFn: async () => {
+      if (!activeTenant?.id) return [];
+      
       const { data } = await supabase
         .from('products')
         .select('manufacturer')
-        .eq('user_id', user?.id)
+        .eq('tenant_id', activeTenant.id)
         .not('manufacturer', 'is', null);
       const uniqueManufacturers = [...new Set(data?.map(p => p.manufacturer).filter(Boolean) || [])];
       return uniqueManufacturers.sort();
     },
-    enabled: !!user,
+    enabled: !!user && !!activeTenant,
   });
 
   // Fetch user preferences
@@ -104,7 +110,7 @@ export function UserPreferencesPopover() {
   // Save preferences mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      if (!user) return;
+      if (!user || !activeTenant) return;
 
       const { data: existing } = await supabase
         .from('user_preferences')
@@ -121,6 +127,7 @@ export function UserPreferencesPopover() {
             manufacturers: selectedManufacturers,
             recent_projects_limit: recentProjectsLimit,
             auto_logoff_minutes: autoLogoffMinutes,
+            tenant_id: activeTenant.id,
           })
           .eq('user_id', user.id);
       } else {
@@ -128,6 +135,7 @@ export function UserPreferencesPopover() {
           .from('user_preferences')
           .insert({
             user_id: user.id,
+            tenant_id: activeTenant.id,
             target_applications: selectedApplications,
             product_families: selectedFamilies,
             manufacturers: selectedManufacturers,
