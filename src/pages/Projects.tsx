@@ -954,41 +954,13 @@ export default function Projects() {
         return;
       }
 
-      // Get project_number for finding the customer_projects entry
-      const { data: projectData } = await supabase
-        .from('customer_projects')
-        .select('project_number')
-        .eq('customer', customer)
-        .eq('project_name', projectName)
-        .limit(1)
-        .maybeSingle();
-
-      if (!projectData) {
-        toast.error('Projekt nicht gefunden');
-        return;
-      }
-
-      // Delete from opps_optimization
-      const { error: optError } = await supabase
+      // Delete only from opps_optimization (not from customer_projects)
+      const { error } = await supabase
         .from('opps_optimization')
         .delete()
         .eq('id', recordId);
 
-      if (optError) throw optError;
-
-      // Delete from customer_projects (the entry where this product was added)
-      const { error: projectError } = await supabase
-        .from('customer_projects')
-        .delete()
-        .eq('customer', customer)
-        .eq('project_name', projectName)
-        .eq('product', productName)
-        .eq('project_number', projectData.project_number);
-
-      if (projectError) {
-        console.error('Error removing from customer_projects:', projectError);
-        // Don't throw here, as the optimization record was already deleted
-      }
+      if (error) throw error;
 
       // Invalidate queries to refresh data
       await Promise.all([
@@ -1001,7 +973,7 @@ export default function Projects() {
         refetchOptimization()
       ]);
 
-      toast.success(`${productName} aus dem Projekt entfernt`);
+      toast.success(`${productName} aus den Optimierungen entfernt`);
     } catch (error: any) {
       console.error('Error removing product:', error);
       toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
