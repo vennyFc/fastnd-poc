@@ -359,11 +359,11 @@ export default function Projects() {
       return highest;
     }
     
-    // Check if products were added to project (from optimization)
+    // Check if products were added to project (from optimization) → Prüfung
     const hasAddedProducts = projectOptRecords.some((rec: any) => 
       rec.cross_sell_product_name || rec.alternative_product_name
     );
-    if (hasAddedProducts) return 'Validierung';
+    if (hasAddedProducts) return 'Prüfung';
     
     // Check if project was viewed (from history)
     const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
@@ -403,7 +403,7 @@ export default function Projects() {
       return 'Offen';
     }
     
-    // Default: Viewed project -> Prüfung
+    // Default: Viewed project without added products → Prüfung
     return 'Prüfung';
   };
 
