@@ -45,10 +45,11 @@ export function AddedProductsWidget() {
         .from('opps_optimization')
         .select('*');
       
-      // Filter by tenant if a tenant is selected
-      if (activeTenant?.id) {
+      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
+      if (activeTenant?.id && activeTenant.id !== 'global') {
         query = query.eq('tenant_id', activeTenant.id);
       }
+      // For 'global', no filter is applied - get all tenants
       
       const { data, error } = await query;
       
