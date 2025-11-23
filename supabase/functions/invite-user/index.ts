@@ -71,7 +71,8 @@ Deno.serve(async (req) => {
 
     // Handle super_admin invites
     if (adminInfo.role === 'super_admin') {
-      let effectiveTenantId = tenantId
+      // Convert "global" string to null for database compatibility
+      let effectiveTenantId = tenantId === 'global' ? null : tenantId
       const inviteRole = userRole
 
       // If inviting a super_admin, tenant_id must be null
