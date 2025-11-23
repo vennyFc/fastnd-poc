@@ -88,14 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setTenantId(data?.tenant_id || null);
       
-      // Set active tenant for non-super-admin users
-      if (data?.tenant) {
-        // @ts-ignore
-        setActiveTenant(data.tenant);
-      } else {
-        setActiveTenant(null);
-      }
-      
       const roles = data?.user_roles || [];
       const isSuperAdminRole = roles.some((r: any) => r.role === 'super_admin');
       const isTenantAdminRole = roles.some((r: any) => r.role === 'tenant_admin');
@@ -109,6 +101,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Super Admin has priority - if user is super admin, they are NOT tenant admin
       setIsSuperAdmin(isSuperAdminRole);
       setIsTenantAdmin(isTenantAdminRole && !isSuperAdminRole);
+      
+      // Set active tenant
+      if (isSuperAdminRole) {
+        // Super Admins default to Global view
+        setActiveTenant({ id: 'global', name: 'Global' });
+      } else if (data?.tenant) {
+        // Regular users and tenant admins get their assigned tenant
+        // @ts-ignore
+        setActiveTenant(data.tenant);
+      } else {
+        setActiveTenant(null);
+      }
     } catch (error) {
       console.error('Error loading user context:', error);
       setTenantId(null);
