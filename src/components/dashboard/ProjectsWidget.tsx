@@ -140,11 +140,7 @@ export function ProjectsWidget() {
   // Get favorite projects with full data
   const favoriteProjects = allProjects.filter((p: any) => favoriteIds.includes(p.id));
 
-  // Get new projects (last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const newProjects = allProjects.filter((p: any) => new Date(p.created_at) > sevenDaysAgo);
-
+  // Fetch optimization records
   const { data: optimizationRecords = [] } = useQuery({
     queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
@@ -254,6 +250,9 @@ export function ProjectsWidget() {
   };
 
   const { isFavorite, toggleFavorite } = useFavorites('project');
+
+  // Get new projects (with status "Neu")
+  const newProjects = allProjects.filter((p: any) => getOptimizationStatus(p) === 'Neu');
 
   // Get projects to review (with status "Prüfung")
   const projectsToReview = allProjects.filter((p: any) => getOptimizationStatus(p) === 'Prüfung');
