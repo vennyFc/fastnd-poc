@@ -114,6 +114,7 @@ export default function Projects() {
     { key: 'product_tags', label: 'Tags', visible: true, width: 200, order: 6 },
     { key: 'status', label: 'Status', visible: true, width: 150, order: 7 },
     { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 8 },
+    { key: 'remove', label: '', visible: true, width: 70, order: 9 },
   ]), []);
 
   const { 
@@ -933,6 +934,52 @@ export default function Projects() {
     await handleUndoRemovalById(lastRemovedId);
   };
 
+  const handleRemoveAddedProduct = async (
+    customer: string,
+    projectName: string,
+    productName: string,
+    type: 'cross_sell' | 'alternative'
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Nicht authentifiziert');
+        return;
+      }
+
+      // Get the optimization record ID
+      const recordId = getOptimizationRecordId(customer, projectName, productName, type);
+      if (!recordId) {
+        toast.error('Optimierungsdatensatz nicht gefunden');
+        return;
+      }
+
+      // Delete from opps_optimization
+      const { error } = await supabase
+        .from('opps_optimization')
+        .delete()
+        .eq('id', recordId);
+
+      if (error) throw error;
+
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['opps_optimization'] }),
+        queryClient.invalidateQueries({ queryKey: ['customer_projects'] })
+      ]);
+      
+      await Promise.all([
+        refetchProjects(),
+        refetchOptimization()
+      ]);
+
+      toast.success(`${productName} aus dem Projekt entfernt`);
+    } catch (error: any) {
+      console.error('Error removing product:', error);
+      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+    }
+  };
+
   const handleAddAlternative = async (project: any, alternativeProduct: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -1561,35 +1608,56 @@ export default function Projects() {
                                              )}
                                            </div>
                                          );
-                                       } else if (column.key === 'status') {
-                                         const isRegistered = productStatus === 'Registriert';
-                                         value = productStatus ? (
-                                           <Select
-                                             value={productStatus}
-                                             disabled={isRegistered}
-                                             onValueChange={(newStatus) => 
-                                               handleUpdateCrossSellStatus(
-                                                 project.customer, 
-                                                 project.project_name, 
-                                                 productName, 
-                                                 newStatus,
-                                                 'cross_sell'
-                                               )
-                                             }
-                                           >
-                                             <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
-                                               <SelectValue />
-                                             </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                <SelectItem value="Registriert">Registriert</SelectItem>
-                                                <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
-                                              </SelectContent>
-                                           </Select>
-                                         ) : '-';
-                                         } else if (details) {
+                                        } else if (column.key === 'status') {
+                                          const isRegistered = productStatus === 'Registriert';
+                                          value = productStatus ? (
+                                            <Select
+                                              value={productStatus}
+                                              disabled={isRegistered}
+                                              onValueChange={(newStatus) => 
+                                                handleUpdateCrossSellStatus(
+                                                  project.customer, 
+                                                  project.project_name, 
+                                                  productName, 
+                                                  newStatus,
+                                                  'cross_sell'
+                                                )
+                                              }
+                                            >
+                                              <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                               <SelectContent>
+                                                 <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                 <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                 <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                 <SelectItem value="Registriert">Registriert</SelectItem>
+                                                 <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                               </SelectContent>
+                                            </Select>
+                                          ) : '-';
+                                        } else if (column.key === 'remove') {
+                                          // Show remove button only for added products (not for original "Registriert" products)
+                                          const isAddedProduct = productStatus && productStatus !== 'Registriert';
+                                          value = isAddedProduct ? (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveAddedProduct(
+                                                  project.customer,
+                                                  project.project_name,
+                                                  productName,
+                                                  'cross_sell'
+                                                );
+                                              }}
+                                            >
+                                              <X className="h-4 w-4" />
+                                            </Button>
+                                          ) : null;
+                                          } else if (details) {
                                           if (column.key === 'manufacturer') value = details.manufacturer || '-';
                                           if (column.key === 'product_family') value = details.product_family || '-';
                                           if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
@@ -1732,26 +1800,51 @@ export default function Projects() {
                                                   )}
                                                 </TableCell>
                                               );
-                                            } else {
-                                              let value = '-';
-                                              if (altDetails) {
-                                                if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                                if (column.key === 'product_family') value = altDetails.product_family || '-';
-                                                if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
-                                                if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
-                                                if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
-                                                if (column.key === 'description') value = altDetails.product_description || '-';
-                                              }
+                                             } else if (column.key === 'remove') {
+                                               // Show remove button only for added alternative products (not for original "Registriert" products)
+                                               const isAddedProduct = altStatus && altStatus !== 'Registriert';
+                                               return (
+                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                   {isAddedProduct ? (
+                                                     <Button
+                                                       variant="ghost"
+                                                       size="sm"
+                                                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                       onClick={(e) => {
+                                                         e.stopPropagation();
+                                                         handleRemoveAddedProduct(
+                                                           project.customer,
+                                                           project.project_name,
+                                                           alt.alternative_product,
+                                                           'alternative'
+                                                         );
+                                                       }}
+                                                     >
+                                                       <X className="h-4 w-4" />
+                                                     </Button>
+                                                   ) : null}
+                                                 </TableCell>
+                                               );
+                                             } else {
+                                               let value = '-';
+                                               if (altDetails) {
+                                                 if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
+                                                 if (column.key === 'product_family') value = altDetails.product_family || '-';
+                                                 if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
+                                                 if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
+                                                 if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
+                                                 if (column.key === 'description') value = altDetails.product_description || '-';
+                                               }
 
-                                              return (
-                                                <TableCell 
-                                                  key={column.key}
-                                                  style={{ width: `${column.width}px` }}
-                                                >
-                                                  {value}
-                                                </TableCell>
-                                              );
-                                            }
+                                               return (
+                                                 <TableCell 
+                                                   key={column.key}
+                                                   style={{ width: `${column.width}px` }}
+                                                 >
+                                                   {value}
+                                                 </TableCell>
+                                               );
+                                             }
                                           })}
                                        </TableRow>
                                      );
