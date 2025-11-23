@@ -145,7 +145,6 @@ export function ProjectsWidget() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const newProjects = allProjects.filter((p: any) => new Date(p.created_at) > sevenDaysAgo);
 
-  // Fetch optimization records
   const { data: optimizationRecords = [] } = useQuery({
     queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
@@ -166,11 +165,6 @@ export function ProjectsWidget() {
     enabled: isSuperAdmin || !!activeTenant?.id,
   });
 
-  const { isFavorite, toggleFavorite } = useFavorites('project');
-
-  // Get projects to review (missing application or product info)
-  const projectsToReview = allProjects.filter((p: any) => !p.applications || p.applications.length === 0 || !p.products || p.products.length === 0);
-  
   // Get optimization status for a project
   const getOptimizationStatus = (project: any) => {
     // Find all project_numbers that belong to this grouped project
@@ -258,6 +252,11 @@ export function ProjectsWidget() {
     // Default fallback
     return 'Offen';
   };
+
+  const { isFavorite, toggleFavorite } = useFavorites('project');
+
+  // Get projects to review (with status "Prüfung")
+  const projectsToReview = allProjects.filter((p: any) => getOptimizationStatus(p) === 'Prüfung');
 
   const renderProjectList = (projects: any[], showViewedTime: boolean = false) => {
     if (projects.length === 0) {
