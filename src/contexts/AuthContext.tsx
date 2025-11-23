@@ -99,6 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const roles = data?.user_roles || [];
       const isSuperAdminRole = roles.some((r: any) => r.role === 'super_admin');
       const isTenantAdminRole = roles.some((r: any) => r.role === 'tenant_admin');
+
+      console.log('AuthContext: loaded roles for user', userId, {
+        roles,
+        isSuperAdminRole,
+        isTenantAdminRole,
+      });
       
       // Super Admin has priority - if user is super admin, they are NOT tenant admin
       setIsSuperAdmin(isSuperAdminRole);
