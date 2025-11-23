@@ -1315,6 +1315,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_access_logs: { Args: never; Returns: number }
       get_my_tenant_id: { Args: never; Returns: string }
       has_role: {
         Args: {
