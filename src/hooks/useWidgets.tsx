@@ -14,15 +14,11 @@ export interface WidgetConfig {
 }
 
 export const defaultWidgets: WidgetConfig[] = [
-  { id: 'projects', type: 'projects', visible: true, order: 0, size: 'medium' },
-  { id: 'action-items', type: 'action-items', visible: true, order: 1, size: 'medium' },
-  { id: 'npi-products', type: 'npi-products', visible: true, order: 2, size: 'full' },
-  { id: 'statistics', type: 'statistics', visible: true, order: 3, size: 'full' },
-  { id: 'optimization-status', type: 'optimization-status', visible: true, order: 4, size: 'full' },
-  { id: 'login-activity', type: 'login-activity', visible: true, order: 5, size: 'full' },
-  { id: 'access-stats', type: 'access-stats', visible: true, order: 6, size: 'full' },
-  { id: 'added-products', type: 'added-products', visible: true, order: 7, size: 'full' },
-  { id: 'getting-started', type: 'getting-started', visible: true, order: 8, size: 'medium' },
+  { id: 'optimization-status', type: 'optimization-status', visible: true, order: 0, size: 'full' },
+  { id: 'login-activity', type: 'login-activity', visible: true, order: 1, size: 'full' },
+  { id: 'access-stats', type: 'access-stats', visible: true, order: 2, size: 'full' },
+  { id: 'added-products', type: 'added-products', visible: true, order: 3, size: 'full' },
+  { id: 'getting-started', type: 'getting-started', visible: true, order: 4, size: 'medium' },
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {
