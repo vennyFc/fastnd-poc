@@ -46,7 +46,7 @@ export function OptimizationStatusWidget() {
       
       // Filter by tenant if a tenant is selected
       if (activeTenant?.id) {
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+        query = query.eq('tenant_id', activeTenant.id);
       }
       
       const { data, error } = await query;
