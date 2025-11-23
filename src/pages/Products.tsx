@@ -210,12 +210,21 @@ export default function Products() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global'
+        ? activeTenant.id
+        : null;
+
+      if (!effectiveTenantId) {
+        throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');
+      }
+
       const { data, error } = await supabase
         .from('collections')
         .insert({
           user_id: user.id,
           name: name,
           visibility: 'private',
+          tenant_id: effectiveTenantId,
         })
         .select()
         .single();
@@ -237,11 +246,20 @@ export default function Products() {
   // Add product to collection mutation
   const addToCollectionMutation = useMutation({
     mutationFn: async ({ collectionId, productId }: { collectionId: string; productId: string }) => {
+      const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global'
+        ? activeTenant.id
+        : null;
+
+      if (!effectiveTenantId) {
+        throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');
+      }
+
       const { error } = await supabase
         .from('collection_products')
         .insert({
           collection_id: collectionId,
           product_id: productId,
+          tenant_id: effectiveTenantId,
         });
       if (error) {
         if (error.code === '23505') {
