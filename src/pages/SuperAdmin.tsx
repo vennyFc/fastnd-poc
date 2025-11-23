@@ -46,6 +46,37 @@ export default function SuperAdmin() {
   const [addUserEmail, setAddUserEmail] = useState('');
   const queryClient = useQueryClient();
 
+  // Cleanup global data mutation
+  const cleanupMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('cleanup-global-data');
+      
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data.totalDeleted === 0) {
+        toast.info(data.message || 'Keine globalen Daten gefunden');
+      } else {
+        toast.success(data.message || `${data.totalDeleted} Datensätze gelöscht`, {
+          description: data.results
+            ? `Bereinigt: ${data.results.map((r: any) => `${r.table} (${r.deletedCount})`).join(', ')}`
+            : undefined,
+          duration: 5000,
+        });
+      }
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+    },
+    onError: (error: Error) => {
+      toast.error('Fehler beim Bereinigen', {
+        description: error.message,
+      });
+    },
+  });
+
   // Fetch all tenants
   const { data: tenants, isLoading, error } = useQuery({
     queryKey: ['tenants'],
@@ -441,6 +472,29 @@ export default function SuperAdmin() {
               {inviteSuperAdminMutation.isPending ? 'Lädt ein...' : 'Super-Admin einladen'}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Cleanup Global Data */}
+      <Card className="border-destructive/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-destructive">
+            <Trash className="h-5 w-5" />
+            Globale Daten bereinigen
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Entfernt alle verwaisten Daten ohne Mandantenzuordnung (tenant_id = NULL) aus der Datenbank. 
+            Diese Aktion kann nicht rückgängig gemacht werden.
+          </p>
+          <Button 
+            variant="destructive"
+            onClick={() => cleanupMutation.mutate()}
+            disabled={cleanupMutation.isPending}
+          >
+            {cleanupMutation.isPending ? 'Bereinige...' : 'Globale Daten löschen'}
+          </Button>
         </CardContent>
       </Card>
 
