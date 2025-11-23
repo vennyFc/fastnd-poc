@@ -976,7 +976,7 @@ export default function Products() {
                           <SelectTrigger>
                             <SelectValue placeholder="Sammlung auswählen..." />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent position="popper">
                             {collections.map((collection: any) => (
                               <SelectItem key={collection.id} value={collection.id}>
                                 {collection.name}
