@@ -29,7 +29,7 @@ const removalReasonLabels: Record<string, string> = {
 
 export default function Reports() {
   const { t } = useLanguage();
-  const { activeTenant, isSuperAdmin } = useAuth();
+  const { user, activeTenant, isSuperAdmin } = useAuth();
   const [currentView, setCurrentView] = useState<ReportView>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [customerFilter, setCustomerFilter] = useState<string>('all');
@@ -126,6 +126,104 @@ export default function Reports() {
     enabled: !!activeTenant?.id,
   });
 
+  // Fetch recently viewed projects from database
+  const { data: recentHistory = [] } = useQuery({
+    queryKey: ['user-project-history', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('user_project_history')
+        .select('project_id, viewed_at')
+        .eq('user_id', user.id)
+        .order('viewed_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!user
+  });
+
+  // Get optimization status for a project (same logic as ProjectsWidget)
+  const getOptimizationStatus = (projectNumber: string, optRecords: any[]) => {
+    const projectOptRecords = optRecords.filter(
+      (rec: any) => rec.project_number === projectNumber
+    );
+    
+    // 1. Manually set status (highest priority, but NEU cannot be manually set)
+    const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
+    const manualStatuses = projectOptRecords
+      .map((rec: any) => rec.optimization_status)
+      .filter((status: string) => status && status !== 'Neu') as typeof order[number][];
+    if (manualStatuses.length > 0) {
+      const highest = manualStatuses.reduce((acc, cur) => 
+        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Offen' as typeof order[number]
+      );
+      return highest;
+    }
+    
+    // 2. Check if project < 7 days old AND not viewed yet → NEU
+    const project = customerProjects.find((p: any) => p.project_number === projectNumber);
+    if (project) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
+      
+      if (!wasViewed && project.created_at) {
+        const createdDate = new Date(project.created_at);
+        if (createdDate > oneWeekAgo) {
+          return 'Neu';
+        }
+      }
+    }
+    
+    // If no optimization records exist, check remaining status logic
+    if (projectOptRecords.length === 0) {
+      return 'Offen';
+    }
+    
+    // 3. Check if products have been added
+    const hasAddedProducts = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_product_name || rec.alternative_product_name
+    );
+    
+    if (!hasAddedProducts) {
+      // 3a. No products added → OFFEN
+      return 'Offen';
+    }
+    
+    // 4-6. Products added, check product status
+    const allProductStatuses: string[] = [];
+    projectOptRecords.forEach((rec: any) => {
+      if (rec.cross_sell_product_name && rec.cross_sell_status) {
+        allProductStatuses.push(rec.cross_sell_status);
+      }
+      if (rec.alternative_product_name && rec.alternative_status) {
+        allProductStatuses.push(rec.alternative_status);
+      }
+    });
+    
+    if (allProductStatuses.length === 0) {
+      // Products added but no status set → PRÜFUNG
+      return 'Prüfung';
+    }
+    
+    // 4. At least one product has status "Identifiziert" → PRÜFUNG
+    if (allProductStatuses.some(status => status === 'Identifiziert')) {
+      return 'Prüfung';
+    }
+    
+    // 5. At least one product has status "Vorgeschlagen" → VALIDIERUNG
+    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
+      return 'Validierung';
+    }
+    
+    // 6. All products have status "Akzeptiert" or "Registriert" → ABGESCHLOSSEN
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
+    }
+    
+    // Default fallback
+    return 'Offen';
+  };
+
   const handleRestore = async (id: string, productName: string) => {
     try {
       const { error } = await supabase
@@ -193,6 +291,9 @@ export default function Reports() {
   const enrichedAddedProducts = addedProducts.map((opt: any) => {
     const project = customerProjects.find((p: any) => p.project_number === opt.project_number);
     
+    // Calculate dynamic optimization status
+    const dynamicStatus = getOptimizationStatus(opt.project_number, addedProducts);
+    
     const products_list = [];
     
     // Cross-Sell Product
@@ -204,7 +305,7 @@ export default function Reports() {
         application: project?.application || '-',
         project_name: project?.project_name || '-',
         project_number: opt.project_number,
-        optimization_status: opt.optimization_status,
+        optimization_status: dynamicStatus,
         product_name: opt.cross_sell_product_name,
         product_family: productInfo?.product_family || '-',
         product_type: 'Cross-Sell',
@@ -222,7 +323,7 @@ export default function Reports() {
         application: project?.application || '-',
         project_name: project?.project_name || '-',
         project_number: opt.project_number,
-        optimization_status: opt.optimization_status,
+        optimization_status: dynamicStatus,
         product_name: opt.alternative_product_name,
         product_family: productInfo?.product_family || '-',
         product_type: 'Alternative',
