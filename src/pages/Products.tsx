@@ -406,10 +406,6 @@ export default function Products() {
             Produktkatalog und Halbleiter-Komponenten
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Hinzufügen
-        </Button>
       </div>
 
       {/* Search and Filter */}
