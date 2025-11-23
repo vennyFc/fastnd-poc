@@ -1129,8 +1129,11 @@ export default function Projects() {
     }
   };
 
-  const handleRowClick = (project: any) => {
-    addToHistory(project.id);
+  const handleRowClick = async (project: any) => {
+    await addToHistory(project.id);
+    // Invalidate queries to update the status calculation
+    await queryClient.invalidateQueries({ queryKey: ['user-project-history'] });
+    await queryClient.invalidateQueries({ queryKey: ['opps_optimization', activeTenant?.id] });
     setSelectedProject(project);
     setSelectedCustomer(null);
     setViewMode('detail');
