@@ -321,26 +321,35 @@ export function OptimizationStatusWidget() {
 
             <div className="mt-6">
               <p className="text-sm font-medium mb-3">Verteilung nach Status:</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {chartData.map((item) => (
-                <div 
-                  key={item.status} 
-                  className="p-3 rounded-lg border"
-                  style={{ backgroundColor: `${item.fill}10` }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div 
-                      className="h-3 w-3 rounded-full" 
-                      style={{ backgroundColor: item.fill }}
-                    />
-                    <p className="text-sm font-medium">{item.status}</p>
+              <div className="grid grid-cols-5 gap-3">
+              {chartData.map((item) => {
+                const percentage = totalProjects > 0 
+                  ? Math.round((item.anzahl / totalProjects) * 100) 
+                  : 0;
+                
+                return (
+                  <div 
+                    key={item.status} 
+                    className="p-3 rounded-lg border"
+                    style={{ backgroundColor: `${item.fill}10` }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div 
+                        className="h-3 w-3 rounded-full" 
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <p className="text-sm font-medium">{item.status}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold">{item.anzahl}</p>
+                      <p className="text-xs text-muted-foreground">Projekte</p>
+                      <p className="text-sm font-semibold mt-1" style={{ color: item.fill }}>
+                        {percentage}%
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{item.anzahl}</p>
-                    <p className="text-xs text-muted-foreground">Projekte</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               </div>
             </div>
           </>
