@@ -26,22 +26,36 @@ export const defaultWidgets: WidgetConfig[] = [
 ];
 
 export function useWidgets(storageKey: string = 'dashboard-widgets') {
-  const { user } = useAuth();
+  const { user, activeTenant } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch widget settings from database
+  // Get effective tenant_id (null for 'global')
+  const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global' 
+    ? activeTenant.id 
+    : null;
+
+  // Fetch widget settings from database (tenant-specific)
   const { data: dbSettings } = useQuery({
-    queryKey: ['user-dashboard-settings', user?.id],
+    queryKey: ['user-dashboard-settings', user?.id, effectiveTenantId],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase
+      
+      let query = supabase
         .from('user_dashboard_settings')
         .select('settings')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
+      
+      // Filter by tenant_id
+      if (effectiveTenantId) {
+        query = query.eq('tenant_id', effectiveTenantId);
+      } else {
+        query = query.is('tenant_id', null);
+      }
+      
+      const { data } = await query.maybeSingle();
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && activeTenant !== null,
   });
 
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => {
@@ -81,30 +95,44 @@ export function useWidgets(storageKey: string = 'dashboard-widgets') {
     }
   }, [dbSettings]);
 
-  // Mutation to save settings to database
+  // Mutation to save settings to database (tenant-specific)
   const saveSettings = useMutation({
     mutationFn: async (newWidgets: WidgetConfig[]) => {
       if (!user) return;
       
-      const { data: existing } = await supabase
+      let query = supabase
         .from('user_dashboard_settings')
         .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
+      
+      // Filter by tenant_id
+      if (effectiveTenantId) {
+        query = query.eq('tenant_id', effectiveTenantId);
+      } else {
+        query = query.is('tenant_id', null);
+      }
+      
+      const { data: existing } = await query.maybeSingle();
 
       if (existing) {
         await supabase
           .from('user_dashboard_settings')
           .update({ settings: newWidgets as any })
-          .eq('user_id', user.id);
+          .eq('id', existing.id);
       } else {
         await supabase
           .from('user_dashboard_settings')
-          .insert({ user_id: user.id, settings: newWidgets as any });
+          .insert({ 
+            user_id: user.id, 
+            tenant_id: effectiveTenantId,
+            settings: newWidgets as any 
+          });
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-dashboard-settings', user?.id] });
+      queryClient.invalidateQueries({ 
+        queryKey: ['user-dashboard-settings', user?.id, effectiveTenantId] 
+      });
     },
   });
 
