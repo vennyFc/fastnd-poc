@@ -2314,10 +2314,6 @@ export default function Projects() {
             Übersicht aller Kundenprojekte mit Opportunity-Scores
           </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Hinzufügen
-        </Button>
       </div>
 
       {/* Search and Filter Bar */}
