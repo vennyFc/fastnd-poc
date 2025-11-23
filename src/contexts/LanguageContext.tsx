@@ -28,7 +28,7 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.collections': 'Sammlungen',
     'nav.reports': 'Reports',
     'nav.administration': 'Administration',
-    'nav.admin': 'Admin',
+    'nav.admin': 'Benutzerverwaltung',
     'nav.dataHub': 'Datenhub',
     'nav.logout': 'Abmelden',
     
