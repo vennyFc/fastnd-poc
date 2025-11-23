@@ -205,6 +205,8 @@ export default function Dashboard() {
           </WidgetContainer>
         );
       case 'projects':
+        // Hide in global view
+        if (activeTenant?.id === 'global') return null;
         return (
           <WidgetContainer
             key="projects"
@@ -223,6 +225,8 @@ export default function Dashboard() {
           </WidgetContainer>
         );
       case 'action-items':
+        // Hide in global view
+        if (activeTenant?.id === 'global') return null;
         return (
           <WidgetContainer
             key="action-items"
@@ -241,6 +245,8 @@ export default function Dashboard() {
           </WidgetContainer>
         );
       case 'statistics':
+        // Hide in global view
+        if (activeTenant?.id === 'global') return null;
         return (
           <WidgetContainer
             key="statistics"
@@ -263,6 +269,8 @@ export default function Dashboard() {
           </WidgetContainer>
         );
       case 'npi-products':
+        // Hide in global view
+        if (activeTenant?.id === 'global') return null;
         return (
           <WidgetContainer
             key="npi-products"
@@ -357,6 +365,8 @@ export default function Dashboard() {
           </WidgetContainer>
         );
       case 'getting-started':
+        // Hide in global view
+        if (activeTenant?.id === 'global') return null;
         return (
           <WidgetContainer
             key="getting-started"
