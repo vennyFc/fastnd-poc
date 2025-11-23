@@ -368,10 +368,11 @@ export default function Projects() {
     // Check if project was viewed (from history)
     const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
     
-    // Check if opportunity was added within last week
+    // Check if opportunity was added OR project was created within last week
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
+    // Check opportunity records
     const newestRecord = projectOptRecords
       .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
       .sort((a: any, b: any) => {
@@ -380,18 +381,29 @@ export default function Projects() {
         return dateB.getTime() - dateA.getTime();
       })[0];
     
-    // Status "Neu": Opportunity < 7 Tage UND noch nicht angesehen
-    if (newestRecord && !wasViewed) {
-      const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
-      if (addedDate > oneWeekAgo) {
-        return 'Neu';
+    // Status "Neu": (Opportunity < 7 Tage ODER Projekt < 7 Tage) UND noch nicht angesehen
+    if (!wasViewed) {
+      // Check if opportunity was added recently
+      if (newestRecord) {
+        const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
+        if (addedDate > oneWeekAgo) {
+          return 'Neu';
+        }
       }
+      
+      // Check if project itself was created recently
+      if (project.created_at) {
+        const createdDate = new Date(project.created_at);
+        if (createdDate > oneWeekAgo) {
+          return 'Neu';
+        }
+      }
+      
+      // Not viewed but older than 7 days
+      return 'Offen';
     }
     
-    // Status "Offen": Noch nicht angesehen
-    if (!wasViewed) return 'Offen';
-    
-    // Default: Prüfung
+    // Default: Viewed project -> Prüfung
     return 'Prüfung';
   };
 
