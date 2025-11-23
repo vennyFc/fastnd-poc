@@ -94,6 +94,7 @@ export type Database = {
           old_values: Json | null
           record_id: string | null
           table_name: string
+          tenant_id: string | null
         }
         Insert: {
           action: string
@@ -104,6 +105,7 @@ export type Database = {
           old_values?: Json | null
           record_id?: string | null
           table_name: string
+          tenant_id?: string | null
         }
         Update: {
           action?: string
@@ -114,8 +116,17 @@ export type Database = {
           old_values?: Json | null
           record_id?: string | null
           table_name?: string
+          tenant_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_cache: {
         Row: {
