@@ -144,9 +144,10 @@ export default function Admin() {
           .insert(roleData);
         if (error) throw error;
       }
+      return userId;
     },
-    onSuccess: () => {
-      toast.success('Rolle erfolgreich aktualisiert');
+    onSuccess: (userId) => {
+      toast.success('Rolle erfolgreich aktualisiert. Benutzer muss sich neu anmelden, damit die Änderungen wirksam werden.');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (error: any) => {
