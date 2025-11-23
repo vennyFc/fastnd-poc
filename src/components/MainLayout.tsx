@@ -233,41 +233,10 @@ export function MainLayout({ children }: MainLayoutProps) {
         
         <div className="flex-1 flex flex-col">
           <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger className="h-8 w-8" />
               
-              {/* Tenant Selector / Display */}
-              {isSuperAdmin ? (
-                <div className="w-[200px]">
-                  <Select
-                    value={activeTenant?.id || ""}
-                    onValueChange={(value) => {
-                      const tenant = allTenants?.find(t => t.id === value);
-                      if (tenant) setActiveTenant(tenant);
-                    }}
-                  >
-                    <SelectTrigger className={!activeTenant ? "border-destructive" : ""}>
-                      <SelectValue placeholder="Mandant auswählen..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allTenants?.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id}>
-                          {tenant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                activeTenant && (
-                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground px-2 border-l border-border">
-                    <Building2 className="h-4 w-4" />
-                    <span>{activeTenant.name}</span>
-                  </div>
-                )
-              )}
-              
-              <div className="relative w-[576px] max-w-2xl" ref={searchRef}>
+              <div className="relative flex-1 max-w-2xl" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
@@ -459,6 +428,37 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </div>
                 )}
               </div>
+              
+              {/* Tenant Selector / Display */}
+              {isSuperAdmin ? (
+                <div className="w-[200px]">
+                  <Select
+                    value={activeTenant?.id || ""}
+                    onValueChange={(value) => {
+                      const tenant = allTenants?.find(t => t.id === value);
+                      if (tenant) setActiveTenant(tenant);
+                    }}
+                  >
+                    <SelectTrigger className={!activeTenant ? "border-destructive" : ""}>
+                      <SelectValue placeholder="Mandant auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allTenants?.map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id}>
+                          {tenant.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                activeTenant && (
+                  <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+                    <Building2 className="h-4 w-4" />
+                    <span>{activeTenant.name}</span>
+                  </div>
+                )
+              )}
             </div>
             
             <div className="flex items-center gap-4">
