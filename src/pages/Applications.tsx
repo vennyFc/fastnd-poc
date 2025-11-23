@@ -52,65 +52,40 @@ export default function Applications() {
     }
   }, [searchParams]);
 
-  const { data: tenantApplications, isLoading: isTenantApplicationsLoading } = useQuery({
+  const { data: tenantApplications, isLoading } = useQuery({
     queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
-        .from('applications')
-        .select('*');
+      if (!activeTenant) return [];
       
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
-      }
-      
-      const { data, error } = await query.order('application', { ascending: true });
-      
-      if (error) throw error;
-      return data as any[];
-    },
-  });
-
-  const { data: globalApplications, isLoading: isGlobalApplicationsLoading } = useQuery({
-    queryKey: ['global_applications'],
-    queryFn: async () => {
       const { data, error } = await supabase
-        .from('global_applications')
+        .from('applications')
         .select('*')
+        .eq('tenant_id', activeTenant.id)
         .order('application', { ascending: true });
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
-  // Combine tenant and global applications
-  const allApplications = React.useMemo(() => {
-    const tApps = tenantApplications || [];
-    const gApps = globalApplications || [];
-    return [...tApps, ...gApps];
-  }, [tenantApplications, globalApplications]);
-
-  const isLoading = isTenantApplicationsLoading || isGlobalApplicationsLoading;
+  const allApplications = tenantApplications || [];
 
   // Fetch application insights
   const { data: appInsights = [] } = useQuery({
     queryKey: ['app_insights', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('app_insights')
-        .select('*');
-      
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   const filteredApplications = allApplications?.filter((app: any) => {

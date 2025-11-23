@@ -165,125 +165,103 @@ export default function Projects() {
   const { data: projects, isLoading, refetch: refetchProjects } = useQuery({
     queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('customer_projects')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .select('*')
+        .eq('tenant_id', activeTenant.id)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch cross-sells
   const { data: crossSells = [] } = useQuery({
     queryKey: ['cross_sells', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('cross_sells')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch product details
   const { data: productDetails = [] } = useQuery({
     queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('products')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch product alternatives
   const { data: productAlternatives = [] } = useQuery({
     queryKey: ['product_alternatives', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('product_alternatives')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch application insights
   const { data: appInsights = [], isLoading: appInsightsLoading } = useQuery({
     queryKey: ['app_insights', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('app_insights')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        query = query.eq('tenant_id', activeTenant.id);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch optimization records
   const { data: optimizationRecords = [], refetch: refetchOptimization } = useQuery({
     queryKey: ['opps_optimization', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('opps_optimization')
-        .select('*');
-      
-      if (!isSuperAdmin && activeTenant?.id) {
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data as any[];
     },
-    enabled: isSuperAdmin || !!activeTenant?.id,
+    enabled: !!activeTenant,
   });
 
   // Fetch removed cross-sells

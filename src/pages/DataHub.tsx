@@ -25,8 +25,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-// Pure tenant-specific data types (no global option)
-const tenantOnlyDataTypes = [
+// Pure tenant-specific data types - ALL uploads are now tenant-specific
+const dataTypes = [
   {
     id: 'customer_projects',
     title: 'Kundenprojekte',
@@ -48,10 +48,6 @@ const tenantOnlyDataTypes = [
     fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
     icon: FileSpreadsheet,
   },
-];
-
-// Data types that can be uploaded either for a tenant OR globally
-const mixedDataTypes = [
   {
     id: 'applications',
     title: 'Applikationen',
@@ -82,9 +78,6 @@ const mixedDataTypes = [
   },
 ];
 
-// All data types combined (for regular tenant admins)
-const dataTypes = [...tenantOnlyDataTypes, ...mixedDataTypes];
-
 export default function DataHub() {
   const { isSuperAdmin, activeTenant } = useAuth();
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
@@ -97,25 +90,9 @@ export default function DataHub() {
   const [tableToDelete, setTableToDelete] = useState<string | null>(null);
   const [selectedUploads, setSelectedUploads] = useState<Set<string>>(new Set());
   const [isRemovingDuplicates, setIsRemovingDuplicates] = useState(false);
-  
-  // Super Admin specific states
-  const [uploadScope, setUploadScope] = useState<'tenant' | 'global'>('tenant');
-  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
   const [targetTenantId, setTargetTenantId] = useState<string | null | undefined>(undefined);
 
-  // Fetch tenants for Super Admin
-  const { data: tenants } = useQuery({
-    queryKey: ['tenants'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .order('name', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: isSuperAdmin,
-  });
+  // Fetch tenants for Super Admin - removed as global uploads are no longer supported
 
   useEffect(() => {
     loadUploadHistory();
@@ -369,48 +346,12 @@ export default function DataHub() {
         </Button>
       </div>
 
-      {/* Super Admin Upload Scope Selector */}
-      {isSuperAdmin && (
-        <Card className="shadow-card border-primary/20">
-          <CardHeader>
-            <CardTitle>Upload-Ziel auswählen</CardTitle>
-            <CardDescription>
-              Wählen Sie, ob Daten für den aktuellen Mandanten oder global hochgeladen werden sollen
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={uploadScope} onValueChange={(v) => setUploadScope(v as 'tenant' | 'global')} className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="tenant">
-                  Upload für: {activeTenant?.name || 'Kein Mandant ausgewählt'}
-                </TabsTrigger>
-                <TabsTrigger value="global">
-                  Globaler Upload (Alle Mandanten)
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {uploadScope === 'tenant' && !activeTenant && (
-              <p className="text-sm text-destructive mt-2">
-                Bitte wählen Sie einen Mandanten in der Seitenleiste aus
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Data Upload Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {dataTypes.map((dataType) => {
-          // Determine target tenant ID based on upload scope
-          const getTargetTenantId = () => {
-            if (isSuperAdmin) {
-              return uploadScope === 'global' ? null : activeTenant?.id || null;
-            }
-            return activeTenant?.id || null;
-          };
-
-          const targetTenant = getTargetTenantId();
-          const canUpload = isSuperAdmin ? (uploadScope === 'tenant' ? !!activeTenant : true) : !!activeTenant;
+          // All uploads are now tenant-specific
+          const targetTenant = activeTenant?.id || null;
+          const canUpload = !!activeTenant;
 
           return (
             <Card key={dataType.id} className="shadow-card hover:shadow-md transition-shadow flex flex-col">

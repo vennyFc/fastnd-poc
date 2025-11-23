@@ -76,22 +76,18 @@ export default function Products() {
   const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore - Supabase types not yet updated
-      let query = supabase
-        // @ts-ignore
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('products')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .select('*')
+        .eq('tenant_id', activeTenant.id)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as any[];
     },
+    enabled: !!activeTenant,
   });
 
   // Fetch user preferences
@@ -114,20 +110,17 @@ export default function Products() {
   const { data: applications = [] } = useQuery({
     queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
         .from('applications')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      const { data, error } = await query;
+        .select('*')
+        .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
       return data || [];
     },
+    enabled: !!activeTenant,
   });
 
   // Get unique applications for filter
