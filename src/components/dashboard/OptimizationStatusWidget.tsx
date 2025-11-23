@@ -3,11 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar } from 'lucide-react';
+import { Calendar, Globe } from 'lucide-react';
 import { subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 type TimeRange = '1' | '3' | '6' | '12';
 
@@ -37,6 +38,8 @@ const statusLabels: Record<string, string> = {
 export function OptimizationStatusWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
   const { user, activeTenant, isSuperAdmin } = useAuth();
+  
+  const isGlobalView = activeTenant?.id === 'global';
 
   // Fetch all projects
   const { data: allProjectsRaw = [], isLoading: isLoadingProjects } = useQuery({
@@ -44,7 +47,10 @@ export function OptimizationStatusWidget() {
     queryFn: async () => {
       let query = supabase.from('customer_projects').select('*');
       
-      if (activeTenant?.id && activeTenant.id !== 'global') {
+      // In global view, fetch all tenant projects (not null tenant_id)
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -60,7 +66,10 @@ export function OptimizationStatusWidget() {
     queryFn: async () => {
       let query = supabase.from('opps_optimization').select('*');
       
-      if (activeTenant?.id && activeTenant.id !== 'global') {
+      // In global view, fetch all tenant optimization records (not null tenant_id)
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -247,9 +256,18 @@ export function OptimizationStatusWidget() {
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
               Projekte nach Optimierungsstatus
+              {isGlobalView && (
+                <Badge variant="outline" className="ml-2 gap-1">
+                  <Globe className="h-3 w-3" />
+                  Alle Mandanten
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription className="mt-2">
-              Verteilung der Projekte nach Status im ausgewählten Zeitraum
+              {isGlobalView 
+                ? 'Aggregierte Verteilung aller Projekte aus allen Mandanten nach Status'
+                : 'Verteilung der Projekte nach Status im ausgewählten Zeitraum'
+              }
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
@@ -274,19 +292,35 @@ export function OptimizationStatusWidget() {
           </div>
         ) : totalProjects === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium">Keine Projekte im ausgewählten Zeitraum</p>
+            {isGlobalView ? (
+              <Globe className="h-16 w-16 mx-auto mb-4 opacity-50" />
+            ) : (
+              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+            )}
+            <p className="text-lg font-medium">
+              {isGlobalView 
+                ? 'Keine Projekte in den Mandanten gefunden'
+                : 'Keine Projekte im ausgewählten Zeitraum'
+              }
+            </p>
             <p className="text-sm mt-2">
-              Versuchen Sie einen längeren Zeitraum oder laden Sie Projektdaten hoch
+              {isGlobalView
+                ? 'Stellen Sie sicher, dass Mandanten Projektdaten hochgeladen haben'
+                : 'Versuchen Sie einen längeren Zeitraum oder laden Sie Projektdaten hoch'
+              }
             </p>
           </div>
         ) : (
           <>
             <div className="mb-4 flex items-center justify-center min-h-[88px]">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">Gesamt</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  {isGlobalView ? 'Gesamt (Alle Mandanten)' : 'Gesamt'}
+                </p>
                 <p className="text-3xl font-bold text-foreground">{totalProjects}</p>
-                <p className="text-xs text-muted-foreground mt-1">Projekte</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isGlobalView ? 'Projekte mandantenübergreifend' : 'Projekte'}
+                </p>
               </div>
             </div>
             
