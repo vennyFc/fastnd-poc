@@ -347,46 +347,72 @@ export default function Projects() {
       groupNumbers.includes(rec.project_number)
     );
     
-    // 1. If there is any manually set optimization_status, choose the highest in the workflow (HIGHEST PRIORITY)
+    // 1. Manuell gesetzter Status (höchste Priorität, aber NEU kann nicht manuell gesetzt werden)
     const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
     const manualStatuses = projectOptRecords
       .map((rec: any) => rec.optimization_status)
-      .filter(Boolean) as typeof order[number][];
+      .filter((status) => status && status !== 'Neu') as typeof order[number][]; // Exclude 'Neu'
     if (manualStatuses.length > 0) {
       const highest = manualStatuses.reduce((acc, cur) => 
-        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Neu' as typeof order[number]
+        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Offen' as typeof order[number]
       );
       return highest;
     }
     
-    // 2. Check if products were added to project → PRÜFUNG (regardless of view status or date)
+    // 2. Prüfe ob Projekt < 7 Tage alt UND noch nicht angeschaut → NEU
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
+    
+    if (!wasViewed && project.created_at) {
+      const createdDate = new Date(project.created_at);
+      if (createdDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    // 3. Prüfe ob Produkte hinzugefügt wurden
     const hasAddedProducts = projectOptRecords.some((rec: any) => 
       rec.cross_sell_product_name || rec.alternative_product_name
     );
-    if (hasAddedProducts) return 'Prüfung';
     
-    // 3. Check if project was viewed (from history)
-    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
-    
-    // 4. Check dates for projects without added products
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    // Status "Neu": NOT viewed AND (Project created < 7 days ago)
-    if (!wasViewed) {
-      // Check if project itself was created recently
-      if (project.created_at) {
-        const createdDate = new Date(project.created_at);
-        if (createdDate > oneWeekAgo) {
-          return 'Neu';
-        }
-      }
-      
-      // Not viewed but older than 7 days → Offen
+    if (!hasAddedProducts) {
+      // 3a. Keine Produkte hinzugefügt → OFFEN
       return 'Offen';
     }
     
-    // 5. Viewed project without added products → Offen
+    // 4-6. Produkte wurden hinzugefügt, prüfe Produktstatus
+    const allProductStatuses: string[] = [];
+    projectOptRecords.forEach((rec: any) => {
+      if (rec.cross_sell_product_name && rec.cross_sell_status) {
+        allProductStatuses.push(rec.cross_sell_status);
+      }
+      if (rec.alternative_product_name && rec.alternative_status) {
+        allProductStatuses.push(rec.alternative_status);
+      }
+    });
+    
+    if (allProductStatuses.length === 0) {
+      // Produkte hinzugefügt aber keine Status gesetzt → PRÜFUNG
+      return 'Prüfung';
+    }
+    
+    // 4. Mindestens ein Produkt hat Status "Identifiziert" → PRÜFUNG
+    if (allProductStatuses.some(status => status === 'Identifiziert')) {
+      return 'Prüfung';
+    }
+    
+    // 5. Mindestens ein Produkt hat Status "Vorgeschlagen" → VALIDIERUNG
+    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
+      return 'Validierung';
+    }
+    
+    // 6. Alle Produkte haben Status "Akzeptiert" oder "Registriert" → ABGESCHLOSSEN
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
+    }
+    
+    // Default fallback
     return 'Offen';
   };
 
