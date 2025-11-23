@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export type EntityType = 'project' | 'product' | 'collection' | 'customer';
 
 export function useFavorites(entityType: EntityType) {
-  const { user } = useAuth();
+  const { user, activeTenant } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch user's favorites for this entity type
@@ -27,9 +27,19 @@ export function useFavorites(entityType: EntityType) {
   const addFavorite = useMutation({
     mutationFn: async (entityId: string) => {
       if (!user) return;
+      
+      const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global' 
+        ? activeTenant.id 
+        : null;
+      
       await supabase
         .from('user_favorites')
-        .insert({ user_id: user.id, entity_type: entityType, entity_id: entityId });
+        .insert({ 
+          user_id: user.id, 
+          entity_type: entityType, 
+          entity_id: entityId,
+          tenant_id: effectiveTenantId
+        });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-favorites', user?.id, entityType] });
