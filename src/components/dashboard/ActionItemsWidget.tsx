@@ -172,6 +172,7 @@ export function ActionItemsWidget() {
           .insert({
             ...payload,
             user_id: user.id,
+            tenant_id: activeTenant?.id && activeTenant.id !== 'global' ? activeTenant.id : null,
           });
         if (error) throw error;
       }
