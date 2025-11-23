@@ -71,7 +71,7 @@ export function AppSidebar() {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{t('nav.cockpit')}</SidebarGroupLabel>
+          <SidebarGroupLabel>Dashboards</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
