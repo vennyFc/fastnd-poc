@@ -5,6 +5,7 @@ import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle } from 'lucide
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -468,11 +469,20 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />
               </button>
               <NotificationPopover />
-              <Avatar className={`h-8 w-8 ${isSuperAdmin ? 'ring-2 ring-red-500' : isTenantAdmin ? 'ring-2 ring-green-500' : ''}`}>
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {getInitials()}
-                </AvatarFallback>
-              </Avatar>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Avatar className={`h-8 w-8 cursor-help ${isSuperAdmin ? 'ring-2 ring-red-500' : isTenantAdmin ? 'ring-2 ring-green-500' : ''}`}>
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {getInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isSuperAdmin ? 'Super Administrator' : isTenantAdmin ? 'Tenant Administrator' : 'Benutzer'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </header>
 
