@@ -1500,7 +1500,6 @@ export default function Projects() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
-                                <SelectItem value="neu">Neu</SelectItem>
                                 <SelectItem value="offen">Offen</SelectItem>
                                 <SelectItem value="prüfung">Prüfung</SelectItem>
                                 <SelectItem value="validierung">Validierung</SelectItem>
