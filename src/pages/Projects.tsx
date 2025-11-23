@@ -265,6 +265,14 @@ export default function Projects() {
     enabled: !!activeTenant,
   });
 
+  // Helper: check if a product still has an active optimization entry
+  const hasActiveOptimizationForProduct = (projectNumber: string, productName: string) => {
+    return optimizationRecords.some((rec: any) =>
+      rec.project_number === projectNumber &&
+      (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
+    );
+  };
+  
   // Fetch removed cross-sells
   const { data: removedCrossSells = [] } = useQuery({
     queryKey: ['removed_cross_sells'],
@@ -298,17 +306,25 @@ export default function Projects() {
 
   // Group projects by customer and project_name
   const groupedProjects = projects?.reduce((acc: any[], project: any) => {
-    const key = `${project.customer}-${project.project_name}`;
     const existing = acc.find(
       (p) => p.customer === project.customer && p.project_name === project.project_name
     );
+
+    const isAddedRow = !project.upload_id; // Rows created by cross-sell/alternative add have no upload_id
+    const includeProduct = (prod: string | null | undefined) => {
+      if (!prod) return false;
+      // Original uploaded products (with upload_id) are always shown.
+      // Added products are only shown if there is still an active optimization record.
+      if (!isAddedRow) return true;
+      return hasActiveOptimizationForProduct(project.project_number, prod);
+    };
 
     if (existing) {
       // Add application and product if not already included
       if (project.application && !existing.applications.includes(project.application)) {
         existing.applications.push(project.application);
       }
-      if (project.product && !existing.products.includes(project.product)) {
+      if (includeProduct(project.product) && !existing.products.includes(project.product)) {
         existing.products.push(project.product);
       }
       // Keep the earliest created_at date
@@ -321,7 +337,7 @@ export default function Projects() {
         customer: project.customer,
         project_name: project.project_name,
         applications: project.application ? [project.application] : [],
-        products: project.product ? [project.product] : [],
+        products: includeProduct(project.product) ? [project.product] : [],
         created_at: project.created_at,
       });
     }
