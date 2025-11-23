@@ -367,7 +367,6 @@ export default function Projects() {
     
     // Check if project was viewed (from history)
     const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
-    if (!wasViewed) return 'Offen';
     
     // Check if opportunity was added within last week
     const oneWeekAgo = new Date();
@@ -381,12 +380,16 @@ export default function Projects() {
         return dateB.getTime() - dateA.getTime();
       })[0];
     
-    if (newestRecord) {
+    // Status "Neu": Opportunity < 7 Tage UND noch nicht angesehen
+    if (newestRecord && !wasViewed) {
       const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
       if (addedDate > oneWeekAgo) {
         return 'Neu';
       }
     }
+    
+    // Status "Offen": Noch nicht angesehen
+    if (!wasViewed) return 'Offen';
     
     // Default: Prüfung
     return 'Prüfung';
