@@ -183,10 +183,6 @@ export function ProjectsWidget() {
       (rec: any) => projectNumbers.includes(rec.project_number)
     );
     
-    if (projectOptRecords.length === 0) {
-      return 'Offen';
-    }
-    
     // 1. Manuell gesetzter Status (höchste Priorität, aber NEU kann nicht manuell gesetzt werden)
     const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
     const manualStatuses = projectOptRecords
@@ -211,6 +207,11 @@ export function ProjectsWidget() {
       if (createdDate > oneWeekAgo) {
         return 'Neu';
       }
+    }
+    
+    // If no optimization records exist, check remaining status logic
+    if (projectOptRecords.length === 0) {
+      return 'Offen';
     }
     
     // 3. Prüfe ob Produkte hinzugefügt wurden
