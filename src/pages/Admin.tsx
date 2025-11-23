@@ -124,18 +124,18 @@ export default function Admin() {
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, isCurrentlyAdmin }: { userId: string; isCurrentlyAdmin: boolean }) => {
       if (isCurrentlyAdmin) {
-        // Remove admin role
+        // Remove tenant admin role
         // @ts-ignore
         const { error } = await supabase
           // @ts-ignore
           .from('user_roles')
           .delete()
           .eq('user_id', userId)
-          .eq('role', 'super_admin');
+          .eq('role', 'tenant_admin');
         if (error) throw error;
       } else {
-        // Add admin role
-        const roleData: any = { user_id: userId, role: 'super_admin' };
+        // Add tenant admin role
+        const roleData: any = { user_id: userId, role: 'tenant_admin' };
         // @ts-ignore
         const { error } = await supabase
           // @ts-ignore
@@ -396,7 +396,7 @@ export default function Admin() {
                         className="flex items-center justify-between text-sm py-1.5 px-2 rounded hover:bg-background"
                       >
                         <span className="text-foreground">{user.email}</span>
-                        {user.roles.some((r: any) => r.role === 'admin') && (
+                        {user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin') && (
                           <Badge variant="default" className="h-5 text-xs">
                             <Shield className="h-3 w-3 mr-1" />
                             Admin
@@ -451,7 +451,7 @@ export default function Admin() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-primary">
-              {users?.filter((u: any) => u.roles.some((r: any) => r.role === 'admin')).length || 0}
+              {users?.filter((u: any) => u.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin')).length || 0}
             </p>
             <p className="text-sm text-muted-foreground mt-1">Mit Admin-Rechten</p>
           </CardContent>
@@ -509,7 +509,7 @@ export default function Admin() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user: any) => {
-                  const isUserAdmin = user.roles.some((r: any) => r.role === 'admin');
+                  const isUserAdmin = user.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin');
                   return (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.email}</TableCell>
