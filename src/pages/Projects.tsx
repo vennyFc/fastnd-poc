@@ -670,18 +670,20 @@ export default function Projects() {
       }
     }
     
-    // If not in optimization records, check if it's an original project product
-    const isInProjects = projects?.some((p: any) => 
+    // If not in optimization records, check if it's an original project product (with upload_id)
+    const originalProduct = projects?.find((p: any) => 
       p.customer === customer && 
       p.project_name === projectName && 
-      p.product === productName
+      p.product === productName &&
+      p.upload_id !== null  // Original uploaded products have an upload_id
     );
     
     // Original project products without optimization record are "Registriert"
-    if (isInProjects) {
+    if (originalProduct) {
       return 'Registriert';
     }
     
+    // Products not in optimization and not original uploads have no status
     return null;
   };
 
