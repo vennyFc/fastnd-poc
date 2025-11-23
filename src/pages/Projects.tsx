@@ -33,7 +33,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
+type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at' | 'last_viewed';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Projects() {
@@ -99,6 +99,7 @@ export default function Projects() {
     { key: 'products', label: 'Produkt', visible: true, width: 200, order: 3 },
     { key: 'optimization_status', label: 'Optimierungsstatus', visible: true, width: 160, order: 4 },
     { key: 'created_at', label: 'Erstellt', visible: true, width: 120, order: 5 },
+    { key: 'last_viewed', label: 'Zuletzt angesehen', visible: true, width: 140, order: 6 },
   ]), []);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -501,6 +502,18 @@ export default function Projects() {
     if (sortField === 'optimization_status') {
       aValue = calculateProjectStatus(a, false);
       bValue = calculateProjectStatus(b, false);
+    }
+    
+    // Handle last_viewed (computed field)
+    if (sortField === 'last_viewed') {
+      const aViewed = recentHistory.find((rh: any) => 
+        a.sourceIds ? a.sourceIds.includes(rh.project_id) : rh.project_id === a.id
+      );
+      const bViewed = recentHistory.find((rh: any) => 
+        b.sourceIds ? b.sourceIds.includes(rh.project_id) : rh.project_id === b.id
+      );
+      aValue = aViewed ? new Date(aViewed.viewed_at).getTime() : 0;
+      bValue = bViewed ? new Date(bViewed.viewed_at).getTime() : 0;
     }
 
     // Handle array fields
@@ -2536,6 +2549,8 @@ export default function Projects() {
                         value = null; // Will be handled separately
                       } else if (column.key === 'optimization_status') {
                         value = null; // Will be handled separately
+                      } else if (column.key === 'last_viewed') {
+                        value = null; // Will be handled separately
                       } else if (column.key === 'created_at') {
                         value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
                       } else {
@@ -2611,6 +2626,8 @@ export default function Projects() {
                             }>
                               {calculateProjectStatus(project, false)}
                             </Badge>
+                          ) : column.key === 'last_viewed' ? (
+                            lastViewed ? format(new Date(lastViewed.viewed_at), 'dd.MM.yyyy HH:mm') : '-'
                           ) : (
                             value
                           )}
