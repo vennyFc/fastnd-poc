@@ -1351,6 +1351,7 @@ export type Database = {
         | "Vorgeschlagen"
         | "Akzeptiert"
         | "Registriert"
+        | "Abgelehnt"
       removal_reason:
         | "technischer_fit"
         | "commercial_fit"
@@ -1507,6 +1508,7 @@ export const Constants = {
         "Vorgeschlagen",
         "Akzeptiert",
         "Registriert",
+        "Abgelehnt",
       ],
       removal_reason: [
         "technischer_fit",
