@@ -81,15 +81,25 @@ export function OptimizationStatusWidget() {
   });
 
   // Fetch recently viewed projects
+  // In global view, fetch ALL users' history to properly calculate "Neu" status
   const { data: recentHistory = [] } = useQuery({
-    queryKey: ['user-project-history', user?.id],
+    queryKey: ['user-project-history', user?.id, activeTenant?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await supabase
+      
+      let query = supabase
         .from('user_project_history')
-        .select('project_id, viewed_at')
-        .eq('user_id', user.id)
-        .order('viewed_at', { ascending: false });
+        .select('project_id, viewed_at');
+      
+      // In global view, get history from all tenants (not just current user)
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else {
+        // In tenant view, only current user's history
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data } = await query.order('viewed_at', { ascending: false });
       return data || [];
     },
     enabled: !!user
