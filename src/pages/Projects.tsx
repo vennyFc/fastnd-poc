@@ -360,7 +360,7 @@ export default function Projects() {
   };
 
   // Calculate automatic project status based on business rules
-  const calculateProjectStatus = (project: any): string => {
+  const calculateProjectStatus = (project: any, isInDetailView: boolean = false): string => {
     const groupNumbers = getProjectNumbersForGroup(project.customer, project.project_name);
     if (groupNumbers.length === 0) return 'Neu';
     
@@ -384,7 +384,7 @@ export default function Projects() {
     // 2. Prüfe ob Projekt < 7 Tage alt UND noch nicht angeschaut → NEU
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const wasViewed = recentHistory.some((rh: any) => 
+    const wasViewed = isInDetailView || recentHistory.some((rh: any) => 
       project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
     );
     
@@ -455,7 +455,7 @@ export default function Projects() {
     }
     
     if (quickFilter === 'open') {
-      const status = calculateProjectStatus(project);
+      const status = calculateProjectStatus(project, false);
       if (status !== 'Offen') return false;
     }
 
@@ -491,8 +491,8 @@ export default function Projects() {
 
     // Handle optimization_status (computed field)
     if (sortField === 'optimization_status') {
-      aValue = calculateProjectStatus(a);
-      bValue = calculateProjectStatus(b);
+      aValue = calculateProjectStatus(a, false);
+      bValue = calculateProjectStatus(b, false);
     }
 
     // Handle array fields
@@ -1456,7 +1456,7 @@ export default function Projects() {
                     {/* Optimization Status Progress Bar */}
                     <div className="mt-4 flex items-center gap-4">
                       {(() => {
-                        const currentStatus = calculateProjectStatus(project);
+                        const currentStatus = calculateProjectStatus(project, true);
                         const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
                         
                         return (
@@ -2511,13 +2511,13 @@ export default function Projects() {
                             </div>
                           ) : column.key === 'optimization_status' ? (
                             <Badge variant={
-                              calculateProjectStatus(project) === 'Offen' ? 'outline' :
-                              calculateProjectStatus(project) === 'Neu' ? 'default' :
-                              calculateProjectStatus(project) === 'Prüfung' ? 'secondary' :
-                              calculateProjectStatus(project) === 'Validierung' ? 'default' :
+                              calculateProjectStatus(project, false) === 'Offen' ? 'outline' :
+                              calculateProjectStatus(project, false) === 'Neu' ? 'default' :
+                              calculateProjectStatus(project, false) === 'Prüfung' ? 'secondary' :
+                              calculateProjectStatus(project, false) === 'Validierung' ? 'default' :
                               'secondary'
                             }>
-                              {calculateProjectStatus(project)}
+                              {calculateProjectStatus(project, false)}
                             </Badge>
                           ) : (
                             value
