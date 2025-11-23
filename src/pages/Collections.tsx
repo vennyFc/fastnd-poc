@@ -118,6 +118,15 @@ export default function Collections() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Get effective tenant_id
+      const effectiveTenantId = activeTenant?.id && activeTenant.id !== 'global' 
+        ? activeTenant.id 
+        : null;
+
+      if (!effectiveTenantId) {
+        throw new Error('Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten aus.');
+      }
+
       if (editingCollection) {
         const { error } = await supabase
           .from('collections')
@@ -145,6 +154,7 @@ export default function Collections() {
                 data.shared_users.map((userId: string) => ({
                   collection_id: editingCollection.id,
                   shared_with_user_id: userId,
+                  tenant_id: effectiveTenantId,
                 }))
               );
           }
@@ -157,6 +167,7 @@ export default function Collections() {
             name: data.name,
             description: data.description,
             visibility: data.visibility,
+            tenant_id: effectiveTenantId,
           })
           .select()
           .single();
@@ -171,6 +182,7 @@ export default function Collections() {
               data.shared_users.map((userId: string) => ({
                 collection_id: newCollection.id,
                 shared_with_user_id: userId,
+                tenant_id: effectiveTenantId,
               }))
             );
         }
