@@ -189,16 +189,22 @@ export default function Products() {
 
   // Fetch collections for adding products
   const { data: collections = [] } = useQuery({
-    queryKey: ['collections'],
+    queryKey: ['collections', isSuperAdmin ? activeTenant?.id : tenantId],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('collections')
         .select('id, name, visibility')
         .order('name');
 
+      // For super admins, optionally filter by active tenant (except global)
+      if (isSuperAdmin && activeTenant && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
