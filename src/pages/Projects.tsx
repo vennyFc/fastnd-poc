@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, ThumbsDown, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -23,6 +23,7 @@ import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -2468,31 +2469,63 @@ export default function Projects() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedProjects.map((project: any) => (
+                {sortedProjects.map((project: any) => {
+                  // Get last viewed date for this project
+                  const lastViewed = recentHistory.find((rh: any) => 
+                    project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
+                  );
+                  
+                  return (
                   <TableRow 
                     key={project.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(project)}
                   >
                     <TableCell className="w-12">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const targetId = project.sourceIds?.[0] || project.id;
-                          toggleFavorite(targetId);
-                        }}
-                        >
-                          <Star
-                            className={`h-4 w-4 ${
-                              project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id)
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-muted-foreground'
-                            }`}
-                          />
-                        </Button>
+                      <div className="flex items-center gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const targetId = project.sourceIds?.[0] || project.id;
+                                  toggleFavorite(targetId);
+                                }}
+                              >
+                                <Star
+                                  className={`h-4 w-4 ${
+                                    project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id)
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'text-muted-foreground'
+                                  }`}
+                                />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        
+                        {lastViewed && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center">
+                                  <Eye className="h-3.5 w-3.5 text-blue-500" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Zuletzt angesehen: {format(new Date(lastViewed.viewed_at), 'dd.MM.yyyy HH:mm')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
                     </TableCell>
                     {visibleColumns.map((column) => {
                       let value;
@@ -2585,7 +2618,8 @@ export default function Projects() {
                       );
                     })}
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           ) : (
