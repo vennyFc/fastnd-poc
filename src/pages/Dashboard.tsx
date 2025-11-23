@@ -18,7 +18,7 @@ import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Users, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function Dashboard() {
@@ -43,27 +43,6 @@ export default function Dashboard() {
       return data || false;
     },
     enabled: !!user,
-  });
-
-  // Fetch tenant user count
-  const { data: tenantUserCount = 0 } = useQuery({
-    queryKey: ['tenant-user-count', activeTenant?.id],
-    queryFn: async () => {
-      if (!activeTenant?.id) return 0;
-      
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', activeTenant.id);
-      
-      if (error) {
-        console.error('Error fetching tenant user count:', error);
-        return 0;
-      }
-      
-      return count || 0;
-    },
-    enabled: !!activeTenant?.id,
   });
 
   useEffect(() => {
@@ -403,7 +382,7 @@ export default function Dashboard() {
   return (
     <div className="p-6 space-y-6">
       {/* Tenant Information Banner */}
-      {isSuperAdmin && !activeTenant ? (
+      {isSuperAdmin && !activeTenant && (
         <Alert className="border-warning bg-warning/10">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center gap-2">
@@ -411,47 +390,7 @@ export default function Dashboard() {
             <span className="text-muted-foreground">- Kein Tenant ausgewählt. Sie sehen globale Daten.</span>
           </AlertDescription>
         </Alert>
-      ) : activeTenant ? (
-        <div className="flex items-start gap-4 flex-wrap">
-          <Card className="flex-1 min-w-[300px]">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg">Aktueller Tenant</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold">{activeTenant.name}</p>
-                  {isSuperAdmin && (
-                    <Badge variant="outline" className="mt-2">
-                      Super Admin Ansicht
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {activeTenant.id && (
-            <Card className="min-w-[200px]">
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">Benutzer</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{tenantUserCount}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {tenantUserCount === 1 ? 'Benutzer' : 'Benutzer'} in diesem Tenant
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      ) : null}
+      )}
 
       <div className="flex justify-end mb-4">
         <WidgetSettings
