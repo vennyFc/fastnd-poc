@@ -15,6 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SuperAdminManagement } from '@/components/SuperAdminManagement';
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
@@ -448,81 +450,70 @@ export default function SuperAdmin() {
         <h1 className="text-3xl font-bold">Super Admin</h1>
       </div>
 
-      {/* Invite Super Admin */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Super-Admin einladen
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleInviteSuperAdmin} className="flex gap-4">
-            <Input
-              type="email"
-              placeholder="super-admin@example.com"
-              value={newSuperAdminEmail}
-              onChange={(e) => setNewSuperAdminEmail(e.target.value)}
-              className="max-w-md"
-            />
-            <Button 
-              type="submit" 
-              disabled={inviteSuperAdminMutation.isPending}
-            >
-              {inviteSuperAdminMutation.isPending ? 'Lädt ein...' : 'Super-Admin einladen'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="admins" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="admins">Super-Admins</TabsTrigger>
+          <TabsTrigger value="tenants">Mandanten</TabsTrigger>
+          <TabsTrigger value="settings">Einstellungen</TabsTrigger>
+        </TabsList>
 
-      {/* Cleanup Global Data */}
-      <Card className="border-destructive/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Trash className="h-5 w-5" />
-            Globale Daten bereinigen
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            Entfernt alle verwaisten Daten ohne Mandantenzuordnung (tenant_id = NULL) aus der Datenbank. 
-            Diese Aktion kann nicht rückgängig gemacht werden.
-          </p>
-          <Button 
-            variant="destructive"
-            onClick={() => cleanupMutation.mutate()}
-            disabled={cleanupMutation.isPending}
-          >
-            {cleanupMutation.isPending ? 'Bereinige...' : 'Globale Daten löschen'}
-          </Button>
-        </CardContent>
-      </Card>
+        <TabsContent value="admins" className="space-y-6">
+          <SuperAdminManagement />
+          
+          {/* Invite Super Admin */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Neuen Super-Admin einladen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleInviteSuperAdmin} className="flex gap-4">
+                <Input
+                  type="email"
+                  placeholder="super-admin@example.com"
+                  value={newSuperAdminEmail}
+                  onChange={(e) => setNewSuperAdminEmail(e.target.value)}
+                  className="max-w-md"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={inviteSuperAdminMutation.isPending}
+                >
+                  {inviteSuperAdminMutation.isPending ? 'Lädt ein...' : 'Super-Admin einladen'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Create New Tenant */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Neuen Mandanten erstellen
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCreateTenant} className="flex gap-4">
-            <Input
-              placeholder="Mandantenname"
-              value={newTenantName}
-              onChange={(e) => setNewTenantName(e.target.value)}
-              className="max-w-md"
-            />
-            <Button 
-              type="submit" 
-              disabled={createTenantMutation.isPending}
-            >
-              {createTenantMutation.isPending ? 'Erstelle...' : 'Erstellen'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        <TabsContent value="tenants" className="space-y-6">
+          {/* Create New Tenant */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Neuen Mandanten erstellen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCreateTenant} className="flex gap-4">
+                <Input
+                  placeholder="Mandantenname"
+                  value={newTenantName}
+                  onChange={(e) => setNewTenantName(e.target.value)}
+                  className="max-w-md"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={createTenantMutation.isPending}
+                >
+                  {createTenantMutation.isPending ? 'Erstelle...' : 'Erstellen'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
       {/* Tenants List */}
       <Card>
@@ -649,6 +640,33 @@ export default function SuperAdmin() {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          {/* Cleanup Global Data */}
+          <Card className="border-destructive/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-destructive">
+                <Trash className="h-5 w-5" />
+                Globale Daten bereinigen
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Entfernt alle verwaisten Daten ohne Mandantenzuordnung (tenant_id = NULL) aus der Datenbank. 
+                Diese Aktion kann nicht rückgängig gemacht werden.
+              </p>
+              <Button 
+                variant="destructive"
+                onClick={() => cleanupMutation.mutate()}
+                disabled={cleanupMutation.isPending}
+              >
+                {cleanupMutation.isPending ? 'Bereinige...' : 'Globale Daten löschen'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Invite Tenant Admin Dialog */}
       <Dialog 
