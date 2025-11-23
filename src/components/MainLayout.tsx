@@ -453,7 +453,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   </Select>
                 </div>
               ) : (
-                activeTenant && (
+                !isSuperAdmin && activeTenant && (
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-md bg-muted/50 border border-border">
                     <Building2 className="h-4 w-4" />
                     <span>{activeTenant.name}</span>
