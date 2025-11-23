@@ -347,7 +347,7 @@ export default function Projects() {
       groupNumbers.includes(rec.project_number)
     );
     
-    // If there is any manually set optimization_status, choose the highest in the workflow
+    // 1. If there is any manually set optimization_status, choose the highest in the workflow (HIGHEST PRIORITY)
     const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
     const manualStatuses = projectOptRecords
       .map((rec: any) => rec.optimization_status)
@@ -359,38 +359,21 @@ export default function Projects() {
       return highest;
     }
     
-    // Check if products were added to project (from optimization) → Prüfung
+    // 2. Check if products were added to project → PRÜFUNG (regardless of view status or date)
     const hasAddedProducts = projectOptRecords.some((rec: any) => 
       rec.cross_sell_product_name || rec.alternative_product_name
     );
     if (hasAddedProducts) return 'Prüfung';
     
-    // Check if project was viewed (from history)
+    // 3. Check if project was viewed (from history)
     const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
     
-    // Check if opportunity was added OR project was created within last week
+    // 4. Check dates for projects without added products
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
-    // Check opportunity records
-    const newestRecord = projectOptRecords
-      .filter((rec: any) => rec.cross_sell_date_added || rec.alternative_date_added)
-      .sort((a: any, b: any) => {
-        const dateA = new Date(a.cross_sell_date_added || a.alternative_date_added);
-        const dateB = new Date(b.cross_sell_date_added || b.alternative_date_added);
-        return dateB.getTime() - dateA.getTime();
-      })[0];
-    
-    // Status "Neu": (Opportunity < 7 Tage ODER Projekt < 7 Tage) UND noch nicht angesehen
+    // Status "Neu": NOT viewed AND (Project created < 7 days ago)
     if (!wasViewed) {
-      // Check if opportunity was added recently
-      if (newestRecord) {
-        const addedDate = new Date(newestRecord.cross_sell_date_added || newestRecord.alternative_date_added);
-        if (addedDate > oneWeekAgo) {
-          return 'Neu';
-        }
-      }
-      
       // Check if project itself was created recently
       if (project.created_at) {
         const createdDate = new Date(project.created_at);
@@ -399,13 +382,12 @@ export default function Projects() {
         }
       }
       
-      // Not viewed but older than 7 days
+      // Not viewed but older than 7 days → Offen
       return 'Offen';
     }
     
-    // Viewed project: Check if products were added to determine status
-    // If products added → Prüfung, otherwise → Offen
-    return hasAddedProducts ? 'Prüfung' : 'Offen';
+    // 5. Viewed project without added products → Offen
+    return 'Offen';
   };
 
 
