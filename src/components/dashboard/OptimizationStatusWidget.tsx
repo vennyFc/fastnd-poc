@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar } from 'lucide-react';
 import { subMonths } from 'date-fns';
@@ -20,42 +20,180 @@ const timeRangeLabels: Record<TimeRange, string> = {
 
 const statusColors: Record<string, string> = {
   'Neu': '#3b82f6',
-  'In Bearbeitung': '#f59e0b',
+  'Offen': '#f59e0b',
+  'Prüfung': '#8b5cf6',
+  'Validierung': '#06b6d4',
   'Abgeschlossen': '#10b981',
-  'Abgelehnt': '#ef4444',
 };
 
 const statusLabels: Record<string, string> = {
   'Neu': 'Neu',
-  'In Bearbeitung': 'In Bearbeitung',
+  'Offen': 'Offen',
+  'Prüfung': 'Prüfung',
+  'Validierung': 'Validierung',
   'Abgeschlossen': 'Abgeschlossen',
-  'Abgelehnt': 'Abgelehnt',
 };
 
 export function OptimizationStatusWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
-  const { activeTenant } = useAuth();
+  const { user, activeTenant, isSuperAdmin } = useAuth();
 
-  // Fetch opps_optimization data
-  const { data: optimizationData = [], isLoading } = useQuery({
-    queryKey: ['opps_optimization', activeTenant?.id],
+  // Fetch all projects
+  const { data: allProjectsRaw = [], isLoading: isLoadingProjects } = useQuery({
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
-        .from('opps_optimization')
-        .select('*');
+      let query = supabase.from('customer_projects').select('*');
       
-      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
       if (activeTenant?.id && activeTenant.id !== 'global') {
         query = query.eq('tenant_id', activeTenant.id);
       }
-      // For 'global', no filter is applied - get all tenants
+      
+      const { data } = await query.order('created_at', { ascending: false });
+      return data || [];
+    },
+    enabled: isSuperAdmin || !!activeTenant?.id
+  });
+
+  // Fetch optimization records
+  const { data: optimizationRecords = [] } = useQuery({
+    queryKey: ['opps_optimization', activeTenant?.id],
+    queryFn: async () => {
+      let query = supabase.from('opps_optimization').select('*');
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
       
       const { data, error } = await query;
-      
       if (error) throw error;
-      return data;
+      return data as any[];
     },
+    enabled: isSuperAdmin || !!activeTenant?.id,
   });
+
+  // Fetch recently viewed projects
+  const { data: recentHistory = [] } = useQuery({
+    queryKey: ['user-project-history', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data } = await supabase
+        .from('user_project_history')
+        .select('project_id, viewed_at')
+        .eq('user_id', user.id)
+        .order('viewed_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!user
+  });
+
+  // Group projects by customer and project_name
+  const allProjects = allProjectsRaw.reduce((acc: any[], project: any) => {
+    const existing = acc.find(
+      (p) => p.customer === project.customer && p.project_name === project.project_name
+    );
+    if (existing) {
+      const appValue = typeof project.application === 'object' ? project.application?.application : project.application;
+      if (appValue && !existing.applications?.includes(appValue)) {
+        existing.applications = [...(existing.applications || []), String(appValue)];
+      }
+      const prodValue = typeof project.product === 'object' ? project.product?.product : project.product;
+      if (prodValue && !existing.products?.includes(prodValue)) {
+        existing.products = [...(existing.products || []), String(prodValue)];
+      }
+      if (!existing.sourceIds?.includes(project.id)) {
+        existing.sourceIds = [...(existing.sourceIds || []), project.id];
+      }
+      if (new Date(project.created_at) < new Date(existing.created_at)) {
+        existing.created_at = project.created_at;
+      }
+    } else {
+      const appValue = typeof project.application === 'object' ? project.application?.application : project.application;
+      const prodValue = typeof project.product === 'object' ? project.product?.product : project.product;
+      acc.push({
+        ...project,
+        applications: appValue ? [String(appValue)] : [],
+        products: prodValue ? [String(prodValue)] : [],
+        sourceIds: [project.id],
+      });
+    }
+    return acc;
+  }, []);
+
+  // Get optimization status for a project (same logic as ProjectsWidget)
+  const getOptimizationStatus = (project: any) => {
+    const projectNumbers = allProjectsRaw
+      .filter((p: any) => p.customer === project.customer && p.project_name === project.project_name)
+      .map((p: any) => p.project_number)
+      .filter(Boolean);
+    
+    const projectOptRecords = optimizationRecords.filter(
+      (rec: any) => projectNumbers.includes(rec.project_number)
+    );
+    
+    const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
+    const manualStatuses = projectOptRecords
+      .map((rec: any) => rec.optimization_status)
+      .filter((status: string) => status && status !== 'Neu') as typeof order[number][];
+    if (manualStatuses.length > 0) {
+      const highest = manualStatuses.reduce((acc, cur) => 
+        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Offen' as typeof order[number]
+      );
+      return highest;
+    }
+    
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const wasViewed = recentHistory.some((rh: any) => 
+      project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
+    );
+    
+    if (!wasViewed && project.created_at) {
+      const createdDate = new Date(project.created_at);
+      if (createdDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    if (projectOptRecords.length === 0) {
+      return 'Offen';
+    }
+    
+    const hasAddedProducts = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_product_name || rec.alternative_product_name
+    );
+    
+    if (!hasAddedProducts) {
+      return 'Offen';
+    }
+    
+    const allProductStatuses: string[] = [];
+    projectOptRecords.forEach((rec: any) => {
+      if (rec.cross_sell_product_name && rec.cross_sell_status) {
+        allProductStatuses.push(rec.cross_sell_status);
+      }
+      if (rec.alternative_product_name && rec.alternative_status) {
+        allProductStatuses.push(rec.alternative_status);
+      }
+    });
+    
+    if (allProductStatuses.length === 0) {
+      return 'Prüfung';
+    }
+    
+    if (allProductStatuses.some(status => status === 'Identifiziert')) {
+      return 'Prüfung';
+    }
+    
+    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
+      return 'Validierung';
+    }
+    
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
+    }
+    
+    return 'Offen';
+  };
 
   // Calculate date threshold based on selected time range
   const getDateThreshold = () => {
@@ -67,22 +205,23 @@ export function OptimizationStatusWidget() {
   const getChartData = () => {
     const threshold = getDateThreshold();
     
-    // Filter by date
-    const filteredData = optimizationData.filter((item: any) => {
-      const createdDate = new Date(item.created_at);
+    // Filter projects by creation date within time range
+    const filteredProjects = allProjects.filter((project: any) => {
+      const createdDate = new Date(project.created_at);
       return createdDate >= threshold;
     });
 
-    // Count by status
+    // Count by calculated status
     const statusCounts: Record<string, number> = {
       'Neu': 0,
-      'In Bearbeitung': 0,
+      'Offen': 0,
+      'Prüfung': 0,
+      'Validierung': 0,
       'Abgeschlossen': 0,
-      'Abgelehnt': 0,
     };
 
-    filteredData.forEach((item: any) => {
-      const status = item.optimization_status || 'Neu';
+    filteredProjects.forEach((project: any) => {
+      const status = getOptimizationStatus(project);
       if (statusCounts.hasOwnProperty(status)) {
         statusCounts[status]++;
       }
@@ -98,6 +237,7 @@ export function OptimizationStatusWidget() {
 
   const chartData = getChartData();
   const totalProjects = chartData.reduce((sum, item) => sum + item.anzahl, 0);
+  const isLoading = isLoadingProjects;
 
   return (
     <Card className="shadow-card h-full flex flex-col">
