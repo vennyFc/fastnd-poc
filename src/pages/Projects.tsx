@@ -1130,13 +1130,27 @@ export default function Projects() {
   };
 
   const handleRowClick = async (project: any) => {
-    await addToHistory(project.id);
-    // Invalidate queries to update the status calculation
-    await queryClient.invalidateQueries({ queryKey: ['user-project-history'] });
-    await queryClient.invalidateQueries({ queryKey: ['opps_optimization', activeTenant?.id] });
-    setSelectedProject(project);
-    setSelectedCustomer(null);
-    setViewMode('detail');
+    try {
+      // Add to history and wait for completion
+      await addToHistory(project.id);
+      
+      // Wait for history query to refetch
+      await queryClient.refetchQueries({ 
+        queryKey: ['user-project-history'],
+        type: 'active'
+      });
+      
+      // Now set the view mode - status calculation will use updated history
+      setSelectedProject(project);
+      setSelectedCustomer(null);
+      setViewMode('detail');
+    } catch (error) {
+      console.error('Error updating project history:', error);
+      // Still show the detail view even if history update fails
+      setSelectedProject(project);
+      setSelectedCustomer(null);
+      setViewMode('detail');
+    }
   };
 
   const handleCustomerClick = (customer: string) => {
