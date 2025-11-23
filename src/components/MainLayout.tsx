@@ -1,11 +1,12 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle } from 'lucide-react';
+import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,7 +25,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   useAccessTracking();
-  const { user, activeTenant, setActiveTenant, isSuperAdmin, isTenantAdmin } = useAuth();
+  const { user, activeTenant, setActiveTenant, isSuperAdmin, isTenantAdmin, signOut } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +43,17 @@ export function MainLayout({ children }: MainLayoutProps) {
   const getInitials = () => {
     if (!user?.email) return 'U';
     return user.email.substring(0, 2).toUpperCase();
+  };
+
+  const getRoleLabel = () => {
+    if (isSuperAdmin) return 'Super Administrator';
+    if (isTenantAdmin) return 'Tenant Administrator';
+    return 'Benutzer';
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
   };
 
   // Fetch all tenants for super admin
@@ -469,20 +481,42 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />
               </button>
               <NotificationPopover />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Avatar className={`h-8 w-8 cursor-help ${isSuperAdmin ? 'ring-2 ring-red-500' : isTenantAdmin ? 'ring-2 ring-green-500' : ''}`}>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="focus:outline-none">
+                    <Avatar className={`h-8 w-8 cursor-pointer ${isSuperAdmin ? 'ring-2 ring-red-500' : isTenantAdmin ? 'ring-2 ring-green-500' : ''}`}>
                       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                         {getInitials()}
                       </AvatarFallback>
                     </Avatar>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isSuperAdmin ? 'Super Administrator' : isTenantAdmin ? 'Tenant Administrator' : 'Benutzer'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 bg-card border-border z-50">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.email}</p>
+                      <p className="text-xs leading-none text-muted-foreground mt-1">
+                        {getRoleLabel()}
+                      </p>
+                      {activeTenant && (
+                        <p className="text-xs leading-none text-muted-foreground mt-1 flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          {activeTenant.name}
+                        </p>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Einstellungen
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Abmelden
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
