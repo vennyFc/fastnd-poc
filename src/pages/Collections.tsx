@@ -134,6 +134,7 @@ export default function Collections() {
             name: data.name,
             description: data.description,
             visibility: data.visibility,
+            tenant_id: effectiveTenantId,
           })
           .eq('id', editingCollection.id);
         if (error) throw error;
