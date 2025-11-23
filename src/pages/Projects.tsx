@@ -954,13 +954,41 @@ export default function Projects() {
         return;
       }
 
+      // Get project_number for finding the customer_projects entry
+      const { data: projectData } = await supabase
+        .from('customer_projects')
+        .select('project_number')
+        .eq('customer', customer)
+        .eq('project_name', projectName)
+        .limit(1)
+        .maybeSingle();
+
+      if (!projectData) {
+        toast.error('Projekt nicht gefunden');
+        return;
+      }
+
       // Delete from opps_optimization
-      const { error } = await supabase
+      const { error: optError } = await supabase
         .from('opps_optimization')
         .delete()
         .eq('id', recordId);
 
-      if (error) throw error;
+      if (optError) throw optError;
+
+      // Delete from customer_projects (the entry where this product was added)
+      const { error: projectError } = await supabase
+        .from('customer_projects')
+        .delete()
+        .eq('customer', customer)
+        .eq('project_name', projectName)
+        .eq('product', productName)
+        .eq('project_number', projectData.project_number);
+
+      if (projectError) {
+        console.error('Error removing from customer_projects:', projectError);
+        // Don't throw here, as the optimization record was already deleted
+      }
 
       // Invalidate queries to refresh data
       await Promise.all([
