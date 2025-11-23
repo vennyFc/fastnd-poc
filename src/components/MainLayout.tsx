@@ -267,183 +267,13 @@ export function MainLayout({ children }: MainLayoutProps) {
                 {/* Search Results Dropdown */}
                 {showResults && searchQuery.length >= 2 && (
                   <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-                    {!hasResults ? (
-                      <div className="p-4 text-sm text-muted-foreground">
-                        {t('search.noResults')}
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {/* Projects Results */}
-                        {results.projects.length > 0 && (
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.projects').toUpperCase()}</h3>
-                              <Link
-                                to={`/projects?search=${encodeURIComponent(searchQuery)}`}
-                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                onClick={() => setShowResults(false)}
-                              >
-                                Alle <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            </div>
-                            <div className="space-y-1">
-                              {results.projects.map((project: any) => (
-                                <Link
-                                  key={project.id}
-                                  to={`/projects?search=${encodeURIComponent(project.project_name)}`}
-                                  className="block p-2 hover:bg-muted rounded text-sm"
-                                  onClick={() => setShowResults(false)}
-                                >
-                                  <div className="font-medium">{project.project_name}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {project.customer}
-                                    {project.products.length > 0 && (
-                                      <span> • {project.products.join(', ')}</span>
-                                    )}
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Products Results */}
-                        {results.products.length > 0 && (
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.products').toUpperCase()}</h3>
-                              <Link
-                                to={`/products?search=${encodeURIComponent(searchQuery)}`}
-                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                onClick={() => setShowResults(false)}
-                              >
-                                Alle <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            </div>
-                            <div className="space-y-1">
-                              {results.products.map((product: any) => (
-                                <Link
-                                  key={product.id}
-                                  to={`/products?search=${encodeURIComponent(product.product)}`}
-                                  className="block p-2 hover:bg-muted rounded text-sm"
-                                  onClick={() => setShowResults(false)}
-                                >
-                                  <div className="font-medium">{product.product}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {product.manufacturer}
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Customers Results */}
-                        {results.customers.length > 0 && (
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.customers').toUpperCase()}</h3>
-                              <Link
-                                to={`/customers?search=${encodeURIComponent(searchQuery)}`}
-                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                onClick={() => setShowResults(false)}
-                              >
-                                Alle <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            </div>
-                            <div className="space-y-1">
-                              {results.customers.map((customer: any) => (
-                                <Link
-                                  key={customer.id}
-                                  to={`/customers?search=${encodeURIComponent(customer.customer_name)}`}
-                                  className="block p-2 hover:bg-muted rounded text-sm"
-                                  onClick={() => setShowResults(false)}
-                                >
-                                  <div className="font-medium">{customer.customer_name}</div>
-                                  {customer.industry && (
-                                    <div className="text-xs text-muted-foreground">
-                                      {customer.industry}
-                                    </div>
-                                  )}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Applications Results */}
-                        {results.applications.length > 0 && (
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.applications').toUpperCase()}</h3>
-                              <Link
-                                to={`/applications?search=${encodeURIComponent(searchQuery)}`}
-                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                onClick={() => setShowResults(false)}
-                              >
-                                Alle <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            </div>
-                             <div className="space-y-1">
-                              {results.applications.map((application: any) => (
-                                <Link
-                                  key={application.id}
-                                  to={`/applications?search=${encodeURIComponent(application.application || '')}`}
-                                  className="block p-2 hover:bg-muted rounded text-sm"
-                                  onClick={() => setShowResults(false)}
-                                >
-                                  <div className="font-medium">{application.application || '-'}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {Array.isArray(application.related_products) && application.related_products.length > 0 ? (
-                                      application.related_products.map((p: any) => String(p)).join(', ')
-                                    ) : '-'}
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Collections Results */}
-                        {results.collections.length > 0 && (
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-semibold text-xs text-muted-foreground">{t('search.collections').toUpperCase()}</h3>
-                              <Link
-                                to="/collections"
-                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                onClick={() => setShowResults(false)}
-                              >
-                                Alle <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            </div>
-                            <div className="space-y-1">
-                              {results.collections.map((collection: any) => (
-                              <Link
-                                key={collection.id}
-                                to={`/collections?search=${encodeURIComponent(collection.name)}`}
-                                className="block p-2 hover:bg-muted rounded text-sm"
-                                onClick={() => setShowResults(false)}
-                              >
-                                  <div className="font-medium">{collection.name}</div>
-                                  {collection.description && (
-                                    <div className="text-xs text-muted-foreground truncate">
-                                      {collection.description}
-                                    </div>
-                                  )}
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+...
                   </div>
                 )}
               </div>
               
-              {/* Tenant Selector / Display */}
-              {isSuperAdmin ? (
+              {/* Tenant Selector for Super Admin */}
+              {isSuperAdmin && (
                 <div className="w-[200px]">
                   <Select
                     value={activeTenant?.id || ""}
@@ -464,17 +294,17 @@ export function MainLayout({ children }: MainLayoutProps) {
                     </SelectContent>
                   </Select>
                 </div>
-              ) : (
-                !isSuperAdmin && activeTenant && (
-                  <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-md bg-muted/50 border border-border">
-                    <Building2 className="h-4 w-4" />
-                    <span>{activeTenant.name}</span>
-                  </div>
-                )
               )}
             </div>
             
             <div className="flex items-center gap-4">
+              {/* Tenant Display for User and Tenant Admin */}
+              {!isSuperAdmin && activeTenant && (
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+                  <Building2 className="h-4 w-4" />
+                  <span>{activeTenant.name}</span>
+                </div>
+              )}
               <LanguageSelector />
               <UserPreferencesPopover />
               <button className="p-2 hover:bg-muted rounded-md">
