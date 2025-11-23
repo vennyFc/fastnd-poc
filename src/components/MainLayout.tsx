@@ -56,6 +56,13 @@ export function MainLayout({ children }: MainLayoutProps) {
     navigate('/auth');
   };
 
+  // Set default "Global" for Super Admins
+  useEffect(() => {
+    if (isSuperAdmin && !activeTenant) {
+      setActiveTenant({ id: 'global', name: 'Global' });
+    }
+  }, [isSuperAdmin, activeTenant, setActiveTenant]);
+
   // Fetch all tenants for super admin
   const { data: allTenants } = useQuery({
     queryKey: ['all_tenants'],
