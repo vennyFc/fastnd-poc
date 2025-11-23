@@ -327,6 +327,10 @@ export default function Projects() {
       if (includeProduct(project.product) && !existing.products.includes(project.product)) {
         existing.products.push(project.product);
       }
+      // Track all project ids that belong to this grouped project
+      if (!existing.sourceIds?.includes(project.id)) {
+        existing.sourceIds = [...(existing.sourceIds || []), project.id];
+      }
       // Keep the earliest created_at date
       if (new Date(project.created_at) < new Date(existing.created_at)) {
         existing.created_at = project.created_at;
@@ -338,6 +342,7 @@ export default function Projects() {
         project_name: project.project_name,
         applications: project.application ? [project.application] : [],
         products: includeProduct(project.product) ? [project.product] : [],
+        sourceIds: [project.id],
         created_at: project.created_at,
       });
     }
@@ -379,7 +384,9 @@ export default function Projects() {
     // 2. Prüfe ob Projekt < 7 Tage alt UND noch nicht angeschaut → NEU
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const wasViewed = recentHistory.some((rh: any) => rh.project_id === project.id);
+    const wasViewed = recentHistory.some((rh: any) => 
+      project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
+    );
     
     if (!wasViewed && project.created_at) {
       const createdDate = new Date(project.created_at);
@@ -436,13 +443,15 @@ export default function Projects() {
 
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
-    if (quickFilter === 'favorites' && !isFavorite(project.id)) {
-      return false;
+    if (quickFilter === 'favorites') {
+      const hasFavoriteId = project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id);
+      if (!hasFavoriteId) return false;
     }
     
     if (quickFilter === 'recent') {
       const recentlyViewed = getRecentlyViewed();
-      if (!recentlyViewed.includes(project.id)) return false;
+      const hasRecentId = project.sourceIds?.some((sourceId: string) => recentlyViewed.includes(sourceId)) || recentlyViewed.includes(project.id);
+      if (!hasRecentId) return false;
     }
     
     if (quickFilter === 'open') {
@@ -1206,7 +1215,8 @@ export default function Projects() {
   const handleRowClick = async (project: any) => {
     try {
       // Add to history and wait for completion
-      await addToHistory(project.id);
+      const targetId = project.sourceIds?.[0] || project.id;
+      await addToHistory(targetId);
       
       // Wait for history query to refetch
       await queryClient.refetchQueries({ 
@@ -1516,12 +1526,13 @@ export default function Projects() {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(project.id);
+                      const targetId = project.sourceIds?.[0] || project.id;
+                      toggleFavorite(targetId);
                     }}
                   >
                     <Star
                       className={`h-5 w-5 ${
-                        isFavorite(project.id)
+                        project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-muted-foreground'
                       }`}
@@ -2411,17 +2422,18 @@ export default function Projects() {
                         className="h-8 w-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleFavorite(project.id);
+                          const targetId = project.sourceIds?.[0] || project.id;
+                          toggleFavorite(targetId);
                         }}
-                      >
-                        <Star
-                          className={`h-4 w-4 ${
-                            isFavorite(project.id)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted-foreground'
-                          }`}
-                        />
-                      </Button>
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-muted-foreground'
+                            }`}
+                          />
+                        </Button>
                     </TableCell>
                     {visibleColumns.map((column) => {
                       let value;
