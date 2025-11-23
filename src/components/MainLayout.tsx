@@ -278,14 +278,21 @@ export function MainLayout({ children }: MainLayoutProps) {
                   <Select
                     value={activeTenant?.id || ""}
                     onValueChange={(value) => {
-                      const tenant = allTenants?.find(t => t.id === value);
-                      if (tenant) setActiveTenant(tenant);
+                      if (value === 'global') {
+                        setActiveTenant({ id: 'global', name: 'Global' });
+                      } else {
+                        const tenant = allTenants?.find(t => t.id === value);
+                        if (tenant) setActiveTenant(tenant);
+                      }
                     }}
                   >
                     <SelectTrigger className={!activeTenant ? "border-destructive" : ""}>
                       <SelectValue placeholder="Mandant auswählen..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="global">
+                        <span className="font-semibold">🌐 Global (Alle Mandanten)</span>
+                      </SelectItem>
                       {allTenants?.map((tenant) => (
                         <SelectItem key={tenant.id} value={tenant.id}>
                           {tenant.name}
