@@ -355,6 +355,7 @@ Deno.serve(async (req) => {
           message: 'Einladung erfolgreich versendet'
         }),
         { 
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -527,6 +528,7 @@ Deno.serve(async (req) => {
           message: 'Einladung erfolgreich versendet'
         }),
         { 
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
