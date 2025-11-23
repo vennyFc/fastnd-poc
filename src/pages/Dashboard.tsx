@@ -5,13 +5,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useWidgets } from '@/hooks/useWidgets';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchWidget } from '@/components/dashboard/SearchWidget';
-import { StatisticsWidget } from '@/components/dashboard/StatisticsWidget';
 import { GettingStartedWidget } from '@/components/dashboard/GettingStartedWidget';
-import { ActionItemsWidget } from '@/components/dashboard/ActionItemsWidget';
-import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
 import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationStatusWidget';
 import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
-import { NPIProductsWidget } from '@/components/dashboard/NPIProductsWidget';
 import { AccessStatsWidget } from '@/components/dashboard/AccessStatsWidget';
 import { LoginActivityWidget } from '@/components/dashboard/LoginActivityWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
@@ -202,82 +198,6 @@ export default function Dashboard() {
               applications={applications || []}
               crossSells={crossSells || []}
             />
-          </WidgetContainer>
-        );
-      case 'projects':
-        return (
-          <WidgetContainer
-            key="projects"
-            id="projects"
-            index={index}
-            isDragging={draggedIndex === index}
-            isDropTarget={dragOverIndex === index}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
-            onDragEnd={handleDragEnd}
-            size={widget.size}
-          >
-            <ProjectsWidget />
-          </WidgetContainer>
-        );
-      case 'action-items':
-        return (
-          <WidgetContainer
-            key="action-items"
-            id="action-items"
-            index={index}
-            isDragging={draggedIndex === index}
-            isDropTarget={dragOverIndex === index}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
-            onDragEnd={handleDragEnd}
-            size={widget.size}
-          >
-            <ActionItemsWidget />
-          </WidgetContainer>
-        );
-      case 'statistics':
-        return (
-          <WidgetContainer
-            key="statistics"
-            id="statistics"
-            index={index}
-            isDragging={draggedIndex === index}
-            isDropTarget={dragOverIndex === index}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
-            onDragEnd={handleDragEnd}
-            size={widget.size}
-          >
-            <StatisticsWidget
-              projects={projects || []}
-              products={products || []}
-              crossSells={crossSells || []}
-            />
-          </WidgetContainer>
-        );
-      case 'npi-products':
-        return (
-          <WidgetContainer
-            key="npi-products"
-            id="npi-products"
-            index={index}
-            isDragging={draggedIndex === index}
-            isDropTarget={dragOverIndex === index}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
-            onDragEnd={handleDragEnd}
-            size={widget.size}
-          >
-            <NPIProductsWidget />
           </WidgetContainer>
         );
       case 'optimization-status':
