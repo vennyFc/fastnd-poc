@@ -129,36 +129,25 @@ export default function Customers() {
       setIsLoading(true);
       
       // Load customers
-      let customersQuery = supabase
-        .from('customers')
-        .select('*');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        customersQuery = customersQuery.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      if (!activeTenant) {
+        setCustomers([]);
+        setFilteredCustomers([]);
+        return;
       }
       
-      const { data: customersData, error: customersError } = await customersQuery
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('tenant_id', activeTenant.id)
         .order('customer_name', { ascending: true });
 
       if (customersError) throw customersError;
 
       // Load projects to calculate counts and last activity
-      let projectsQuery = supabase
+      const { data: projectsData, error: projectsError } = await supabase
         .from('customer_projects')
-        .select('customer, project_name, created_at');
-      
-      if (activeTenant) {
-        // Show tenant-specific data AND global data (tenant_id IS NULL)
-        projectsQuery = projectsQuery.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
-      }
-      
-      // Filter by tenant if super admin has selected a specific tenant
-      if (isSuperAdmin && activeTenant) {
-        projectsQuery = projectsQuery.eq('tenant_id', activeTenant.id);
-      }
-      
-      const { data: projectsData, error: projectsError } = await projectsQuery;
+        .select('customer, project_name, created_at')
+        .eq('tenant_id', activeTenant.id);
 
       if (projectsError) throw projectsError;
 
