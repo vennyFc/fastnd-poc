@@ -468,7 +468,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />
               </button>
               <NotificationPopover />
-              <Avatar className="h-8 w-8">
+              <Avatar className={`h-8 w-8 ${isSuperAdmin ? 'ring-2 ring-red-500' : isTenantAdmin ? 'ring-2 ring-green-500' : ''}`}>
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   {getInitials()}
                 </AvatarFallback>
