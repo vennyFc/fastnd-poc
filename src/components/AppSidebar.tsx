@@ -91,7 +91,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {(isTenantAdmin || isSuperAdmin) && (
+        {(isTenantAdmin || (isSuperAdmin && activeTenant?.id !== 'global')) && (
           <SidebarGroup>
             <SidebarGroupLabel>Tenant Admin</SidebarGroupLabel>
             <SidebarGroupContent>
