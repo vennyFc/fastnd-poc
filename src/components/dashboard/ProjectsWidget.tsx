@@ -173,30 +173,89 @@ export function ProjectsWidget() {
   
   // Get optimization status for a project
   const getOptimizationStatus = (project: any) => {
+    // Find all project_numbers that belong to this grouped project
+    const projectNumbers = allProjectsRaw
+      .filter((p: any) => p.customer === project.customer && p.project_name === project.project_name)
+      .map((p: any) => p.project_number)
+      .filter(Boolean);
+    
     const projectOptRecords = optimizationRecords.filter(
-      (rec: any) => rec.project_number === project.project_number
+      (rec: any) => projectNumbers.includes(rec.project_number)
     );
     
     if (projectOptRecords.length === 0) {
       return 'Offen';
     }
     
-    // Get the most advanced status from all records
-    const statusPriority: Record<string, number> = {
-      'Abgeschlossen': 5,
-      'Validierung': 4,
-      'Prüfung': 3,
-      'Offen': 2,
-      'Neu': 1
-    };
+    // 1. Manuell gesetzter Status (höchste Priorität, aber NEU kann nicht manuell gesetzt werden)
+    const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
+    const manualStatuses = projectOptRecords
+      .map((rec: any) => rec.optimization_status)
+      .filter((status: string) => status && status !== 'Neu') as typeof order[number][];
+    if (manualStatuses.length > 0) {
+      const highest = manualStatuses.reduce((acc, cur) => 
+        order.indexOf(cur) > order.indexOf(acc) ? cur : acc, 'Offen' as typeof order[number]
+      );
+      return highest;
+    }
     
-    const highestStatus = projectOptRecords.reduce((highest, rec: any) => {
-      const currentPriority = statusPriority[rec.optimization_status] || 0;
-      const highestPriority = statusPriority[highest] || 0;
-      return currentPriority > highestPriority ? rec.optimization_status : highest;
-    }, 'Offen');
+    // 2. Prüfe ob Projekt < 7 Tage alt UND noch nicht angeschaut → NEU
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const wasViewed = recentHistory.some((rh: any) => 
+      project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id
+    );
     
-    return highestStatus;
+    if (!wasViewed && project.created_at) {
+      const createdDate = new Date(project.created_at);
+      if (createdDate > oneWeekAgo) {
+        return 'Neu';
+      }
+    }
+    
+    // 3. Prüfe ob Produkte hinzugefügt wurden
+    const hasAddedProducts = projectOptRecords.some((rec: any) => 
+      rec.cross_sell_product_name || rec.alternative_product_name
+    );
+    
+    if (!hasAddedProducts) {
+      // 3a. Keine Produkte hinzugefügt → OFFEN
+      return 'Offen';
+    }
+    
+    // 4-6. Produkte wurden hinzugefügt, prüfe Produktstatus
+    const allProductStatuses: string[] = [];
+    projectOptRecords.forEach((rec: any) => {
+      if (rec.cross_sell_product_name && rec.cross_sell_status) {
+        allProductStatuses.push(rec.cross_sell_status);
+      }
+      if (rec.alternative_product_name && rec.alternative_status) {
+        allProductStatuses.push(rec.alternative_status);
+      }
+    });
+    
+    if (allProductStatuses.length === 0) {
+      // Produkte hinzugefügt aber keine Status gesetzt → PRÜFUNG
+      return 'Prüfung';
+    }
+    
+    // 4. Mindestens ein Produkt hat Status "Identifiziert" → PRÜFUNG
+    if (allProductStatuses.some(status => status === 'Identifiziert')) {
+      return 'Prüfung';
+    }
+    
+    // 5. Mindestens ein Produkt hat Status "Vorgeschlagen" → VALIDIERUNG
+    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
+      return 'Validierung';
+    }
+    
+    // 6. Alle Produkte haben Status "Akzeptiert" oder "Registriert" → ABGESCHLOSSEN
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
+    }
+    
+    // Default fallback
+    return 'Offen';
   };
 
   const renderProjectList = (projects: any[], showViewedTime: boolean = false) => {
