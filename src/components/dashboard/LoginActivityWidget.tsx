@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LogIn } from 'lucide-react';
 import { subMonths, format, startOfDay, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfWeek, startOfMonth } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useAuth } from '@/contexts/AuthContext';
 
 type TimeRange = '1' | '3' | '6' | '12';
 type Granularity = 'day' | 'week' | 'month';
@@ -21,16 +22,24 @@ const timeRangeLabels: Record<TimeRange, string> = {
 
 export function LoginActivityWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
+  const { activeTenant } = useAuth();
 
   // Fetch login events
   const { data: loginEvents = [], isLoading } = useQuery({
-    queryKey: ['login-events'],
+    queryKey: ['login-events', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_access_logs')
         .select('*')
         .eq('event_type', 'login')
         .order('created_at', { ascending: true });
+      
+      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;

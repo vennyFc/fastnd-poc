@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, Calendar } from 'lucide-react';
 import { subMonths, format } from 'date-fns';
 import { de } from 'date-fns/locale';
+import { useAuth } from '@/contexts/AuthContext';
 
 type TimeRange = '1' | '3' | '6' | '12';
 
@@ -34,14 +35,22 @@ const eventTypeLabels: Record<string, string> = {
 
 export function AccessStatsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
+  const { activeTenant } = useAuth();
 
   // Fetch access logs data
   const { data: accessLogs = [], isLoading } = useQuery({
-    queryKey: ['user_access_logs'],
+    queryKey: ['user_access_logs', activeTenant?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('user_access_logs')
         .select('*');
+      
+      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
