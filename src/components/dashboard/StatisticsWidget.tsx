@@ -8,6 +8,22 @@ interface StatisticsWidgetProps {
 }
 
 export function StatisticsWidget({ projects, products, crossSells }: StatisticsWidgetProps) {
+  // Group projects by customer and project_name (same logic as ProjectsWidget)
+  const groupedProjects = projects.reduce((acc: any[], project: any) => {
+    const existing = acc.find(
+      (p) => p.customer === project.customer && p.project_name === project.project_name
+    );
+    if (!existing) {
+      acc.push({
+        ...project,
+        sourceIds: [project.id],
+      });
+    }
+    return acc;
+  }, []);
+
+  const projectCount = groupedProjects.length;
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -18,7 +34,7 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
                 <CardTitle className="text-lg">Projekte</CardTitle>
               </CardHeader>
               <CardContent className="!pt-12 text-center">
-                <p className="text-3xl font-bold text-primary">{projects?.length || 0}</p>
+                <p className="text-3xl font-bold text-primary">{projectCount}</p>
                 <p className="text-sm text-muted-foreground mt-1">In der Datenbank</p>
               </CardContent>
             </Card>
