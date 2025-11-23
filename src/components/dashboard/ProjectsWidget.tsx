@@ -138,7 +138,9 @@ export function ProjectsWidget() {
     });
 
   // Get favorite projects with full data
-  const favoriteProjects = allProjects.filter((p: any) => favoriteIds.includes(p.id));
+  const favoriteProjects = allProjects.filter((p: any) => 
+    p.sourceIds?.some((sourceId: string) => favoriteIds.includes(sourceId)) || favoriteIds.includes(p.id)
+  );
 
   // Fetch optimization records
   const { data: optimizationRecords = [] } = useQuery({
@@ -304,12 +306,13 @@ export function ProjectsWidget() {
               className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleFavorite(project.id);
+                const targetId = project.sourceIds?.[0] || project.id;
+                toggleFavorite(targetId);
               }}
             >
               <Star
                 className={`h-3.5 w-3.5 ${
-                  isFavorite(project.id)
+                  project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id)
                     ? 'fill-yellow-400 text-yellow-400'
                     : 'text-muted-foreground'
                 }`}
@@ -318,7 +321,7 @@ export function ProjectsWidget() {
             <Link 
               to={`/projects?search=${encodeURIComponent(project.project_name)}`} 
               className="flex-1 min-w-0"
-              onClick={() => addToHistory(project.id)}
+              onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-0.5">
