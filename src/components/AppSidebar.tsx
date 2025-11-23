@@ -30,11 +30,11 @@ const adminMenuItems = [
 ];
 
 export function AppSidebar() {
-  const { signOut, isSuperAdmin, isTenantAdmin } = useAuth();
+  const { signOut, isSuperAdmin, isTenantAdmin, activeTenant } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   
-  const menuItems = [
+  const allMenuItems = [
     { title: t('nav.cockpit'), url: '/', icon: LayoutDashboard },
     { title: t('nav.projects'), url: '/projects', icon: FolderKanban },
     { title: t('nav.products'), url: '/products', icon: Package },
@@ -42,6 +42,14 @@ export function AppSidebar() {
     { title: t('nav.collections'), url: '/collections', icon: Layers },
     { title: t('nav.reports'), url: '/reports', icon: BarChart3 },
   ];
+
+  // Hide Projekte, Produkte, Kunden, Sammlungen for Super Admins in Global view
+  const disabledUrls = ['/projects', '/products', '/customers', '/collections'];
+  const isGlobalView = isSuperAdmin && activeTenant?.id === 'global';
+  
+  const menuItems = allMenuItems.filter(item => 
+    !isGlobalView || !disabledUrls.includes(item.url)
+  );
 
   const tenantAdminMenuItems = [
     { title: t('nav.admin'), url: '/admin', icon: Shield },
