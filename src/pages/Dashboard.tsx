@@ -10,6 +10,7 @@ import { OptimizationStatusWidget } from '@/components/dashboard/OptimizationSta
 import { AddedProductsWidget } from '@/components/dashboard/AddedProductsWidget';
 import { AccessStatsWidget } from '@/components/dashboard/AccessStatsWidget';
 import { LoginActivityWidget } from '@/components/dashboard/LoginActivityWidget';
+import { RecentActivityWidget } from '@/components/dashboard/RecentActivityWidget';
 import { WidgetContainer } from '@/components/dashboard/WidgetContainer';
 import { WidgetSettings } from '@/components/dashboard/WidgetSettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -175,6 +176,24 @@ export default function Dashboard() {
 
   const renderWidget = (widget: typeof widgets[0], index: number) => {
     switch (widget.type) {
+      case 'recent-activity':
+        return (
+          <WidgetContainer
+            key="recent-activity"
+            id="recent-activity"
+            index={index}
+            isDragging={draggedIndex === index}
+            isDropTarget={dragOverIndex === index}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragLeave={handleDragLeave}
+            onDragEnd={handleDragEnd}
+            size={widget.size}
+          >
+            <RecentActivityWidget />
+          </WidgetContainer>
+        );
       case 'search':
         return (
           <WidgetContainer
