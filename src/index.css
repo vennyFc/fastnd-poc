@@ -135,7 +135,7 @@ All colors MUST be HSL.
 .bg-grid-pattern {
   background-image: radial-gradient(
     circle,
-    hsl(var(--primary) / 0.05) 1px,
+    hsl(var(--muted-foreground) / 0.12) 1px,
     transparent 1px
   );
   background-size: 20px 20px;
