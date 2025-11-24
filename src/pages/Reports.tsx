@@ -63,6 +63,7 @@ export default function Reports() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
+      // Note: removed_cross_sells doesn't have tenant_id, so we show all for now
       const { data, error } = await supabase
         .from('removed_cross_sells')
         .select('*')
@@ -80,11 +81,18 @@ export default function Reports() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
-        .select('*')
-        .eq('tenant_id', activeTenant.id)
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      // Filter by tenant: if global, show all tenant data; otherwise filter by specific tenant
+      if (activeTenant.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       return data;
@@ -98,10 +106,18 @@ export default function Reports() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('customer_projects')
-        .select('*')
-        .eq('tenant_id', activeTenant.id);
+        .select('*');
+      
+      // Filter by tenant: if global, show all tenant data; otherwise filter by specific tenant
+      if (activeTenant.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
@@ -115,10 +131,18 @@ export default function Reports() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
-        .select('product, product_family')
-        .eq('tenant_id', activeTenant.id);
+        .select('product, product_family');
+      
+      // Filter by tenant: if global, show all tenant data; otherwise filter by specific tenant
+      if (activeTenant.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
