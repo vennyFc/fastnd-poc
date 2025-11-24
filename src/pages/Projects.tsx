@@ -1688,21 +1688,31 @@ export default function Projects() {
                                   <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
-                                       if (column.key === 'product') {
-                                         value = (
-                                           <div className="flex items-center gap-2">
-                                             <span>{productName}</span>
-                                             {hasAlternatives && (
-                                               <Replace 
-                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   toggleAlternatives(productName);
-                                                 }}
-                                               />
-                                             )}
-                                           </div>
-                                         );
+                                        if (column.key === 'product') {
+                                          value = (
+                                            <div className="flex items-center gap-2">
+                                              <span>{productName}</span>
+                                              <div className="flex items-center gap-2">
+                                                {hasAlternatives && (
+                                                  <Replace 
+                                                    className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      toggleAlternatives(productName);
+                                                    }}
+                                                  />
+                                                )}
+                                                {showAlternativesBadge && productStatus === 'Registriert' && (
+                                                  <Badge 
+                                                    variant="outline"
+                                                    className="rounded-full bg-primary/10 border-primary/30 text-primary backdrop-blur-sm"
+                                                  >
+                                                    A
+                                                  </Badge>
+                                                )}
+                                              </div>
+                                            </div>
+                                          );
                                         } else if (column.key === 'status') {
                                           const isRegistered = productStatus === 'Registriert';
                                           value = productStatus ? (
@@ -2020,18 +2030,28 @@ export default function Projects() {
                                                    setProductQuickViewOpen(true);
                                                  }}
                                                >
-                                                 <div className="flex items-center gap-2">
-                                                   <span>{cs.cross_sell_product}</span>
-                                                   {hasAlternatives && (
-                                                     <Replace 
-                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                       onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         toggleAlternatives(cs.cross_sell_product);
-                                                       }}
-                                                     />
-                                                   )}
-                                                 </div>
+                                                  <div className="flex items-center gap-2">
+                                                    <span>{cs.cross_sell_product}</span>
+                                                    <div className="flex items-center gap-2">
+                                                      {hasAlternatives && (
+                                                        <Replace 
+                                                          className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleAlternatives(cs.cross_sell_product);
+                                                          }}
+                                                        />
+                                                      )}
+                                                      {showAlternativesBadge && (
+                                                        <Badge 
+                                                          variant="outline"
+                                                          className="rounded-full bg-primary/10 border-primary/30 text-primary backdrop-blur-sm"
+                                                        >
+                                                          A
+                                                        </Badge>
+                                                      )}
+                                                    </div>
+                                                  </div>
                                                </TableCell>
                                              );
                                            }
