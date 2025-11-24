@@ -2251,7 +2251,12 @@ export default function Projects() {
                                      {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
                                        const altDetails = getProductDetails(alt.alternative_product);
                                        const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
-                                       const isAlreadyInProject = project.products.includes(alt.alternative_product);
+                                       // Check if product is currently in customer_projects
+                                       const isAlreadyInProject = projects?.some((p: any) => 
+                                         p.customer === project.customer &&
+                                         p.project_name === project.project_name &&
+                                         p.product === alt.alternative_product
+                                       ) || false;
                                        
                                        return (
                                          <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70">
@@ -2282,7 +2287,7 @@ export default function Projects() {
                                              } else if (column.key === 'action') {
                                                return (
                                                  <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                   {altStatus ? (
+                                                   {isAlreadyInProject && altStatus ? (
                                                      <Select
                                                        value={altStatus}
                                                        disabled={altStatus === 'Registriert'}
@@ -2308,19 +2313,17 @@ export default function Projects() {
                                                         </SelectContent>
                                                      </Select>
                                                    ) : (
-                                                     !isAlreadyInProject && (
-                                                       <Button
-                                                         size="sm"
-                                                         variant="default"
-                                                         onClick={(e) => {
-                                                           e.stopPropagation();
-                                                           handleAddAlternative(project, alt.alternative_product);
-                                                         }}
-                                                       >
-                                                         <Plus className="h-4 w-4 mr-1" />
-                                                         Hinzufügen
-                                                       </Button>
-                                                     )
+                                                     <Button
+                                                       size="sm"
+                                                       variant="default"
+                                                       onClick={(e) => {
+                                                         e.stopPropagation();
+                                                         handleAddAlternative(project, alt.alternative_product);
+                                                       }}
+                                                     >
+                                                       <Plus className="h-4 w-4 mr-1" />
+                                                       Hinzufügen
+                                                     </Button>
                                                    )}
                                                  </TableCell>
                                                );
