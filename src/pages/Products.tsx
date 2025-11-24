@@ -726,6 +726,12 @@ export default function Products() {
                                       aria-label="Alternative verfügbar" 
                                       onClick={(e) => toggleExpanded(product.product, e)}
                                     />
+                                    <Badge 
+                                      className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                      variant="default"
+                                    >
+                                      A
+                                    </Badge>
                                   </div>
                                 )}
                               </div>

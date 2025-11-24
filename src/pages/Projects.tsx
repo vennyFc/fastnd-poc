@@ -1690,7 +1690,7 @@ export default function Projects() {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
-                                             <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
                                               <span>{productName}</span>
                                               {hasAlternatives && (
                                                 <div className="relative inline-flex">
@@ -1701,9 +1701,10 @@ export default function Projects() {
                                                       toggleAlternatives(productName);
                                                     }}
                                                   />
-                                                  {showAlternativesBadge && productStatus === 'Registriert' && (
+                                                  {showAlternativesBadge && (
                                                     <Badge 
-                                                      className="absolute -top-1 -right-1 h-4 w-4 rounded-sm bg-primary/10 border border-primary/30 backdrop-blur-sm flex items-center justify-center text-[9px] font-bold text-primary"
+                                                      className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                                      variant="default"
                                                     >
                                                       A
                                                     </Badge>
@@ -2010,7 +2011,6 @@ export default function Projects() {
                                   const hasAlternatives = alternatives.length > 0;
                                   const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
                                   const isExpanded = expandedAlternatives[cs.cross_sell_product];
-                                  const crossSellStatus = getOptimizationStatus(project.customer, project.project_name, cs.cross_sell_product, 'cross_sell');
                                   
                                   return (
                                     <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
@@ -2030,7 +2030,7 @@ export default function Projects() {
                                                    setProductQuickViewOpen(true);
                                                  }}
                                                >
-                                                   <div className="flex items-center gap-2">
+                                                  <div className="flex items-center gap-2">
                                                     <span>{cs.cross_sell_product}</span>
                                                     {hasAlternatives && (
                                                       <div className="relative inline-flex">
@@ -2041,9 +2041,10 @@ export default function Projects() {
                                                             toggleAlternatives(cs.cross_sell_product);
                                                           }}
                                                         />
-                                                        {showAlternativesBadge && crossSellStatus === 'Registriert' && (
+                                                        {showAlternativesBadge && (
                                                           <Badge 
-                                                            className="absolute -top-1 -right-1 h-4 w-4 rounded-sm bg-primary/10 border border-primary/30 backdrop-blur-sm flex items-center justify-center text-[9px] font-bold text-primary"
+                                                            className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                                            variant="default"
                                                           >
                                                             A
                                                           </Badge>
