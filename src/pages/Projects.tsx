@@ -927,13 +927,21 @@ export default function Projects() {
 
       console.log('Optimization record created:', insertedOpp);
 
-      // Invalidate and refetch data instead of reloading page
-      await queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
-      await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      // Invalidate and refetch data with tenant context
+      await queryClient.invalidateQueries({ 
+        queryKey: ['customer_projects', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['opps_optimization', activeTenant?.id] 
+      });
+      
       await Promise.all([
         refetchProjects(),
         refetchOptimization()
       ]);
+
+      // Wait a moment for React Query to update the cache
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       toast.success(`${crossSellProduct} zum Projekt hinzugefügt`);
     } catch (error: any) {
@@ -1125,14 +1133,22 @@ export default function Projects() {
 
       console.log('Product removed successfully');
 
-      // Step 3: Invalidate queries and refetch
-      queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
-      queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
+      // Step 3: Invalidate ALL related queries with tenant context
+      await queryClient.invalidateQueries({ 
+        queryKey: ['opps_optimization', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['customer_projects', activeTenant?.id] 
+      });
       
+      // Step 4: Force refetch to ensure fresh data
       await Promise.all([
         refetchProjects(),
         refetchOptimization()
       ]);
+
+      // Step 5: Wait a moment for React Query to update the cache
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       toast.success(`${productName} entfernt`);
     } catch (error: any) {
@@ -1212,13 +1228,21 @@ export default function Projects() {
         throw insertError;
       }
 
-      // Invalidate and refetch data
-      await queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
-      await queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      // Invalidate and refetch data with tenant context
+      await queryClient.invalidateQueries({ 
+        queryKey: ['customer_projects', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['opps_optimization', activeTenant?.id] 
+      });
+      
       await Promise.all([
         refetchProjects(),
         refetchOptimization()
       ]);
+
+      // Wait a moment for React Query to update the cache
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       toast.success(`${alternativeProduct} als Alternative zum Projekt hinzugefügt`);
     } catch (error: any) {
