@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import fastndLogo from '@/assets/fastnd-logo-gradient.svg';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 // Validation schemas
 const emailSchema = z.string()
@@ -28,15 +30,53 @@ const nameSchema = z.string()
   .max(100, 'Name darf maximal 100 Zeichen lang sein');
 
 export default function Auth() {
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgotPassword'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgotPassword' | 'setPassword'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
+
+  // Check if user came from invitation link
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If there's a session but user needs to set password (invited user)
+      if (session?.user) {
+        // Check if user has set a password (this is typically indicated by user_metadata)
+        const needsPasswordSet = session.user.user_metadata?.invited === true || 
+                                 session.user.confirmed_at === null ||
+                                 window.location.hash.includes('type=invite');
+        
+        if (needsPasswordSet) {
+          setAuthMode('setPassword');
+          setEmail(session.user.email || '');
+        }
+      }
+    };
+    
+    checkSession();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Check if this is an invited user who needs to set password
+        if (window.location.hash.includes('type=invite')) {
+          setAuthMode('setPassword');
+          setEmail(session.user.email || '');
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const isLogin = authMode === 'login';
   const isForgotPassword = authMode === 'forgotPassword';
+  const isSetPassword = authMode === 'setPassword';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +142,6 @@ export default function Auth() {
         return;
       }
 
-      const { supabase } = await import('@/integrations/supabase/client');
       const { error } = await supabase.auth.resetPasswordForEmail(emailValidation.data, {
         redirectTo: `${window.location.origin}/update-password`,
       });
@@ -120,9 +159,104 @@ export default function Auth() {
     }
   };
 
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        toast.error('Passwörter stimmen nicht überein');
+        setLoading(false);
+        return;
+      }
+
+      // Validate password
+      const passwordValidation = passwordSchema.safeParse(password);
+      if (!passwordValidation.success) {
+        toast.error(passwordValidation.error.errors[0].message);
+        setLoading(false);
+        return;
+      }
+
+      // Update the user's password
+      const { error } = await supabase.auth.updateUser({
+        password: passwordValidation.data,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Passwort erfolgreich festgelegt');
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast.error('Ein Fehler ist aufgetreten');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
-      {isForgotPassword ? (
+      {isSetPassword ? (
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-1">
+            <div className="flex items-center mb-4">
+              <img src={fastndLogo} alt="FASTND Logo" className="h-10" />
+            </div>
+            <CardTitle className="text-2xl">Passwort festlegen</CardTitle>
+            <CardDescription>
+              Willkommen! Bitte legen Sie Ihr Passwort fest, um fortzufahren.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="set-email">E-Mail</Label>
+                <Input
+                  id="set-email"
+                  type="email"
+                  value={email}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="set-password">Neues Passwort</Label>
+                <Input
+                  id="set-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Mindestens 8 Zeichen mit Groß-, Kleinbuchstaben und Ziffern
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="set-confirm-password">Passwort bestätigen</Label>
+                <Input
+                  id="set-confirm-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Passwort festlegen und anmelden
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      ) : isForgotPassword ? (
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1">
             <div className="flex items-center mb-4">
