@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LogIn } from 'lucide-react';
 import { subMonths, format, startOfDay, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfWeek, startOfMonth } from 'date-fns';
@@ -18,6 +18,29 @@ const timeRangeLabels: Record<TimeRange, string> = {
   '3': '3 Monate',
   '6': '6 Monate',
   '12': '12 Monate',
+};
+
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border shadow-lg rounded-md p-3">
+        <p className="font-semibold text-sm mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div 
+              className="h-2 w-2 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <p className="text-sm text-muted-foreground">
+              {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
 };
 
 export function LoginActivityWidget() {
@@ -212,8 +235,14 @@ export function LoginActivityWidget() {
             {/* Chart */}
             <div className="flex-1 min-h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorLogins" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="date" 
                     stroke="hsl(var(--foreground))"
@@ -226,25 +255,18 @@ export function LoginActivityWidget() {
                     stroke="hsl(var(--foreground))"
                     fontSize={12}
                   />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px',
-                    }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Legend />
-                  <Line 
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area 
                     type="monotone" 
                     dataKey="logins" 
                     name="Logins"
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
+                    fill="url(#colorLogins)"
                     dot={{ fill: 'hsl(var(--primary))', r: 4 }}
                     activeDot={{ r: 6 }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
 

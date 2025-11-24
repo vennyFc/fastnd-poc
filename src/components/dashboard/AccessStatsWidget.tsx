@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Activity, Calendar } from 'lucide-react';
 import { subMonths, format } from 'date-fns';
@@ -31,6 +31,29 @@ const eventTypeLabels: Record<string, string> = {
   'logout': 'Logouts',
   'page_view': 'Seitenaufrufe',
   'action': 'Aktionen',
+};
+
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card border border-border shadow-lg rounded-md p-3">
+        <p className="font-semibold text-sm mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div 
+              className="h-2 w-2 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <p className="text-sm text-muted-foreground">
+              {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
 };
 
 export function AccessStatsWidget() {
@@ -175,7 +198,25 @@ export function AccessStatsWidget() {
             <div className="flex-1 min-h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <defs>
+                    <linearGradient id="gradientLogin" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="gradientLogout" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="gradientPageView" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="gradientAction" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                   <XAxis 
                     dataKey="eventType" 
                     stroke="hsl(var(--foreground))"
@@ -185,20 +226,25 @@ export function AccessStatsWidget() {
                     stroke="hsl(var(--foreground))"
                     fontSize={12}
                   />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '6px',
-                    }}
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Legend />
+                  <Tooltip content={<CustomTooltip />} />
                   <Bar 
                     dataKey="anzahl" 
                     name="Anzahl"
                     radius={[8, 8, 0, 0]}
-                  />
+                  >
+                    {chartData.map((entry, index) => {
+                      const eventTypeKey = Object.keys(eventTypeLabels).find(
+                        key => eventTypeLabels[key] === entry.eventType
+                      ) || 'login';
+                      const gradientMap: Record<string, string> = {
+                        'login': 'url(#gradientLogin)',
+                        'logout': 'url(#gradientLogout)',
+                        'page_view': 'url(#gradientPageView)',
+                        'action': 'url(#gradientAction)',
+                      };
+                      return <Cell key={`cell-${index}`} fill={gradientMap[eventTypeKey] || 'url(#gradientLogin)'} />;
+                    })}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
