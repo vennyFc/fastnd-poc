@@ -720,11 +720,19 @@ export default function Products() {
                               <div className="flex items-center gap-2">
                                 <span>{product[column.key] || '-'}</span>
                                 {hasAlternative && (
-                                  <Replace 
-                                    className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                    aria-label="Alternative verfügbar" 
-                                    onClick={(e) => toggleExpanded(product.product, e)}
-                                  />
+                                  <div className="relative inline-flex">
+                                    <Replace 
+                                      className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                      aria-label="Alternative verfügbar" 
+                                      onClick={(e) => toggleExpanded(product.product, e)}
+                                    />
+                                    <Badge 
+                                      className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                      variant="default"
+                                    >
+                                      A
+                                    </Badge>
+                                  </div>
                                 )}
                               </div>
                             );

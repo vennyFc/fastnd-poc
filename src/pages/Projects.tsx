@@ -1690,18 +1690,28 @@ export default function Projects() {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
-                                           <div className="flex items-center gap-2">
-                                             <span>{productName}</span>
-                                             {hasAlternatives && (
-                                               <Replace 
-                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   toggleAlternatives(productName);
-                                                 }}
-                                               />
-                                             )}
-                                           </div>
+                                            <div className="flex items-center gap-2">
+                                              <span>{productName}</span>
+                                              {hasAlternatives && (
+                                                <div className="relative inline-flex">
+                                                  <Replace 
+                                                    className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      toggleAlternatives(productName);
+                                                    }}
+                                                  />
+                                                  {showAlternativesBadge && (
+                                                    <Badge 
+                                                      className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                                      variant="default"
+                                                    >
+                                                      A
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
                                          );
                                         } else if (column.key === 'status') {
                                           const isRegistered = productStatus === 'Registriert';
@@ -2020,18 +2030,28 @@ export default function Projects() {
                                                    setProductQuickViewOpen(true);
                                                  }}
                                                >
-                                                 <div className="flex items-center gap-2">
-                                                   <span>{cs.cross_sell_product}</span>
-                                                   {hasAlternatives && (
-                                                     <Replace 
-                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                       onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         toggleAlternatives(cs.cross_sell_product);
-                                                       }}
-                                                     />
-                                                   )}
-                                                 </div>
+                                                  <div className="flex items-center gap-2">
+                                                    <span>{cs.cross_sell_product}</span>
+                                                    {hasAlternatives && (
+                                                      <div className="relative inline-flex">
+                                                        <Replace 
+                                                          className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleAlternatives(cs.cross_sell_product);
+                                                          }}
+                                                        />
+                                                        {showAlternativesBadge && (
+                                                          <Badge 
+                                                            className="absolute -top-1 -right-1 h-3 w-3 p-0 flex items-center justify-center text-[8px] font-bold"
+                                                            variant="default"
+                                                          >
+                                                            A
+                                                          </Badge>
+                                                        )}
+                                                      </div>
+                                                    )}
+                                                  </div>
                                                </TableCell>
                                              );
                                            }
