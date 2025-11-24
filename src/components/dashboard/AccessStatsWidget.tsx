@@ -64,19 +64,37 @@ export function AccessStatsWidget() {
   const { data: accessLogs = [], isLoading } = useQuery({
     queryKey: ['user_access_logs', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      // First fetch all access logs
+      const { data: allAccessLogs, error: logsError } = await supabase
         .from('user_access_logs')
         .select('*');
       
-      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
-      if (activeTenant?.id && activeTenant.id !== 'global') {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (logsError) throw logsError;
+      if (!allAccessLogs) return [];
+      
+      // If global view, return all logs
+      if (activeTenant?.id === 'global') {
+        return allAccessLogs;
       }
       
-      const { data, error } = await query;
+      // For specific tenant, filter by user's tenant_id via profiles
+      if (activeTenant?.id) {
+        // Get all user_ids that belong to this tenant
+        const { data: tenantUsers, error: usersError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('tenant_id', activeTenant.id);
+        
+        if (usersError) throw usersError;
+        if (!tenantUsers) return [];
+        
+        const tenantUserIds = new Set(tenantUsers.map(u => u.id));
+        
+        // Filter access logs to only those from users in this tenant
+        return allAccessLogs.filter(log => tenantUserIds.has(log.user_id));
+      }
       
-      if (error) throw error;
-      return data;
+      return allAccessLogs;
     },
   });
 
