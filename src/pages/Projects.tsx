@@ -768,8 +768,8 @@ export default function Projects() {
       return 'Registriert';
     }
     
-    // Products not in optimization and not original uploads have no status
-    return null;
+    // Products not in optimization and not original uploads are treated as "Identifiziert"
+    return 'Identifiziert';
   };
 
   const getOptimizationRecordId = (
@@ -1715,9 +1715,9 @@ export default function Projects() {
                                           );
                                         } else if (column.key === 'status') {
                                           const isRegistered = productStatus === 'Registriert';
-                                          value = productStatus ? (
+                                          value = (
                                             <Select
-                                              value={productStatus}
+                                              value={productStatus || 'Identifiziert'}
                                               disabled={isRegistered}
                                               onValueChange={(newStatus) => 
                                                 handleUpdateCrossSellStatus(
@@ -1740,11 +1740,11 @@ export default function Projects() {
                                                  <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                </SelectContent>
                                             </Select>
-                                          ) : '-';
+                                          );
                                         } else if (column.key === 'remove') {
-                                          // Show remove button only for added products (not for original "Registriert" products)
-                                          const isAddedProduct = productStatus && productStatus !== 'Registriert';
-                                          value = isAddedProduct ? (
+                                          // Show remove button for all products except "Registriert"
+                                          const canDelete = productStatus !== 'Registriert';
+                                          value = canDelete ? (
                                             <Button
                                               variant="ghost"
                                               size="sm"
@@ -1861,9 +1861,9 @@ export default function Projects() {
                                               const isRegistered = altStatus === 'Registriert';
                                               return (
                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                  {altStatus ? (
+                                                  {altStatus || !isAlreadyInProject ? (
                                                     <Select
-                                                      value={altStatus}
+                                                      value={altStatus || 'Identifiziert'}
                                                       disabled={isRegistered}
                                                       onValueChange={(newStatus) => 
                                                         handleUpdateCrossSellStatus(
@@ -1887,7 +1887,7 @@ export default function Projects() {
                                                        </SelectContent>
                                                     </Select>
                                                   ) : (
-                                                    !isAlreadyInProject && (
+                                                    isAlreadyInProject && (
                                                       <Button
                                                         size="sm"
                                                         variant="default"
@@ -1904,11 +1904,11 @@ export default function Projects() {
                                                 </TableCell>
                                               );
                                              } else if (column.key === 'remove') {
-                                               // Show remove button only for added alternative products (not for original "Registriert" products)
-                                               const isAddedProduct = altStatus && altStatus !== 'Registriert';
+                                               // Show remove button for all alternative products except "Registriert"
+                                               const canDelete = altStatus !== 'Registriert';
                                                return (
                                                  <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                   {isAddedProduct ? (
+                                                   {canDelete ? (
                                                      <Button
                                                        variant="ghost"
                                                        size="sm"
