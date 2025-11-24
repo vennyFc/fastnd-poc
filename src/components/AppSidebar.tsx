@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import fastndLogo from '@/assets/fastnd-logo-blue-black.png';
-import fastndIcon from '@/assets/fastnd-icon.svg';
+import fastndIconCollapsed from '@/assets/fastnd-icon-collapsed.png';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from '@/components/ui/sidebar';
 const menuItems = [{
   title: 'Cockpit',
@@ -99,9 +99,9 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-3 justify-center">
           <img 
-            src={state === "collapsed" ? fastndIcon : fastndLogo} 
+            src={state === "collapsed" ? fastndIconCollapsed : fastndLogo} 
             alt="FASTND Logo" 
-            className={state === "collapsed" ? "h-10 w-10" : "h-8 w-auto"} 
+            className={state === "collapsed" ? "h-10 w-auto object-contain" : "h-8 w-auto"} 
           />
         </div>
       </SidebarHeader>
