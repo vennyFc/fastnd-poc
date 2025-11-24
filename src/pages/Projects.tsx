@@ -744,14 +744,21 @@ export default function Projects() {
     // First check if product exists in optimization records
     const groupNumbers = getProjectNumbersForGroup(customer, projectName);
     if (groupNumbers.length > 0) {
+      // Check both cross_sell and alternative records since a product could be added either way
       const record = optimizationRecords.find((rec: any) =>
         groupNumbers.includes(rec.project_number) &&
-        (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
+        (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
       );
       
-      // If found in optimization records, return that status
+      // If found in optimization records, return the appropriate status
       if (record) {
-        return type === 'cross_sell' ? record.cross_sell_status : record.alternative_status;
+        // Return cross_sell_status if the product is in cross_sell_product_name, otherwise alternative_status
+        if (record.cross_sell_product_name === productName && record.cross_sell_status) {
+          return record.cross_sell_status;
+        }
+        if (record.alternative_product_name === productName && record.alternative_status) {
+          return record.alternative_status;
+        }
       }
     }
     
@@ -780,9 +787,10 @@ export default function Projects() {
   ) => {
     const groupNumbers = getProjectNumbersForGroup(customer, projectName);
     if (groupNumbers.length === 0) return null;
+    // Check both cross_sell and alternative records since a product could be added either way
     const record = optimizationRecords.find((rec: any) =>
       groupNumbers.includes(rec.project_number) &&
-      (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
+      (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
     );
     return record?.id || null;
   };
@@ -795,18 +803,32 @@ export default function Projects() {
     type: 'cross_sell' | 'alternative' = 'cross_sell'
   ) => {
     try {
-      const recordId = getOptimizationRecordId(customer, projectName, productName, type);
-      if (!recordId) {
+      // Find the optimization record - check both cross_sell and alternative
+      const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+      if (groupNumbers.length === 0) {
+        toast.error('Optimierungsdatensatz nicht gefunden');
+        return;
+      }
+      
+      const record = optimizationRecords.find((rec: any) =>
+        groupNumbers.includes(rec.project_number) &&
+        (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
+      );
+      
+      if (!record) {
         toast.error('Optimierungsdatensatz nicht gefunden');
         return;
       }
 
-      const updateField = type === 'cross_sell' ? 'cross_sell_status' : 'alternative_status';
+      // Determine which field to update based on what was found
+      const updateField = record.cross_sell_product_name === productName 
+        ? 'cross_sell_status' 
+        : 'alternative_status';
       
       const { error } = await supabase
         .from('opps_optimization')
         .update({ [updateField]: newStatus })
-        .eq('id', recordId);
+        .eq('id', record.id);
 
       if (error) throw error;
 
