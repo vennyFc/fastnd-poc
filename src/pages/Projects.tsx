@@ -1080,37 +1080,35 @@ export default function Projects() {
         return;
       }
 
-      // Get the optimization record
       const groupNumbers = getProjectNumbersForGroup(customer, projectName);
       if (groupNumbers.length === 0) {
         toast.error('Projektnummer nicht gefunden');
         return;
       }
 
+      // STEP 1: Try to delete from opps_optimization (if record exists)
       const optimizationRecord = optimizationRecords.find((rec: any) =>
         groupNumbers.includes(rec.project_number) &&
         (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
       );
 
-      if (!optimizationRecord) {
-        toast.error('Optimierungsdatensatz nicht gefunden');
-        return;
+      if (optimizationRecord) {
+        console.log('Deleting optimization record:', optimizationRecord.id);
+        const { error: oppError } = await supabase
+          .from('opps_optimization')
+          .delete()
+          .eq('id', optimizationRecord.id);
+
+        if (oppError) {
+          console.error('Error deleting from opps_optimization:', oppError);
+        } else {
+          console.log('Successfully deleted from opps_optimization');
+        }
+      } else {
+        console.log('No optimization record found - will only delete from customer_projects');
       }
 
-      console.log('Removing product:', { productName, type, recordId: optimizationRecord.id });
-
-      // Step 1: Delete from opps_optimization first
-      const { error: oppError } = await supabase
-        .from('opps_optimization')
-        .delete()
-        .eq('id', optimizationRecord.id);
-
-      if (oppError) {
-        console.error('Error deleting from opps_optimization:', oppError);
-        throw oppError;
-      }
-
-      // Step 2: Delete from customer_projects
+      // STEP 2: ALWAYS delete from customer_projects (independent of step 1)
       let deleteProjectQuery = supabase
         .from('customer_projects')
         .delete()
@@ -1119,7 +1117,6 @@ export default function Projects() {
         .eq('product', productName)
         .in('project_number', groupNumbers);
       
-      // Filter by tenant_id for non-super-admins
       if (!isSuperAdmin && activeTenant?.id) {
         deleteProjectQuery = deleteProjectQuery.eq('tenant_id', activeTenant.id);
       }
@@ -1131,9 +1128,9 @@ export default function Projects() {
         throw projectDeleteError;
       }
 
-      console.log('Product removed successfully');
+      console.log('Product removed successfully from customer_projects');
 
-      // Step 3: Invalidate ALL related queries with tenant context
+      // STEP 3: Invalidate ALL related queries with tenant context
       await queryClient.invalidateQueries({ 
         queryKey: ['opps_optimization', activeTenant?.id] 
       });
@@ -1141,19 +1138,19 @@ export default function Projects() {
         queryKey: ['customer_projects', activeTenant?.id] 
       });
       
-      // Step 4: Force refetch to ensure fresh data
+      // STEP 4: Force refetch to ensure fresh data
       await Promise.all([
         refetchProjects(),
         refetchOptimization()
       ]);
 
-      // Step 5: Wait a moment for React Query to update the cache
+      // STEP 5: Wait a moment for React Query to update the cache
       await new Promise(resolve => setTimeout(resolve, 100));
 
       toast.success(`${productName} entfernt`);
     } catch (error: any) {
       console.error('Error removing product:', error);
-      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+      toast.error('Fehler beim Entfernen des Produkts');
     }
   };
 
