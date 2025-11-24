@@ -1767,7 +1767,8 @@ export default function Projects() {
                                                     setProductQuickViewOpen(true);
                                                   }}
                                                 >
-                                                  <div className="flex items-center gap-2">
+                                                  <div className="flex items-center gap-2 pl-6">
+                                                    <span className="text-muted-foreground text-sm">↳</span>
                                                     <span>{alt.alternative_product}</span>
                                                     {alt.similarity && (
                                                       <Badge variant="secondary" className="text-xs">
@@ -2089,7 +2090,8 @@ export default function Projects() {
                                                      setProductQuickViewOpen(true);
                                                    }}
                                                  >
-                                                   <div className="flex items-center gap-2">
+                                                   <div className="flex items-center gap-2 pl-6">
+                                                     <span className="text-muted-foreground text-sm">↳</span>
                                                      <span>{alt.alternative_product}</span>
                                                      {alt.similarity && (
                                                        <Badge variant="secondary" className="text-xs">
