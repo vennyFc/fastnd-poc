@@ -27,11 +27,17 @@ export function UserPreferencesPopover() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data } = await supabase
+      let query = supabase
         .from('applications')
-        .select('application')
-        .eq('tenant_id', activeTenant.id);
-      const uniqueApps = [...new Set(data?.map(a => a.application) || [])];
+        .select('application');
+      
+      // Filter by tenant unless in global view
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
+      const uniqueApps = [...new Set(data?.map(a => a.application).filter(Boolean) || [])];
       return uniqueApps.sort();
     },
     enabled: !!user && !!activeTenant,
@@ -43,11 +49,17 @@ export function UserPreferencesPopover() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data } = await supabase
+      let query = supabase
         .from('products')
         .select('product_family')
-        .eq('tenant_id', activeTenant.id)
         .not('product_family', 'is', null);
+      
+      // Filter by tenant unless in global view
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       const uniqueFamilies = [...new Set(data?.map(p => p.product_family).filter(Boolean) || [])];
       return uniqueFamilies.sort();
     },
@@ -60,11 +72,17 @@ export function UserPreferencesPopover() {
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data } = await supabase
+      let query = supabase
         .from('products')
         .select('manufacturer')
-        .eq('tenant_id', activeTenant.id)
         .not('manufacturer', 'is', null);
+      
+      // Filter by tenant unless in global view
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       const uniqueManufacturers = [...new Set(data?.map(p => p.manufacturer).filter(Boolean) || [])];
       return uniqueManufacturers.sort();
     },
