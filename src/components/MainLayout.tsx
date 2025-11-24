@@ -302,7 +302,124 @@ export function MainLayout({ children }: MainLayoutProps) {
                 {/* Search Results Dropdown */}
                 {showResults && searchQuery.length >= 2 && (
                   <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-...
+                    {!hasResults ? (
+                      <div className="p-4 text-sm text-muted-foreground text-center">
+                        Keine Ergebnisse gefunden
+                      </div>
+                    ) : (
+                      <div className="p-2">
+                        {/* Projects */}
+                        {results.projects.length > 0 && (
+                          <div className="mb-4">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              Projekte
+                            </div>
+                            {results.projects.map((project: any) => (
+                              <Link
+                                key={project.id}
+                                to={`/projects?search=${project.project_name}`}
+                                className="block px-2 py-2 hover:bg-muted rounded-md"
+                                onClick={() => setShowResults(false)}
+                              >
+                                <div className="text-sm font-medium">{project.project_name}</div>
+                                <div className="text-xs text-muted-foreground">{project.customer}</div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Products */}
+                        {results.products.length > 0 && (
+                          <div className="mb-4">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              Produkte
+                            </div>
+                            {results.products.map((product: any) => (
+                              <Link
+                                key={product.id}
+                                to={`/products?search=${product.product}`}
+                                className="block px-2 py-2 hover:bg-muted rounded-md"
+                                onClick={() => setShowResults(false)}
+                              >
+                                <div className="text-sm font-medium">{product.product}</div>
+                                <div className="text-xs text-muted-foreground">{product.product_family}</div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Customers */}
+                        {results.customers.length > 0 && (
+                          <div className="mb-4">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              Kunden
+                            </div>
+                            {results.customers.map((customer: any) => (
+                              <Link
+                                key={customer.id}
+                                to={`/customers?search=${customer.customer_name}`}
+                                className="block px-2 py-2 hover:bg-muted rounded-md"
+                                onClick={() => setShowResults(false)}
+                              >
+                                <div className="text-sm font-medium">{customer.customer_name}</div>
+                                <div className="text-xs text-muted-foreground">{customer.industry}</div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Applications */}
+                        {results.applications.length > 0 && (
+                          <div className="mb-4">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              Anwendungen
+                            </div>
+                            {results.applications.map((app: any, index: number) => (
+                              <Link
+                                key={`${app.application}-${index}`}
+                                to={`/applications?search=${app.application}`}
+                                className="block px-2 py-2 hover:bg-muted rounded-md"
+                                onClick={() => setShowResults(false)}
+                              >
+                                <div className="text-sm font-medium">{app.application}</div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Collections */}
+                        {results.collections.length > 0 && (
+                          <div className="mb-4">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                              Sammlungen
+                            </div>
+                            {results.collections.map((collection: any) => (
+                              <Link
+                                key={collection.id}
+                                to={`/collections`}
+                                className="block px-2 py-2 hover:bg-muted rounded-md"
+                                onClick={() => setShowResults(false)}
+                              >
+                                <div className="text-sm font-medium">{collection.name}</div>
+                                <div className="text-xs text-muted-foreground">{collection.description}</div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* View all link */}
+                        <div className="border-t border-border pt-2">
+                          <Link
+                            to={`/?search=${encodeURIComponent(searchQuery)}`}
+                            className="block px-2 py-2 text-sm text-primary hover:bg-muted rounded-md flex items-center justify-between"
+                            onClick={() => setShowResults(false)}
+                          >
+                            <span>Alle Ergebnisse anzeigen</span>
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
