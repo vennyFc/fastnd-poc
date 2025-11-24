@@ -735,25 +735,6 @@ export default function Projects() {
     }));
   };
 
-  const hasOptimizationRecord = (
-    customer: string,
-    projectName: string,
-    productName: string,
-    type: 'cross_sell' | 'alternative'
-  ): boolean => {
-    const groupNumbers = getProjectNumbersForGroup(customer, projectName);
-    if (groupNumbers.length === 0) return false;
-    
-    const record = optimizationRecords.find((rec: any) =>
-      groupNumbers.includes(rec.project_number) &&
-      (type === 'cross_sell' 
-        ? rec.cross_sell_product_name === productName 
-        : rec.alternative_product_name === productName)
-    );
-    
-    return !!record;
-  };
-
   const getOptimizationStatus = (
     customer: string,
     projectName: string,
@@ -768,10 +749,9 @@ export default function Projects() {
         (type === 'cross_sell' ? rec.cross_sell_product_name === productName : rec.alternative_product_name === productName)
       );
       
-      // If found in optimization records, return that status or default to 'Identifiziert'
+      // If found in optimization records, return that status
       if (record) {
-        const status = type === 'cross_sell' ? record.cross_sell_status : record.alternative_status;
-        return status || 'Identifiziert';
+        return type === 'cross_sell' ? record.cross_sell_status : record.alternative_status;
       }
     }
     
@@ -1724,11 +1704,10 @@ export default function Projects() {
                                            </div>
                                          );
                                         } else if (column.key === 'status') {
-                                          const hasRecord = hasOptimizationRecord(project.customer, project.project_name, productName, 'cross_sell');
                                           const isRegistered = productStatus === 'Registriert';
-                                          value = hasRecord ? (
+                                          value = productStatus ? (
                                             <Select
-                                              value={productStatus || 'Identifiziert'}
+                                              value={productStatus}
                                               disabled={isRegistered}
                                               onValueChange={(newStatus) => 
                                                 handleUpdateCrossSellStatus(
@@ -1869,13 +1848,12 @@ export default function Projects() {
                                                 </TableCell>
                                               );
                                             } else if (column.key === 'status') {
-                                              const hasRecord = hasOptimizationRecord(project.customer, project.project_name, alt.alternative_product, 'alternative');
                                               const isRegistered = altStatus === 'Registriert';
                                               return (
                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                  {hasRecord ? (
+                                                  {altStatus ? (
                                                     <Select
-                                                      value={altStatus || 'Identifiziert'}
+                                                      value={altStatus}
                                                       disabled={isRegistered}
                                                       onValueChange={(newStatus) => 
                                                         handleUpdateCrossSellStatus(
@@ -2059,53 +2037,19 @@ export default function Projects() {
                                            }
 
                                           if (column.key === 'action') {
-                                            const crossSellStatus = getOptimizationStatus(project.customer, project.project_name, cs.cross_sell_product, 'cross_sell');
-                                            const hasRecord = hasOptimizationRecord(project.customer, project.project_name, cs.cross_sell_product, 'cross_sell');
-                                            const isAlreadyInProject = project.products.includes(cs.cross_sell_product);
-                                            const isRegistered = crossSellStatus === 'Registriert';
-                                            
                                             return (
                                               <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                {hasRecord ? (
-                                                  <Select
-                                                    value={crossSellStatus || 'Identifiziert'}
-                                                    disabled={isRegistered}
-                                                    onValueChange={(newStatus) => 
-                                                      handleUpdateCrossSellStatus(
-                                                        project.customer, 
-                                                        project.project_name, 
-                                                        cs.cross_sell_product, 
-                                                        newStatus,
-                                                        'cross_sell'
-                                                      )
-                                                    }
-                                                  >
-                                                    <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
-                                                      <SelectValue />
-                                                    </SelectTrigger>
-                                                     <SelectContent>
-                                                       <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                       <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                       <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                       <SelectItem value="Registriert">Registriert</SelectItem>
-                                                       <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
-                                                     </SelectContent>
-                                                  </Select>
-                                                ) : (
-                                                  !isAlreadyInProject && (
-                                                    <Button
-                                                      size="sm"
-                                                      variant="outline"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleAddCrossSell(project, cs.cross_sell_product);
-                                                      }}
-                                                    >
-                                                      <Plus className="h-3.5 w-3.5 mr-1" />
-                                                      Hinzufügen
-                                                    </Button>
-                                                  )
-                                                )}
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleAddCrossSell(project, cs.cross_sell_product);
+                                                  }}
+                                                >
+                                                  <Plus className="h-3.5 w-3.5 mr-1" />
+                                                  Hinzufügen
+                                                </Button>
                                               </TableCell>
                                             );
                                           }
@@ -2226,54 +2170,51 @@ export default function Projects() {
                                                    </div>
                                                  </TableCell>
                                                );
-                                              } else if (column.key === 'action') {
-                                                const hasRecord = hasOptimizationRecord(project.customer, project.project_name, alt.alternative_product, 'alternative');
-                                                const isRegistered = altStatus === 'Registriert';
-                                                
-                                                return (
-                                                  <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                    {hasRecord ? (
-                                                      <Select
-                                                        value={altStatus || 'Identifiziert'}
-                                                        disabled={isRegistered}
-                                                        onValueChange={(newStatus) => 
-                                                          handleUpdateCrossSellStatus(
-                                                            project.customer, 
-                                                            project.project_name, 
-                                                            alt.alternative_product, 
-                                                            newStatus,
-                                                            'alternative'
-                                                          )
-                                                        }
-                                                      >
-                                                        <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
-                                                          <SelectValue />
-                                                        </SelectTrigger>
-                                                         <SelectContent>
-                                                           <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                           <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                           <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                           <SelectItem value="Registriert">Registriert</SelectItem>
-                                                           <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
-                                                         </SelectContent>
-                                                      </Select>
-                                                    ) : (
-                                                      !isAlreadyInProject && (
-                                                        <Button
-                                                          size="sm"
-                                                          variant="default"
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleAddAlternative(project, alt.alternative_product);
-                                                          }}
-                                                        >
-                                                          <Plus className="h-4 w-4 mr-1" />
-                                                          Hinzufügen
-                                                        </Button>
-                                                      )
-                                                    )}
-                                                  </TableCell>
-                                                );
+                                             } else if (column.key === 'action') {
+                                               return (
+                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                   {altStatus ? (
+                                                     <Select
+                                                       value={altStatus}
+                                                       disabled={altStatus === 'Registriert'}
+                                                       onValueChange={(newStatus) => 
+                                                         handleUpdateCrossSellStatus(
+                                                           project.customer, 
+                                                           project.project_name, 
+                                                           alt.alternative_product, 
+                                                           newStatus,
+                                                           'alternative'
+                                                         )
+                                                       }
+                                                     >
+                                                       <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
+                                                         <SelectValue />
+                                                       </SelectTrigger>
+                                                        <SelectContent>
+                                                          <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                          <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                          <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                          <SelectItem value="Registriert">Registriert</SelectItem>
+                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                                        </SelectContent>
+                                                     </Select>
+                                                   ) : (
+                                                     !isAlreadyInProject && (
+                                                       <Button
+                                                         size="sm"
+                                                         variant="default"
+                                                         onClick={(e) => {
+                                                           e.stopPropagation();
+                                                           handleAddAlternative(project, alt.alternative_product);
+                                                         }}
+                                                       >
+                                                         <Plus className="h-4 w-4 mr-1" />
+                                                         Hinzufügen
+                                                       </Button>
+                                                     )
+                                                   )}
+                                                 </TableCell>
+                                               );
                                               } else {
                                                 let value = '-';
                                                 if (altDetails) {
