@@ -75,62 +75,89 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   // Fetch data for search
   const { data: projects } = useQuery({
-    queryKey: ['customer_projects'],
+    queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore
-      const { data } = await supabase
-        // @ts-ignore
+      let query = supabase
         .from('customer_projects')
         .select('*');
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
+    enabled: !!user && !!activeTenant,
   });
 
   const { data: products } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore
-      const { data } = await supabase
-        // @ts-ignore
+      let query = supabase
         .from('products')
         .select('*');
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
+    enabled: !!user && !!activeTenant,
   });
 
   const { data: collections } = useQuery({
-    queryKey: ['collections_search'],
+    queryKey: ['collections_search', activeTenant?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('collections')
         .select('id, name, description, visibility')
         .order('updated_at', { ascending: false });
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
+    enabled: !!user && !!activeTenant,
   });
 
   const { data: customers } = useQuery({
-    queryKey: ['customers'],
+    queryKey: ['customers', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore
-      const { data } = await supabase
-        // @ts-ignore
+      let query = supabase
         .from('customers')
         .select('*');
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
+    enabled: !!user && !!activeTenant,
   });
 
   const { data: applications } = useQuery({
-    queryKey: ['applications'],
+    queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
-      // @ts-ignore
-      const { data } = await supabase
-        // @ts-ignore
+      let query = supabase
         .from('applications')
         .select('*');
+      
+      if (activeTenant?.id && activeTenant.id !== 'global') {
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+      }
+      
+      const { data } = await query;
       return data || [];
     },
+    enabled: !!user && !!activeTenant,
   });
 
   // Search function
