@@ -728,15 +728,6 @@ export default function Projects() {
     );
   };
 
-  const isOriginalProjectProduct = (customer: string, projectName: string, productName: string): boolean => {
-    return projects?.some((p: any) => 
-      p.customer === customer && 
-      p.project_name === projectName && 
-      p.product === productName &&
-      p.upload_id !== null
-    ) || false;
-  };
-
   const toggleAlternatives = (productName: string) => {
     setExpandedAlternatives(prev => ({
       ...prev,
@@ -1711,7 +1702,7 @@ export default function Projects() {
                                                     }}
                                                   />
                                                 )}
-                                                {showAlternativesBadge && isOriginalProjectProduct(project.customer, project.project_name, productName) && (
+                                                {showAlternativesBadge && (
                                                   <Badge 
                                                     variant="outline"
                                                     className="rounded-full bg-primary/10 border-primary/30 text-primary backdrop-blur-sm"
