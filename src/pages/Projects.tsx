@@ -1849,8 +1849,14 @@ export default function Projects() {
                                      })}
                                   </TableRow>
                                   
-                                    {/* Alternative Products - Expandable */}
-                                    {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
+                                    {/* Alternative Products - Expandable - Only show alternatives that have NOT been added yet */}
+                                    {hasAlternatives && isExpanded && alternatives
+                                      .filter((alt: any) => {
+                                        // Only show alternatives that have NOT been added to the project yet
+                                        const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
+                                        return !altStatus; // If no status, it hasn't been added yet
+                                      })
+                                      .map((alt: any, altIdx: number) => {
                                       const altDetails = getProductDetails(alt.alternative_product);
                                       const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
                                       const isAlreadyInProject = project.products.includes(alt.alternative_product);
