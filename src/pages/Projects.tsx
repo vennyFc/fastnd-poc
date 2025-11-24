@@ -1072,21 +1072,37 @@ export default function Projects() {
         return;
       }
 
-      // Get the optimization record ID
-      const recordId = getOptimizationRecordId(customer, projectName, productName, type);
-      if (!recordId) {
-        toast.error('Optimierungsdatensatz nicht gefunden');
-        return;
-      }
-
-      // Get project_number to delete from customer_projects
+      // Get the optimization record
       const groupNumbers = getProjectNumbersForGroup(customer, projectName);
       if (groupNumbers.length === 0) {
         toast.error('Projektnummer nicht gefunden');
         return;
       }
 
-      // Delete from customer_projects (removes from main list)
+      const optimizationRecord = optimizationRecords.find((rec: any) =>
+        groupNumbers.includes(rec.project_number) &&
+        (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
+      );
+
+      if (!optimizationRecord) {
+        toast.error('Optimierungsdatensatz nicht gefunden');
+        return;
+      }
+
+      console.log('Removing product:', { productName, type, recordId: optimizationRecord.id });
+
+      // Step 1: Delete from opps_optimization first
+      const { error: oppError } = await supabase
+        .from('opps_optimization')
+        .delete()
+        .eq('id', optimizationRecord.id);
+
+      if (oppError) {
+        console.error('Error deleting from opps_optimization:', oppError);
+        throw oppError;
+      }
+
+      // Step 2: Delete from customer_projects
       let deleteProjectQuery = supabase
         .from('customer_projects')
         .delete()
@@ -1102,21 +1118,16 @@ export default function Projects() {
       
       const { error: projectDeleteError } = await deleteProjectQuery;
       
-      if (projectDeleteError) throw projectDeleteError;
+      if (projectDeleteError) {
+        console.error('Error deleting from customer_projects:', projectDeleteError);
+        throw projectDeleteError;
+      }
 
-      // Delete from opps_optimization (removes optimization record)
-      const { error: oppError } = await supabase
-        .from('opps_optimization')
-        .delete()
-        .eq('id', recordId);
+      console.log('Product removed successfully');
 
-      if (oppError) throw oppError;
-
-      // Invalidate queries to refresh data
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['opps_optimization'] }),
-        queryClient.invalidateQueries({ queryKey: ['customer_projects'] })
-      ]);
+      // Step 3: Invalidate queries and refetch
+      queryClient.invalidateQueries({ queryKey: ['opps_optimization'] });
+      queryClient.invalidateQueries({ queryKey: ['customer_projects'] });
       
       await Promise.all([
         refetchProjects(),
