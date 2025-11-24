@@ -62,8 +62,10 @@ export default function Dashboard() {
         .from('customer_projects')
         .select('*');
       
-      // Filter by tenant if a tenant is selected
-      if (activeTenant?.id) {
+      // Filter by tenant: if 'global', get all tenant data; if specific tenant, filter by it
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -81,8 +83,10 @@ export default function Dashboard() {
         .from('products')
         .select('*');
       
-      // Filter by tenant if a tenant is selected
-      if (activeTenant?.id) {
+      // Filter by tenant: if 'global', get all tenant data; if specific tenant, filter by it
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -100,8 +104,10 @@ export default function Dashboard() {
         .from('applications')
         .select('*');
       
-      // Filter by tenant if a tenant is selected
-      if (activeTenant?.id) {
+      // Filter by tenant: if 'global', get all tenant data; if specific tenant, filter by it
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
@@ -119,8 +125,10 @@ export default function Dashboard() {
         .from('cross_sells')
         .select('*');
       
-      // Filter by tenant if a tenant is selected
-      if (activeTenant?.id) {
+      // Filter by tenant: if 'global', get all tenant data; if specific tenant, filter by it
+      if (activeTenant?.id === 'global') {
+        query = query.not('tenant_id', 'is', null);
+      } else if (activeTenant?.id) {
         query = query.eq('tenant_id', activeTenant.id);
       }
       
