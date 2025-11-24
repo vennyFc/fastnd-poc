@@ -51,21 +51,39 @@ export function LoginActivityWidget() {
   const { data: loginEvents = [], isLoading } = useQuery({
     queryKey: ['login-events', activeTenant?.id],
     queryFn: async () => {
-      let query = supabase
+      // First fetch all login events
+      const { data: allLoginEvents, error: eventsError } = await supabase
         .from('user_access_logs')
         .select('*')
         .eq('event_type', 'login')
         .order('created_at', { ascending: true });
       
-      // Filter by tenant: if 'global', get all; if specific tenant, filter by it
-      if (activeTenant?.id && activeTenant.id !== 'global') {
-        query = query.eq('tenant_id', activeTenant.id);
+      if (eventsError) throw eventsError;
+      if (!allLoginEvents) return [];
+      
+      // If global view, return all events
+      if (activeTenant?.id === 'global') {
+        return allLoginEvents;
       }
       
-      const { data, error } = await query;
+      // For specific tenant, filter by user's tenant_id via profiles
+      if (activeTenant?.id) {
+        // Get all user_ids that belong to this tenant
+        const { data: tenantUsers, error: usersError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('tenant_id', activeTenant.id);
+        
+        if (usersError) throw usersError;
+        if (!tenantUsers) return [];
+        
+        const tenantUserIds = new Set(tenantUsers.map(u => u.id));
+        
+        // Filter login events to only those from users in this tenant
+        return allLoginEvents.filter(event => tenantUserIds.has(event.user_id));
+      }
       
-      if (error) throw error;
-      return data;
+      return allLoginEvents;
     },
   });
 
