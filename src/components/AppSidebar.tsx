@@ -101,7 +101,7 @@ export function AppSidebar() {
           <img 
             src={state === "collapsed" ? fastndIcon : fastndLogo} 
             alt="FASTND Logo" 
-            className={state === "collapsed" ? "h-8 w-8" : "h-8 w-auto"} 
+            className={state === "collapsed" ? "h-10 w-10" : "h-8 w-auto"} 
           />
         </div>
       </SidebarHeader>
