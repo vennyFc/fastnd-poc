@@ -9,29 +9,6 @@ import { TrendingUp } from 'lucide-react';
 import { subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Custom Tooltip Component
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-card border border-border shadow-lg rounded-md p-3">
-        <p className="font-semibold text-sm mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2">
-            <div 
-              className="h-2 w-2 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <p className="text-sm text-muted-foreground">
-              {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
-
 type TimeRange = '1' | '3' | '6' | '12';
 
 const timeRangeLabels: Record<TimeRange, string> = {
@@ -218,16 +195,6 @@ export function AddedProductsWidget() {
             
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="gradientCrossSells" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientAlternatives" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
                   dataKey="status" 
@@ -239,14 +206,21 @@ export function AddedProductsWidget() {
                   stroke="hsl(var(--border))"
                   allowDecimals={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px',
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))' }}
+                />
                 <Bar 
                   dataKey="crossSells" 
                   name="Cross-Sells"
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((_, index) => (
-                    <Cell key={`cross-${index}`} fill="url(#gradientCrossSells)" />
+                    <Cell key={`cross-${index}`} fill="#3b82f6" />
                   ))}
                 </Bar>
                 <Bar 
@@ -255,7 +229,7 @@ export function AddedProductsWidget() {
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((_, index) => (
-                    <Cell key={`alt-${index}`} fill="url(#gradientAlternatives)" />
+                    <Cell key={`alt-${index}`} fill="#8b5cf6" />
                   ))}
                 </Bar>
               </BarChart>

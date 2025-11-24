@@ -3,35 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Globe } from 'lucide-react';
 import { subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
-
-// Custom Tooltip Component
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-card border border-border shadow-lg rounded-md p-3">
-        <p className="font-semibold text-sm mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2">
-            <div 
-              className="h-2 w-2 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <p className="text-sm text-muted-foreground">
-              {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
-            </p>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
-};
 
 type TimeRange = '1' | '3' | '6' | '12';
 
@@ -359,29 +336,7 @@ export function OptimizationStatusWidget() {
             
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="gradientNeu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientOffen" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientPrüfung" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientValidierung" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientAbgeschlossen" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis 
                   dataKey="status" 
                   className="text-sm"
@@ -392,23 +347,19 @@ export function OptimizationStatusWidget() {
                   tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   allowDecimals={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip 
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px',
+                  }}
+                  labelStyle={{ color: 'hsl(var(--foreground))' }}
+                />
                 <Bar 
                   dataKey="anzahl" 
                   name="Anzahl Projekte"
                   radius={[8, 8, 0, 0]}
-                >
-                  {chartData.map((entry, index) => {
-                    const gradientMap: Record<string, string> = {
-                      'Neu': 'url(#gradientNeu)',
-                      'Offen': 'url(#gradientOffen)',
-                      'Prüfung': 'url(#gradientPrüfung)',
-                      'Validierung': 'url(#gradientValidierung)',
-                      'Abgeschlossen': 'url(#gradientAbgeschlossen)',
-                    };
-                    return <Cell key={`cell-${index}`} fill={gradientMap[entry.status] || 'url(#gradientNeu)'} />;
-                  })}
-                </Bar>
+                />
               </BarChart>
             </ResponsiveContainer>
 
