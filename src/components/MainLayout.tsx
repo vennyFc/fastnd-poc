@@ -509,7 +509,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto bg-grid-pattern">
             {showTenantWarning ? (
               <div className="p-6">
                 <Alert variant="destructive">
