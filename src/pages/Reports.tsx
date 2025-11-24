@@ -59,10 +59,12 @@ export default function Reports() {
 
   // Fetch removed cross-sells
   const { data: removedCrossSells = [], isLoading } = useQuery({
-    queryKey: ['removed_cross_sells', activeTenant?.id],
+    queryKey: ['removed_cross_sells', activeTenant?.id, isSuperAdmin],
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
+      // Super admins in global view see all data across all tenants
+      // In specific tenant view, show only that tenant's data
       const { data, error } = await supabase
         .from('removed_cross_sells')
         .select('*')
@@ -71,59 +73,84 @@ export default function Reports() {
       if (error) throw error;
       return data;
     },
-    enabled: !!activeTenant?.id,
+    enabled: !!activeTenant?.id && isSuperAdmin,
   });
 
   // Fetch added products (opps_optimization)
   const { data: addedProducts = [], isLoading: isLoadingAdded } = useQuery({
-    queryKey: ['opps_optimization', activeTenant?.id],
+    queryKey: ['opps_optimization_reports', activeTenant?.id, isSuperAdmin],
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('opps_optimization')
-        .select('*')
-        .eq('tenant_id', activeTenant.id)
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      // Super admins in global view see all tenant data
+      // In specific tenant view or for regular users, filter by tenant
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      } else {
+        // Global view: only show tenant data (exclude null tenant_id)
+        query = query.not('tenant_id', 'is', null);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       return data;
     },
-    enabled: !!activeTenant?.id,
+    enabled: !!activeTenant?.id && isSuperAdmin,
   });
 
   // Fetch customer projects for joining
   const { data: customerProjects = [] } = useQuery({
-    queryKey: ['customer_projects', activeTenant?.id],
+    queryKey: ['customer_projects_reports', activeTenant?.id, isSuperAdmin],
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('customer_projects')
-        .select('*')
-        .eq('tenant_id', activeTenant.id);
+        .select('*');
+      
+      // Super admins in global view see all tenant data
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      } else {
+        query = query.not('tenant_id', 'is', null);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
     },
-    enabled: !!activeTenant?.id,
+    enabled: !!activeTenant?.id && isSuperAdmin,
   });
 
   // Fetch products for product family
   const { data: products = [] } = useQuery({
-    queryKey: ['products', activeTenant?.id],
+    queryKey: ['products_reports', activeTenant?.id, isSuperAdmin],
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
-        .select('product, product_family')
-        .eq('tenant_id', activeTenant.id);
+        .select('product, product_family');
+      
+      // Super admins in global view see all tenant data
+      if (activeTenant.id !== 'global') {
+        query = query.eq('tenant_id', activeTenant.id);
+      } else {
+        query = query.not('tenant_id', 'is', null);
+      }
+      
+      const { data, error } = await query;
       
       if (error) throw error;
       return data;
     },
-    enabled: !!activeTenant?.id,
+    enabled: !!activeTenant?.id && isSuperAdmin,
   });
 
   // Fetch recently viewed projects from database
