@@ -279,7 +279,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
+          <header className="h-16 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-6">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger className="h-8 w-8" />
               
@@ -509,7 +509,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto bg-grid-pattern">
             {showTenantWarning ? (
               <div className="p-6">
                 <Alert variant="destructive">

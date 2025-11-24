@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -31,9 +31,78 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { cn } from '@/lib/utils';
 
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
+
+// Status Badge Configuration with Teal/Petrol Color Scheme
+const getStatusConfig = (status: string) => {
+  switch (status) {
+    case 'Neu':
+      return {
+        dotColor: 'bg-blue-500',
+        bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+        textColor: 'text-blue-700 dark:text-blue-300',
+        borderColor: 'border-blue-200 dark:border-blue-800'
+      };
+    case 'Offen':
+      return {
+        dotColor: 'bg-orange-500',
+        bgColor: 'bg-orange-50 dark:bg-orange-950/30',
+        textColor: 'text-orange-700 dark:text-orange-300',
+        borderColor: 'border-orange-200 dark:border-orange-800'
+      };
+    case 'Prüfung':
+      return {
+        dotColor: 'bg-teal-500',
+        bgColor: 'bg-teal-50 dark:bg-teal-950/30',
+        textColor: 'text-teal-700 dark:text-teal-300',
+        borderColor: 'border-teal-200 dark:border-teal-800'
+      };
+    case 'Validierung':
+      return {
+        dotColor: 'bg-yellow-500',
+        bgColor: 'bg-yellow-50 dark:bg-yellow-950/30',
+        textColor: 'text-yellow-700 dark:text-yellow-300',
+        borderColor: 'border-yellow-200 dark:border-yellow-800'
+      };
+    case 'Abgeschlossen':
+      return {
+        dotColor: 'bg-green-500',
+        bgColor: 'bg-green-50 dark:bg-green-950/30',
+        textColor: 'text-green-700 dark:text-green-300',
+        borderColor: 'border-green-200 dark:border-green-800'
+      };
+    default:
+      return {
+        dotColor: 'bg-gray-500',
+        bgColor: 'bg-gray-50 dark:bg-gray-950/30',
+        textColor: 'text-gray-700 dark:text-gray-300',
+        borderColor: 'border-gray-200 dark:border-gray-800'
+      };
+  }
+};
+
+// StatusBadge Component with Pulsing Dot
+const StatusBadge = ({ status }: { status: string }) => {
+  const config = getStatusConfig(status);
+  
+  return (
+    <div className={cn(
+      "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold",
+      config.bgColor,
+      config.textColor,
+      config.borderColor
+    )}>
+      <div className={cn(
+        "h-2 w-2 rounded-full animate-pulse",
+        config.dotColor
+      )} />
+      <span>{status}</span>
+    </div>
+  );
+};
 
 export default function Projects() {
   const { user, isSuperAdmin, activeTenant } = useAuth();
@@ -1561,7 +1630,6 @@ export default function Projects() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <th className="w-12"></th>
                               {visibleProductColumns.map((column, index) => (
                                 <ResizableTableHeader
                                   key={column.key}
@@ -1618,28 +1686,20 @@ export default function Projects() {
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
                                   <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
-                                    <TableCell className="w-12">
-                                      {hasAlternatives && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 w-8 p-0"
-                                          onClick={() => toggleAlternatives(productName)}
-                                        >
-                                          <GitBranch className="h-4 w-4 text-primary" />
-                                        </Button>
-                                      )}
-                                    </TableCell>
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
                                            <div className="flex items-center gap-2">
                                              <span>{productName}</span>
-                                             {showAlternativesBadge && (
-                                               <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                 A
-                                               </Badge>
+                                             {hasAlternatives && (
+                                               <Replace 
+                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   toggleAlternatives(productName);
+                                                 }}
+                                               />
                                              )}
                                            </div>
                                          );
@@ -1763,9 +1823,6 @@ export default function Projects() {
                                       
                                       return (
                                         <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
-                                         <TableCell className="w-12 pl-8">
-                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                         </TableCell>
                                           {visibleProductColumns.map((column) => {
                                             if (column.key === 'product') {
                                               return (
@@ -1779,7 +1836,8 @@ export default function Projects() {
                                                     setProductQuickViewOpen(true);
                                                   }}
                                                 >
-                                                  <div className="flex items-center gap-2">
+                                                  <div className="flex items-center gap-2 pl-6">
+                                                    <span className="text-muted-foreground text-sm">↳</span>
                                                     <span>{alt.alternative_product}</span>
                                                     {alt.similarity && (
                                                       <Badge variant="secondary" className="text-xs">
@@ -1909,7 +1967,6 @@ export default function Projects() {
                           <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <th className="w-12"></th>
                                   {visibleCrossSellColumns.map((column, index) => (
                                     <ResizableTableHeader
                                       key={column.key}
@@ -1938,54 +1995,46 @@ export default function Projects() {
                                 </TableRow>
                               </TableHeader>
                              <TableBody>
-                               {projectCrossSells.map((cs: any, idx: number) => {
-                                 const details = getProductDetails(cs.cross_sell_product);
-                                 const alternatives = getProductAlternatives(cs.cross_sell_product);
-                                 const hasAlternatives = alternatives.length > 0;
-                                 const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
-                                 const isExpanded = expandedAlternatives[cs.cross_sell_product];
-                                 
-                                 return (
-                                   <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
-                                     <TableRow key={idx}>
-                                       <TableCell className="w-12">
-                                         {hasAlternatives && (
-                                           <Button
-                                             variant="ghost"
-                                             size="sm"
-                                             className="h-8 w-8 p-0"
-                                             onClick={() => toggleAlternatives(cs.cross_sell_product)}
-                                           >
-                                             <GitBranch className="h-4 w-4 text-primary" />
-                                           </Button>
-                                         )}
-                                        </TableCell>
-                                         {visibleCrossSellColumns.map((column) => {
-                                          const isProductColumn = column.key === 'product';
+                                 {projectCrossSells.map((cs: any, idx: number) => {
+                                  const details = getProductDetails(cs.cross_sell_product);
+                                  const alternatives = getProductAlternatives(cs.cross_sell_product);
+                                  const hasAlternatives = alternatives.length > 0;
+                                  const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
+                                  const isExpanded = expandedAlternatives[cs.cross_sell_product];
+                                  
+                                  return (
+                                    <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
+                                      <TableRow key={idx}>
+                                          {visibleCrossSellColumns.map((column) => {
+                                           const isProductColumn = column.key === 'product';
 
-                                          if (column.key === 'product') {
-                                            return (
-                                              <TableCell 
-                                                key={column.key}
-                                                className="font-medium cursor-pointer text-primary hover:underline"
-                                                style={{ width: `${column.width}px` }}
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                                  setProductQuickViewOpen(true);
-                                                }}
-                                              >
-                                                <div className="flex items-center gap-2">
-                                                  <span>{cs.cross_sell_product}</span>
-                                                  {showAlternativesBadge && (
-                                                    <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
-                                                      A
-                                                    </Badge>
-                                                  )}
-                                                </div>
-                                              </TableCell>
-                                            );
-                                          }
+                                           if (column.key === 'product') {
+                                             return (
+                                               <TableCell 
+                                                 key={column.key}
+                                                 className="font-medium cursor-pointer text-primary hover:underline"
+                                                 style={{ width: `${column.width}px` }}
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                   setProductQuickViewOpen(true);
+                                                 }}
+                                               >
+                                                 <div className="flex items-center gap-2">
+                                                   <span>{cs.cross_sell_product}</span>
+                                                   {hasAlternatives && (
+                                                     <Replace 
+                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                       onClick={(e) => {
+                                                         e.stopPropagation();
+                                                         toggleAlternatives(cs.cross_sell_product);
+                                                       }}
+                                                     />
+                                                   )}
+                                                 </div>
+                                               </TableCell>
+                                             );
+                                           }
 
                                           if (column.key === 'action') {
                                             return (
@@ -2097,9 +2146,6 @@ export default function Projects() {
                                        
                                        return (
                                          <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70">
-                                           <TableCell className="w-12 pl-8">
-                                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                           </TableCell>
                                            {visibleCrossSellColumns.map((column) => {
                                              if (column.key === 'product') {
                                                return (
@@ -2113,7 +2159,8 @@ export default function Projects() {
                                                      setProductQuickViewOpen(true);
                                                    }}
                                                  >
-                                                   <div className="flex items-center gap-2">
+                                                   <div className="flex items-center gap-2 pl-6">
+                                                     <span className="text-muted-foreground text-sm">↳</span>
                                                      <span>{alt.alternative_product}</span>
                                                      {alt.similarity && (
                                                        <Badge variant="secondary" className="text-xs">
@@ -2566,15 +2613,7 @@ export default function Projects() {
                               )}
                             </div>
                           ) : column.key === 'optimization_status' ? (
-                            <Badge variant={
-                              calculateProjectStatus(project, false) === 'Offen' ? 'outline' :
-                              calculateProjectStatus(project, false) === 'Neu' ? 'default' :
-                              calculateProjectStatus(project, false) === 'Prüfung' ? 'secondary' :
-                              calculateProjectStatus(project, false) === 'Validierung' ? 'default' :
-                              'secondary'
-                            }>
-                              {calculateProjectStatus(project, false)}
-                            </Badge>
+                            <StatusBadge status={calculateProjectStatus(project, false)} />
                           ) : (
                             value
                           )}
