@@ -750,18 +750,6 @@ export default function Projects() {
         (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
       );
       
-      console.log('getOptimizationStatus:', { 
-        productName, 
-        type, 
-        groupNumbers, 
-        record: record ? { 
-          cross_sell: record.cross_sell_product_name,
-          alternative: record.alternative_product_name,
-          cross_sell_status: record.cross_sell_status,
-          alternative_status: record.alternative_status
-        } : null 
-      });
-      
       // If found in optimization records, return the appropriate status
       if (record) {
         // Return cross_sell_status if the product is in cross_sell_product_name, otherwise alternative_status
@@ -1091,13 +1079,38 @@ export default function Projects() {
         return;
       }
 
-      // Delete only from opps_optimization (not from customer_projects)
-      const { error } = await supabase
+      // Get project_number to delete from customer_projects
+      const groupNumbers = getProjectNumbersForGroup(customer, projectName);
+      if (groupNumbers.length === 0) {
+        toast.error('Projektnummer nicht gefunden');
+        return;
+      }
+
+      // Delete from customer_projects (removes from main list)
+      let deleteProjectQuery = supabase
+        .from('customer_projects')
+        .delete()
+        .eq('customer', customer)
+        .eq('project_name', projectName)
+        .eq('product', productName)
+        .in('project_number', groupNumbers);
+      
+      // Filter by tenant_id for non-super-admins
+      if (!isSuperAdmin && activeTenant?.id) {
+        deleteProjectQuery = deleteProjectQuery.eq('tenant_id', activeTenant.id);
+      }
+      
+      const { error: projectDeleteError } = await deleteProjectQuery;
+      
+      if (projectDeleteError) throw projectDeleteError;
+
+      // Delete from opps_optimization (removes optimization record)
+      const { error: oppError } = await supabase
         .from('opps_optimization')
         .delete()
         .eq('id', recordId);
 
-      if (error) throw error;
+      if (oppError) throw oppError;
 
       // Invalidate queries to refresh data
       await Promise.all([
@@ -1110,7 +1123,7 @@ export default function Projects() {
         refetchOptimization()
       ]);
 
-      toast.success(`${productName} aus den Optimierungen entfernt`);
+      toast.success(`${productName} entfernt`);
     } catch (error: any) {
       console.error('Error removing product:', error);
       toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
