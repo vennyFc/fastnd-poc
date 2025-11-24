@@ -1987,21 +1987,21 @@ export default function Projects() {
                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                        </SelectContent>
                                                     </Select>
-                                                  ) : (
-                                                    !isAlreadyInProject && (
-                                                      <Button
-                                                        size="sm"
-                                                        variant="default"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleAddAlternative(project, alt.alternative_product);
-                                                        }}
-                                                      >
-                                                        <Plus className="h-4 w-4 mr-1" />
-                                                        Hinzufügen
-                                                      </Button>
-                                                    )
-                                                  )}
+                                                   ) : (
+                                                     !isAlreadyInProject && (
+                                                       <Button
+                                                         size="sm"
+                                                         variant="outline"
+                                                         onClick={(e) => {
+                                                           e.stopPropagation();
+                                                           handleAddAlternative(project, alt.alternative_product);
+                                                         }}
+                                                       >
+                                                         <Plus className="h-3.5 w-3.5 mr-1" />
+                                                         Hinzufügen
+                                                       </Button>
+                                                     )
+                                                   )}
                                                 </TableCell>
                                               );
                                              } else if (column.key === 'remove') {
@@ -2314,19 +2314,19 @@ export default function Projects() {
                                                           <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                         </SelectContent>
                                                      </Select>
-                                                   ) : (
-                                                     <Button
-                                                       size="sm"
-                                                       variant="default"
-                                                       onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         handleAddAlternative(project, alt.alternative_product);
-                                                       }}
-                                                     >
-                                                       <Plus className="h-4 w-4 mr-1" />
-                                                       Hinzufügen
-                                                     </Button>
-                                                   )}
+                                                    ) : (
+                                                      <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleAddAlternative(project, alt.alternative_product);
+                                                        }}
+                                                      >
+                                                        <Plus className="h-3.5 w-3.5 mr-1" />
+                                                        Hinzufügen
+                                                      </Button>
+                                                    )}
                                                  </TableCell>
                                                );
                                               } else {
