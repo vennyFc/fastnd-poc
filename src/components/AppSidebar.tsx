@@ -3,7 +3,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import fastndLogo from '@/assets/fastnd-logo-blue-black.png';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter } from '@/components/ui/sidebar';
+import fastndIcon from '@/assets/fastnd-icon.svg';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from '@/components/ui/sidebar';
 const menuItems = [{
   title: 'Cockpit',
   url: '/',
@@ -45,6 +46,7 @@ export function AppSidebar() {
     t
   } = useLanguage();
   const location = useLocation();
+  const { state } = useSidebar();
   const allMenuItems = [{
     title: t('nav.cockpit'),
     url: '/',
@@ -95,8 +97,12 @@ export function AppSidebar() {
   }];
   return <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
-          <img src={fastndLogo} alt="FASTND Logo" className="h-8 w-auto" />
+        <div className="flex items-center gap-3 justify-center">
+          <img 
+            src={state === "collapsed" ? fastndIcon : fastndLogo} 
+            alt="FASTND Logo" 
+            className={state === "collapsed" ? "h-8 w-8" : "h-8 w-auto"} 
+          />
         </div>
       </SidebarHeader>
       
