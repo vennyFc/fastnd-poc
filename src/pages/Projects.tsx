@@ -768,16 +768,8 @@ export default function Projects() {
       return 'Registriert';
     }
     
-    // Check if product exists in customer_projects at all
-    const productInProject = projects?.find((p: any) => 
-      p.customer === customer && 
-      p.project_name === projectName && 
-      p.product === productName
-    );
-
-    // If product is in project but has no optimization status, treat as "Identifiziert"
-    // If product is NOT in project (e.g., alternative not yet added), return null
-    return productInProject ? 'Identifiziert' : null;
+    // Products not in optimization and not original uploads have no status
+    return null;
   };
 
   const getOptimizationRecordId = (
@@ -1696,36 +1688,26 @@ export default function Projects() {
                                   <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
-                                        if (column.key === 'product') {
-                                          value = (
-                                            <div className="flex items-center gap-2">
-                                              <span>{productName}</span>
-                                              <div className="flex items-center gap-2">
-                                                {hasAlternatives && (
-                                                  <Replace 
-                                                    className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      toggleAlternatives(productName);
-                                                    }}
-                                                  />
-                                                )}
-                                                {showAlternativesBadge && (
-                                                  <Badge 
-                                                    variant="outline"
-                                                    className="rounded-full bg-primary/10 border-primary/30 text-primary backdrop-blur-sm"
-                                                  >
-                                                    A
-                                                  </Badge>
-                                                )}
-                                              </div>
-                                            </div>
-                                          );
+                                       if (column.key === 'product') {
+                                         value = (
+                                           <div className="flex items-center gap-2">
+                                             <span>{productName}</span>
+                                             {hasAlternatives && (
+                                               <Replace 
+                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                 onClick={(e) => {
+                                                   e.stopPropagation();
+                                                   toggleAlternatives(productName);
+                                                 }}
+                                               />
+                                             )}
+                                           </div>
+                                         );
                                         } else if (column.key === 'status') {
                                           const isRegistered = productStatus === 'Registriert';
-                                          value = (
+                                          value = productStatus ? (
                                             <Select
-                                              value={productStatus || 'Identifiziert'}
+                                              value={productStatus}
                                               disabled={isRegistered}
                                               onValueChange={(newStatus) => 
                                                 handleUpdateCrossSellStatus(
@@ -1748,11 +1730,11 @@ export default function Projects() {
                                                  <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                </SelectContent>
                                             </Select>
-                                          );
+                                          ) : '-';
                                         } else if (column.key === 'remove') {
-                                          // Show remove button for all products except "Registriert"
-                                          const canDelete = productStatus !== 'Registriert';
-                                          value = canDelete ? (
+                                          // Show remove button only for added products (not for original "Registriert" products)
+                                          const isAddedProduct = productStatus && productStatus !== 'Registriert';
+                                          value = isAddedProduct ? (
                                             <Button
                                               variant="ghost"
                                               size="sm"
@@ -1895,26 +1877,28 @@ export default function Projects() {
                                                        </SelectContent>
                                                     </Select>
                                                   ) : (
-                                                    <Button
-                                                      size="sm"
-                                                      variant="default"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleAddAlternative(project, alt.alternative_product);
-                                                      }}
-                                                    >
-                                                      <Plus className="h-4 w-4 mr-1" />
-                                                      Hinzufügen
-                                                    </Button>
+                                                    !isAlreadyInProject && (
+                                                      <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleAddAlternative(project, alt.alternative_product);
+                                                        }}
+                                                      >
+                                                        <Plus className="h-4 w-4 mr-1" />
+                                                        Hinzufügen
+                                                      </Button>
+                                                    )
                                                   )}
                                                 </TableCell>
                                               );
                                              } else if (column.key === 'remove') {
-                                               // Show remove button for all alternative products except "Registriert"
-                                               const canDelete = altStatus !== 'Registriert';
+                                               // Show remove button only for added alternative products (not for original "Registriert" products)
+                                               const isAddedProduct = altStatus && altStatus !== 'Registriert';
                                                return (
                                                  <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                   {canDelete ? (
+                                                   {isAddedProduct ? (
                                                      <Button
                                                        variant="ghost"
                                                        size="sm"
@@ -2036,28 +2020,18 @@ export default function Projects() {
                                                    setProductQuickViewOpen(true);
                                                  }}
                                                >
-                                                  <div className="flex items-center gap-2">
-                                                    <span>{cs.cross_sell_product}</span>
-                                                    <div className="flex items-center gap-2">
-                                                      {hasAlternatives && (
-                                                        <Replace 
-                                                          className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleAlternatives(cs.cross_sell_product);
-                                                          }}
-                                                        />
-                                                      )}
-                                                      {showAlternativesBadge && (
-                                                        <Badge 
-                                                          variant="outline"
-                                                          className="rounded-full bg-primary/10 border-primary/30 text-primary backdrop-blur-sm"
-                                                        >
-                                                          A
-                                                        </Badge>
-                                                      )}
-                                                    </div>
-                                                  </div>
+                                                 <div className="flex items-center gap-2">
+                                                   <span>{cs.cross_sell_product}</span>
+                                                   {hasAlternatives && (
+                                                     <Replace 
+                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                                       onClick={(e) => {
+                                                         e.stopPropagation();
+                                                         toggleAlternatives(cs.cross_sell_product);
+                                                       }}
+                                                     />
+                                                   )}
+                                                 </div>
                                                </TableCell>
                                              );
                                            }
@@ -2198,46 +2172,48 @@ export default function Projects() {
                                                );
                                              } else if (column.key === 'action') {
                                                return (
-                                                  <TableCell key={column.key} style={{ width: `${column.width}px` }}>
-                                                    {altStatus ? (
-                                                      <Select
-                                                        value={altStatus}
-                                                        disabled={altStatus === 'Registriert'}
-                                                        onValueChange={(newStatus) => 
-                                                          handleUpdateCrossSellStatus(
-                                                            project.customer, 
-                                                            project.project_name, 
-                                                            alt.alternative_product, 
-                                                            newStatus,
-                                                            'alternative'
-                                                          )
-                                                        }
-                                                      >
-                                                        <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
-                                                          <SelectValue />
-                                                        </SelectTrigger>
-                                                         <SelectContent>
-                                                           <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                           <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                           <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                           <SelectItem value="Registriert">Registriert</SelectItem>
-                                                           <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
-                                                         </SelectContent>
-                                                      </Select>
-                                                    ) : (
-                                                      <Button
-                                                        size="sm"
-                                                        variant="default"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleAddAlternative(project, alt.alternative_product);
-                                                        }}
-                                                      >
+                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                   {altStatus ? (
+                                                     <Select
+                                                       value={altStatus}
+                                                       disabled={altStatus === 'Registriert'}
+                                                       onValueChange={(newStatus) => 
+                                                         handleUpdateCrossSellStatus(
+                                                           project.customer, 
+                                                           project.project_name, 
+                                                           alt.alternative_product, 
+                                                           newStatus,
+                                                           'alternative'
+                                                         )
+                                                       }
+                                                     >
+                                                       <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
+                                                         <SelectValue />
+                                                       </SelectTrigger>
+                                                        <SelectContent>
+                                                          <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                          <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                          <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                          <SelectItem value="Registriert">Registriert</SelectItem>
+                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                                        </SelectContent>
+                                                     </Select>
+                                                   ) : (
+                                                     !isAlreadyInProject && (
+                                                       <Button
+                                                         size="sm"
+                                                         variant="default"
+                                                         onClick={(e) => {
+                                                           e.stopPropagation();
+                                                           handleAddAlternative(project, alt.alternative_product);
+                                                         }}
+                                                       >
                                                          <Plus className="h-4 w-4 mr-1" />
                                                          Hinzufügen
                                                        </Button>
-                                                     )}
-                                                   </TableCell>
+                                                     )
+                                                   )}
+                                                 </TableCell>
                                                );
                                               } else {
                                                 let value = '-';
