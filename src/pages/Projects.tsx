@@ -233,6 +233,30 @@ export default function Projects() {
     }
   }, [searchParams]);
 
+  // Invalidate cache on page mount to ensure fresh data
+  useEffect(() => {
+    const invalidateCache = async () => {
+      console.log('🔄 Invalidating cache on page mount');
+      await queryClient.invalidateQueries({ 
+        queryKey: ['customer_projects', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['opps_optimization', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['cross_sells', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['product_alternatives', activeTenant?.id] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['products', activeTenant?.id] 
+      });
+    };
+    
+    invalidateCache();
+  }, [queryClient, activeTenant?.id]);
+
   const { data: projects, isLoading, refetch: refetchProjects } = useQuery({
     queryKey: ['customer_projects', activeTenant?.id],
     queryFn: async () => {
