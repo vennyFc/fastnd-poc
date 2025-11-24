@@ -750,6 +750,18 @@ export default function Projects() {
         (rec.cross_sell_product_name === productName || rec.alternative_product_name === productName)
       );
       
+      console.log('getOptimizationStatus:', { 
+        productName, 
+        type, 
+        groupNumbers, 
+        record: record ? { 
+          cross_sell: record.cross_sell_product_name,
+          alternative: record.alternative_product_name,
+          cross_sell_status: record.cross_sell_status,
+          alternative_status: record.alternative_status
+        } : null 
+      });
+      
       // If found in optimization records, return the appropriate status
       if (record) {
         // Return cross_sell_status if the product is in cross_sell_product_name, otherwise alternative_status
