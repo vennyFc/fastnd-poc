@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, GitBranch, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -1561,6 +1561,7 @@ export default function Projects() {
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              <th className="w-12"></th>
                               {visibleProductColumns.map((column, index) => (
                                 <ResizableTableHeader
                                   key={column.key}
@@ -1617,20 +1618,28 @@ export default function Projects() {
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
                                   <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
+                                    <TableCell className="w-12">
+                                      {hasAlternatives && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => toggleAlternatives(productName)}
+                                        >
+                                          <GitBranch className="h-4 w-4 text-primary" />
+                                        </Button>
+                                      )}
+                                    </TableCell>
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
                                        if (column.key === 'product') {
                                          value = (
                                            <div className="flex items-center gap-2">
                                              <span>{productName}</span>
-                                             {hasAlternatives && (
-                                               <Replace 
-                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   toggleAlternatives(productName);
-                                                 }}
-                                               />
+                                             {showAlternativesBadge && (
+                                               <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                 A
+                                               </Badge>
                                              )}
                                            </div>
                                          );
@@ -1754,6 +1763,9 @@ export default function Projects() {
                                       
                                       return (
                                         <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                         <TableCell className="w-12 pl-8">
+                                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                         </TableCell>
                                           {visibleProductColumns.map((column) => {
                                             if (column.key === 'product') {
                                               return (
@@ -1767,8 +1779,7 @@ export default function Projects() {
                                                     setProductQuickViewOpen(true);
                                                   }}
                                                 >
-                                                  <div className="flex items-center gap-2 pl-6">
-                                                    <span className="text-muted-foreground text-sm">↳</span>
+                                                  <div className="flex items-center gap-2">
                                                     <span>{alt.alternative_product}</span>
                                                     {alt.similarity && (
                                                       <Badge variant="secondary" className="text-xs">
@@ -1898,6 +1909,7 @@ export default function Projects() {
                           <Table>
                               <TableHeader>
                                 <TableRow>
+                                  <th className="w-12"></th>
                                   {visibleCrossSellColumns.map((column, index) => (
                                     <ResizableTableHeader
                                       key={column.key}
@@ -1926,46 +1938,54 @@ export default function Projects() {
                                 </TableRow>
                               </TableHeader>
                              <TableBody>
-                                 {projectCrossSells.map((cs: any, idx: number) => {
-                                  const details = getProductDetails(cs.cross_sell_product);
-                                  const alternatives = getProductAlternatives(cs.cross_sell_product);
-                                  const hasAlternatives = alternatives.length > 0;
-                                  const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
-                                  const isExpanded = expandedAlternatives[cs.cross_sell_product];
-                                  
-                                  return (
-                                    <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
-                                      <TableRow key={idx}>
-                                          {visibleCrossSellColumns.map((column) => {
-                                           const isProductColumn = column.key === 'product';
+                               {projectCrossSells.map((cs: any, idx: number) => {
+                                 const details = getProductDetails(cs.cross_sell_product);
+                                 const alternatives = getProductAlternatives(cs.cross_sell_product);
+                                 const hasAlternatives = alternatives.length > 0;
+                                 const showAlternativesBadge = hasAddedAlternatives(project.customer, project.project_name, cs.cross_sell_product);
+                                 const isExpanded = expandedAlternatives[cs.cross_sell_product];
+                                 
+                                 return (
+                                   <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
+                                     <TableRow key={idx}>
+                                       <TableCell className="w-12">
+                                         {hasAlternatives && (
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             className="h-8 w-8 p-0"
+                                             onClick={() => toggleAlternatives(cs.cross_sell_product)}
+                                           >
+                                             <GitBranch className="h-4 w-4 text-primary" />
+                                           </Button>
+                                         )}
+                                        </TableCell>
+                                         {visibleCrossSellColumns.map((column) => {
+                                          const isProductColumn = column.key === 'product';
 
-                                           if (column.key === 'product') {
-                                             return (
-                                               <TableCell 
-                                                 key={column.key}
-                                                 className="font-medium cursor-pointer text-primary hover:underline"
-                                                 style={{ width: `${column.width}px` }}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                                   setProductQuickViewOpen(true);
-                                                 }}
-                                               >
-                                                 <div className="flex items-center gap-2">
-                                                   <span>{cs.cross_sell_product}</span>
-                                                   {hasAlternatives && (
-                                                     <Replace 
-                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                       onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         toggleAlternatives(cs.cross_sell_product);
-                                                       }}
-                                                     />
-                                                   )}
-                                                 </div>
-                                               </TableCell>
-                                             );
-                                           }
+                                          if (column.key === 'product') {
+                                            return (
+                                              <TableCell 
+                                                key={column.key}
+                                                className="font-medium cursor-pointer text-primary hover:underline"
+                                                style={{ width: `${column.width}px` }}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                  setProductQuickViewOpen(true);
+                                                }}
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  <span>{cs.cross_sell_product}</span>
+                                                  {showAlternativesBadge && (
+                                                    <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/20">
+                                                      A
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              </TableCell>
+                                            );
+                                          }
 
                                           if (column.key === 'action') {
                                             return (
@@ -2077,6 +2097,9 @@ export default function Projects() {
                                        
                                        return (
                                          <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                           <TableCell className="w-12 pl-8">
+                                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                           </TableCell>
                                            {visibleCrossSellColumns.map((column) => {
                                              if (column.key === 'product') {
                                                return (
@@ -2090,8 +2113,7 @@ export default function Projects() {
                                                      setProductQuickViewOpen(true);
                                                    }}
                                                  >
-                                                   <div className="flex items-center gap-2 pl-6">
-                                                     <span className="text-muted-foreground text-sm">↳</span>
+                                                   <div className="flex items-center gap-2">
                                                      <span>{alt.alternative_product}</span>
                                                      {alt.similarity && (
                                                        <Badge variant="secondary" className="text-xs">

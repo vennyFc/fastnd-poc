@@ -130,13 +130,3 @@ All colors MUST be HSL.
     @apply font-inter;
   }
 }
-
-/* Subtle dot grid pattern for modern technical look */
-.bg-grid-pattern {
-  background-image: radial-gradient(
-    circle,
-    hsl(var(--muted-foreground) / 0.12) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
-}
