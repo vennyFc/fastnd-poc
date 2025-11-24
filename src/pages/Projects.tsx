@@ -272,6 +272,8 @@ export default function Projects() {
       return data as any[];
     },
     enabled: !!activeTenant,
+    refetchOnMount: 'always',  // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   // Fetch cross-sells
