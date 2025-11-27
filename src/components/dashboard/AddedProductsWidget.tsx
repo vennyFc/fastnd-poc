@@ -42,16 +42,16 @@ const timeRangeLabels: Record<TimeRange, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  'Neu': '#3b82f6',
-  'Identifiziert': '#06b6d4',
-  'Akzeptiert': '#10b981',
-  'Registriert': '#a855f7',
-  'Vorgeschlagen': '#8b5cf6',
-  'In Bearbeitung': '#f59e0b',
-  'Angeboten': '#a855f7',
-  'Gewonnen': '#10b981',
-  'Verloren': '#ef4444',
-  'Abgelehnt': '#ef4444',
+  'Neu': '#3b82f6',           // Blue
+  'Offen': '#f97316',         // Orange
+  'Prüfung': '#0d9488',       // Teal/Petrol
+  'Validierung': '#eab308',   // Yellow
+  'Abgeschlossen': '#10b981', // Green
+  'Identifiziert': '#0d9488', // Teal (same as Prüfung)
+  'Vorgeschlagen': '#eab308', // Yellow (same as Validierung)
+  'Akzeptiert': '#10b981',    // Green (same as Abgeschlossen)
+  'Registriert': '#8b5cf6',   // Purple
+  'Abgelehnt': '#ef4444',     // Red
 };
 
 const statusOrder = ['Identifiziert', 'Vorgeschlagen', 'Akzeptiert', 'Registriert', 'Abgelehnt'];
@@ -219,14 +219,12 @@ export function AddedProductsWidget() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <defs>
-                  <linearGradient id="gradientCrossSells" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="gradientAlternatives" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                  </linearGradient>
+                  {chartData.map((item, index) => (
+                    <linearGradient key={`gradient-${item.status}`} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={statusColors[item.status] || '#94a3b8'} stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor={statusColors[item.status] || '#94a3b8'} stopOpacity={0.1}/>
+                    </linearGradient>
+                  ))}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
@@ -246,7 +244,7 @@ export function AddedProductsWidget() {
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((_, index) => (
-                    <Cell key={`cross-${index}`} fill="url(#gradientCrossSells)" />
+                    <Cell key={`cross-${index}`} fill={`url(#gradient-${index})`} />
                   ))}
                 </Bar>
                 <Bar 
@@ -255,7 +253,7 @@ export function AddedProductsWidget() {
                   radius={[4, 4, 0, 0]}
                 >
                   {chartData.map((_, index) => (
-                    <Cell key={`alt-${index}`} fill="url(#gradientAlternatives)" />
+                    <Cell key={`alt-${index}`} fill={`url(#gradient-${index})`} />
                   ))}
                 </Bar>
               </BarChart>
