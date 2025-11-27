@@ -412,6 +412,11 @@ export default function Products() {
       <Card className="shadow-card">
         <CardContent className="pt-6">
           <div className="flex gap-4 justify-end">
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
             <Popover open={filterOpen} onOpenChange={setFilterOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline">
@@ -626,19 +631,10 @@ export default function Products() {
       {/* Products Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Alle Produkte</CardTitle>
-              <CardDescription>
-                {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
-              </CardDescription>
-            </div>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
-          </div>
+          <CardTitle>Alle Produkte</CardTitle>
+          <CardDescription>
+            {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
