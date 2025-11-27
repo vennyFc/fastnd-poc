@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
+import { Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -408,19 +408,10 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Filter */}
       <Card className="shadow-card">
         <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+          <div className="flex gap-4 justify-end">
             <Popover open={filterOpen} onOpenChange={setFilterOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline">
@@ -628,11 +619,6 @@ export default function Products() {
                 </div>
               </PopoverContent>
             </Popover>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
           </div>
         </CardContent>
       </Card>
@@ -640,10 +626,19 @@ export default function Products() {
       {/* Products Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Alle Produkte</CardTitle>
-          <CardDescription>
-            {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Alle Produkte</CardTitle>
+              <CardDescription>
+                {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
+              </CardDescription>
+            </div>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
