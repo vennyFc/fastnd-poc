@@ -219,12 +219,16 @@ export function AddedProductsWidget() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                 <defs>
-                  {chartData.map((item, index) => (
-                    <linearGradient key={`gradient-${item.status}`} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={statusColors[item.status] || '#94a3b8'} stopOpacity={0.9}/>
-                      <stop offset="95%" stopColor={statusColors[item.status] || '#94a3b8'} stopOpacity={0.1}/>
-                    </linearGradient>
-                  ))}
+                  {chartData.map((item) => {
+                    const gradientId = `gradient-${item.status.replace(/\s+/g, '-')}`;
+                    const color = statusColors[item.status] || '#94a3b8';
+                    return (
+                      <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={color} stopOpacity={0.9}/>
+                        <stop offset="95%" stopColor={color} stopOpacity={0.1}/>
+                      </linearGradient>
+                    );
+                  })}
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
@@ -243,8 +247,8 @@ export function AddedProductsWidget() {
                   name="Cross-Sells"
                   radius={[4, 4, 0, 0]}
                 >
-                  {chartData.map((_, index) => (
-                    <Cell key={`cross-${index}`} fill={`url(#gradient-${index})`} />
+                  {chartData.map((item, index) => (
+                    <Cell key={`cross-${index}`} fill={`url(#gradient-${item.status.replace(/\s+/g, '-')})`} />
                   ))}
                 </Bar>
                 <Bar 
@@ -252,8 +256,8 @@ export function AddedProductsWidget() {
                   name="Alternativen"
                   radius={[4, 4, 0, 0]}
                 >
-                  {chartData.map((_, index) => (
-                    <Cell key={`alt-${index}`} fill={`url(#gradient-${index})`} />
+                  {chartData.map((item, index) => (
+                    <Cell key={`alt-${index}`} fill={`url(#gradient-${item.status.replace(/\s+/g, '-')})`} />
                   ))}
                 </Bar>
               </BarChart>
