@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { Search, Filter, Building2, MapPin, Briefcase, Tag, Eye } from 'lucide-react';
+import { Filter, Building2, MapPin, Briefcase, Tag, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -32,9 +32,10 @@ type SortDirection = 'asc' | 'desc' | null;
 
 export default function Customers() {
   const { user, isSuperAdmin, activeTenant } = useAuth();
+  const [searchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +62,13 @@ export default function Customers() {
   useEffect(() => {
     loadCustomers();
   }, [activeTenant?.id]);
+
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search) {
+      setSearchTerm(search);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -209,22 +217,17 @@ export default function Customers() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Kunde suchen..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <ColumnVisibilityToggle
-                columns={columns}
-                onToggle={toggleColumn}
-                onReset={resetColumns}
-              />
+            <div>
+              <CardTitle>Kundenliste</CardTitle>
+              <CardDescription>
+                Übersicht aller Kunden und deren Informationen
+              </CardDescription>
             </div>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
           </div>
         </CardHeader>
         <CardContent>
