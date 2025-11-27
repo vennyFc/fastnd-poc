@@ -412,11 +412,94 @@ export default function Products() {
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <CardTitle>Alle Produkte</CardTitle>
               <CardDescription>
                 {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
               </CardDescription>
+              
+              {/* Active Filters Summary */}
+              {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <span className="text-sm text-muted-foreground">Aktive Filter:</span>
+                  
+                  {selectedApplication !== 'all' && (
+                    <Badge variant="secondary" className="gap-1">
+                      Applikation: {selectedApplication}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedApplication('all')}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {selectedProductFamilies.map((family) => (
+                    <Badge key={family} variant="secondary" className="gap-1">
+                      Familie: {family}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedProductFamilies(prev => prev.filter(f => f !== family))}
+                      />
+                    </Badge>
+                  ))}
+                  
+                  {selectedManufacturers.map((manufacturer) => (
+                    <Badge key={manufacturer} variant="secondary" className="gap-1">
+                      Hersteller: {manufacturer}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedManufacturers(prev => prev.filter(m => m !== manufacturer))}
+                      />
+                    </Badge>
+                  ))}
+                  
+                  {selectedLifecycle !== 'all' && (
+                    <Badge variant="secondary" className="gap-1">
+                      Lifecycle: {selectedLifecycle}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedLifecycle('all')}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {showNewOnly && (
+                    <Badge variant="secondary" className="gap-1">
+                      Nur neue Produkte
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setShowNewOnly(false)}
+                      />
+                    </Badge>
+                  )}
+                  
+                  {showTopOnly && (
+                    <Badge variant="secondary" className="gap-1">
+                      Nur Top-Produkte
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setShowTopOnly(false)}
+                      />
+                    </Badge>
+                  )}
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => {
+                      setSelectedApplication('all');
+                      setSelectedProductFamilies([]);
+                      setSelectedManufacturers([]);
+                      setSelectedLifecycle('all');
+                      setShowNewOnly(false);
+                      setShowTopOnly(false);
+                    }}
+                  >
+                    Alle entfernen
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
