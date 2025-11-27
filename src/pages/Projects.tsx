@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
+import { Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -2477,28 +2477,6 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Search and Filter Bar */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Projektname, Kunde, Applikation oder Produkt suchen..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Quick Filter Chips */}
       <div className="flex gap-2 flex-wrap">
         <Badge
@@ -2580,10 +2558,19 @@ export default function Projects() {
       {/* Projects Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Alle Projekte</CardTitle>
-          <CardDescription>
-            {filteredProjects?.length || 0} Kundenprojekte
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Alle Projekte</CardTitle>
+              <CardDescription>
+                {filteredProjects?.length || 0} Kundenprojekte
+              </CardDescription>
+            </div>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
