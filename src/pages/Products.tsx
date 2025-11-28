@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -408,119 +408,38 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Products Table */}
+      {/* Search and Filter */}
       <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle>Alle Produkte</CardTitle>
-              <CardDescription>
-                {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
-              </CardDescription>
-              
-              {/* Active Filters Summary */}
-              {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="text-sm text-muted-foreground">Aktive Filter:</span>
-                  
-                  {selectedApplication !== 'all' && (
-                    <Badge variant="secondary" className="gap-1">
-                      Applikation: {selectedApplication}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setSelectedApplication('all')}
-                      />
-                    </Badge>
-                  )}
-                  
-                  {selectedProductFamilies.map((family) => (
-                    <Badge key={family} variant="secondary" className="gap-1">
-                      Familie: {family}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setSelectedProductFamilies(prev => prev.filter(f => f !== family))}
-                      />
-                    </Badge>
-                  ))}
-                  
-                  {selectedManufacturers.map((manufacturer) => (
-                    <Badge key={manufacturer} variant="secondary" className="gap-1">
-                      Hersteller: {manufacturer}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setSelectedManufacturers(prev => prev.filter(m => m !== manufacturer))}
-                      />
-                    </Badge>
-                  ))}
-                  
-                  {selectedLifecycle !== 'all' && (
-                    <Badge variant="secondary" className="gap-1">
-                      Lifecycle: {selectedLifecycle}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setSelectedLifecycle('all')}
-                      />
-                    </Badge>
-                  )}
-                  
-                  {showNewOnly && (
-                    <Badge variant="secondary" className="gap-1">
-                      Nur neue Produkte
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setShowNewOnly(false)}
-                      />
-                    </Badge>
-                  )}
-                  
-                  {showTopOnly && (
-                    <Badge variant="secondary" className="gap-1">
-                      Nur Top-Produkte
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
-                        onClick={() => setShowTopOnly(false)}
-                      />
-                    </Badge>
-                  )}
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={() => {
-                      setSelectedApplication('all');
-                      setSelectedProductFamilies([]);
-                      setSelectedManufacturers([]);
-                      setSelectedLifecycle('all');
-                      setShowNewOnly(false);
-                      setShowTopOnly(false);
-                    }}
-                  >
-                    Alle entfernen
-                  </Button>
-                </div>
-              )}
+        <CardContent className="pt-6">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filter
-                    {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
-                        {[
-                          selectedApplication !== 'all' ? 1 : 0,
-                          selectedProductFamilies.length,
-                          selectedManufacturers.length,
-                          selectedLifecycle !== 'all' ? 1 : 0,
-                          showNewOnly ? 1 : 0,
-                          showTopOnly ? 1 : 0
-                        ].reduce((a, b) => a + b, 0)}
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filter
+                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
+                    <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
+                      {[
+                        selectedApplication !== 'all' ? 1 : 0,
+                        selectedProductFamilies.length,
+                        selectedManufacturers.length,
+                        selectedLifecycle !== 'all' ? 1 : 0,
+                        showNewOnly ? 1 : 0,
+                        showTopOnly ? 1 : 0
+                      ].reduce((a, b) => a + b, 0)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
               <PopoverContent className="w-80" align="end">
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -715,8 +634,17 @@ export default function Products() {
               onReset={resetColumns}
             />
           </div>
-        </div>
-      </CardHeader>
+        </CardContent>
+      </Card>
+
+      {/* Products Table */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Alle Produkte</CardTitle>
+          <CardDescription>
+            {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
+          </CardDescription>
+        </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="space-y-2">
