@@ -260,10 +260,35 @@ export function OptimizationStatusWidget() {
   const getChartData = () => {
     const threshold = getDateThreshold();
     
-    // Filter projects by creation date within time range
+    // Filter projects nach letztem Aktivitätsdatum (Optimierung oder Erstellung)
     const filteredProjects = allProjects.filter((project: any) => {
-      const createdDate = new Date(project.created_at);
-      return createdDate >= threshold;
+      // Zugehörige project_numbers für diese Projektgruppe
+      const projectNumbers = allProjectsRaw
+        .filter((p: any) => p.customer === project.customer && p.project_name === project.project_name)
+        .map((p: any) => p.project_number)
+        .filter(Boolean);
+
+      const projectOptRecords = optimizationRecords.filter(
+        (rec: any) => projectNumbers.includes(rec.project_number)
+      );
+
+      // Basis ist Erstellungsdatum des Projekts
+      let lastActivityDate = project.created_at ? new Date(project.created_at) : null;
+
+      // Berücksichtige Optimierungsaktivitäten (created_at/updated_at)
+      projectOptRecords.forEach((rec: any) => {
+        const dates: (string | null | undefined)[] = [rec.updated_at, rec.created_at];
+        dates.forEach((d) => {
+          if (!d) return;
+          const date = new Date(d);
+          if (!lastActivityDate || date > lastActivityDate) {
+            lastActivityDate = date;
+          }
+        });
+      });
+
+      if (!lastActivityDate) return false;
+      return lastActivityDate >= threshold;
     });
 
     // Count by calculated status
