@@ -93,8 +93,8 @@ export function OptimizationStatusWidget() {
         // Im Global-View alle Mandanten (tenant_id nicht NULL)
         query = query.not('tenant_id', 'is', null);
       } else if (activeTenant?.id) {
-        // In der Mandantenansicht sowohl mandantenspezifische als auch ggf. globale Datensätze
-        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
+        // In der Mandantenansicht nur mandantenspezifische Datensätze
+        query = query.eq('tenant_id', activeTenant.id);
       }
       
       const { data, error } = await query;
