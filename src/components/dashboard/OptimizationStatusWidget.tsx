@@ -89,11 +89,12 @@ export function OptimizationStatusWidget() {
     queryFn: async () => {
       let query = supabase.from('opps_optimization').select('*');
       
-      // In global view, fetch all tenant optimization records (not null tenant_id)
-      if (activeTenant?.id === 'global') {
+      if (isGlobalView) {
+        // Im Global-View alle Mandanten (tenant_id nicht NULL)
         query = query.not('tenant_id', 'is', null);
       } else if (activeTenant?.id) {
-        query = query.eq('tenant_id', activeTenant.id);
+        // In der Mandantenansicht sowohl mandantenspezifische als auch ggf. globale Datensätze
+        query = query.or(`tenant_id.eq.${activeTenant.id},tenant_id.is.null`);
       }
       
       const { data, error } = await query;
@@ -163,6 +164,7 @@ export function OptimizationStatusWidget() {
 
   // Get optimization status for a project (same logic as ProjectsWidget)
   const getOptimizationStatus = (project: any) => {
+    // Find all project_numbers that belong to this grouped project
     const projectNumbers = allProjectsRaw
       .filter((p: any) => p.customer === project.customer && p.project_name === project.project_name)
       .map((p: any) => p.project_number)
@@ -172,6 +174,7 @@ export function OptimizationStatusWidget() {
       (rec: any) => projectNumbers.includes(rec.project_number)
     );
     
+    // 1. Manuell gesetzter Status (höchste Priorität, aber NEU kann nicht manuell gesetzt werden)
     const order = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'] as const;
     const manualStatuses = projectOptRecords
       .map((rec: any) => rec.optimization_status)
@@ -183,6 +186,7 @@ export function OptimizationStatusWidget() {
       return highest;
     }
     
+    // 2. Prüfe ob Projekt < 7 Tage alt UND noch nicht angeschaut → NEU
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     const wasViewed = recentHistory.some((rh: any) => 
@@ -196,18 +200,22 @@ export function OptimizationStatusWidget() {
       }
     }
     
+    // If no optimization records exist, check remaining status logic
     if (projectOptRecords.length === 0) {
       return 'Offen';
     }
     
+    // 3. Prüfe ob Produkte hinzugefügt wurden
     const hasAddedProducts = projectOptRecords.some((rec: any) => 
       rec.cross_sell_product_name || rec.alternative_product_name
     );
     
     if (!hasAddedProducts) {
+      // 3a. Keine Produkte hinzugefügt → OFFEN
       return 'Offen';
     }
     
+    // 4-6. Produkte wurden hinzugefügt, prüfe Produktstatus
     const allProductStatuses: string[] = [];
     projectOptRecords.forEach((rec: any) => {
       if (rec.cross_sell_product_name && rec.cross_sell_status) {
@@ -219,23 +227,27 @@ export function OptimizationStatusWidget() {
     });
     
     if (allProductStatuses.length === 0) {
+      // Produkte hinzugefügt aber keine Status gesetzt → PRÜFUNG
       return 'Prüfung';
     }
     
-    // Check in hierarchical order: Abgeschlossen > Validierung > Prüfung
-    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
-      return 'Abgeschlossen';
-    }
-    
-    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
-      return 'Validierung';
-    }
-    
+    // 4. Mindestens ein Produkt hat Status "Identifiziert" → PRÜFUNG
     if (allProductStatuses.some(status => status === 'Identifiziert')) {
       return 'Prüfung';
     }
     
-    return 'Prüfung';
+    // 5. Mindestens ein Produkt hat Status "Vorgeschlagen" → VALIDIERUNG
+    if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
+      return 'Validierung';
+    }
+    
+    // 6. Alle Produkte haben Status "Akzeptiert" oder "Registriert" → ABGESCHLOSSEN
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
+    }
+    
+    // Default fallback
+    return 'Offen';
   };
 
   // Calculate date threshold based on selected time range
