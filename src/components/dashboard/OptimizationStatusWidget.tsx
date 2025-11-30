@@ -222,19 +222,20 @@ export function OptimizationStatusWidget() {
       return 'Prüfung';
     }
     
-    if (allProductStatuses.some(status => status === 'Identifiziert')) {
-      return 'Prüfung';
+    // Check in hierarchical order: Abgeschlossen > Validierung > Prüfung
+    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
+      return 'Abgeschlossen';
     }
     
     if (allProductStatuses.some(status => status === 'Vorgeschlagen')) {
       return 'Validierung';
     }
     
-    if (allProductStatuses.every(status => status === 'Akzeptiert' || status === 'Registriert')) {
-      return 'Abgeschlossen';
+    if (allProductStatuses.some(status => status === 'Identifiziert')) {
+      return 'Prüfung';
     }
     
-    return 'Offen';
+    return 'Prüfung';
   };
 
   // Calculate date threshold based on selected time range
