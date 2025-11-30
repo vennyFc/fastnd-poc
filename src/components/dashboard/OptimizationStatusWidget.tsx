@@ -111,19 +111,12 @@ export function OptimizationStatusWidget() {
     queryFn: async () => {
       if (!user) return [];
       
-      let query = supabase
+      const { data } = await supabase
         .from('user_project_history')
-        .select('project_id, viewed_at');
+        .select('project_id, viewed_at')
+        .order('viewed_at', { ascending: false })
+        .limit(10);
       
-      // In global view, get history from all tenants (not just current user)
-      if (activeTenant?.id === 'global') {
-        query = query.not('tenant_id', 'is', null);
-      } else {
-        // In tenant view, only current user's history
-        query = query.eq('user_id', user.id);
-      }
-      
-      const { data } = await query.order('viewed_at', { ascending: false });
       return data || [];
     },
     enabled: !!user
