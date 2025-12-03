@@ -1637,7 +1637,7 @@ export default function Projects() {
                               let value: any = '-';
                               if (column.key === 'product_info') {
                                 const detailParts = [details?.manufacturer, details?.product_family].filter(Boolean);
-                                value = <div className="flex items-start py-2">
+                                value = <div className="flex items-start py-2 pl-4">
                                              <div className="flex flex-col min-w-0 flex-1">
                                                <div className="flex items-center gap-2">
                                                  <span onClick={e => {
@@ -1860,7 +1860,7 @@ export default function Projects() {
                                   return <TableCell key={column.key} className="p-0" style={{
                                     width: `${column.width}px`
                                   }}>
-                                                 <div className="flex items-start py-2">
+                                                 <div className="flex items-start py-2 pl-4">
                                                    <div className="flex flex-col min-w-0 flex-1">
                                                      <div className="flex items-center gap-2">
                                                        <span onClick={e => {
