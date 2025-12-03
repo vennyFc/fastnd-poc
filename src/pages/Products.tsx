@@ -408,38 +408,36 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Search and Filter */}
+      {/* Products Table */}
       <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        <CardHeader className="space-y-4">
+          <div className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Alle Produkte</CardTitle>
+              <CardDescription>
+                {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
+              </CardDescription>
             </div>
-            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
-                    <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
-                      {[
-                        selectedApplication !== 'all' ? 1 : 0,
-                        selectedProductFamilies.length,
-                        selectedManufacturers.length,
-                        selectedLifecycle !== 'all' ? 1 : 0,
-                        showNewOnly ? 1 : 0,
-                        showTopOnly ? 1 : 0
-                      ].reduce((a, b) => a + b, 0)}
-                    </Badge>
-                  )}
-                </Button>
-              </PopoverTrigger>
+            <div className="flex items-center gap-2">
+              <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filter
+                    {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
+                        {[
+                          selectedApplication !== 'all' ? 1 : 0,
+                          selectedProductFamilies.length,
+                          selectedManufacturers.length,
+                          selectedLifecycle !== 'all' ? 1 : 0,
+                          showNewOnly ? 1 : 0,
+                          showTopOnly ? 1 : 0
+                        ].reduce((a, b) => a + b, 0)}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
               <PopoverContent className="w-80" align="end">
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -627,23 +625,23 @@ export default function Products() {
                   )}
                 </div>
               </PopoverContent>
-            </Popover>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
+              </Popover>
+              <ColumnVisibilityToggle
+                columns={columns}
+                onToggle={toggleColumn}
+                onReset={resetColumns}
+              />
+            </div>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Products Table */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Alle Produkte</CardTitle>
-          <CardDescription>
-            {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
