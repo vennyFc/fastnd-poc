@@ -174,17 +174,20 @@ export default function Projects() {
     defaultProjectColumns
   );
 
+  // Helper function to truncate text
+  const truncateText = (text: string | null | undefined, maxLength: number) => {
+    if (!text) return '';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
   const defaultProductColumns = React.useMemo(() => ([
-    { key: 'product', label: 'Produkt', visible: true, width: 250, order: 0 },
-    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 160, order: 1 },
-    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 160, order: 2 },
-    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
-    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 200, order: 6 },
-    { key: 'status', label: 'Status', visible: true, width: 150, order: 7 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 8 },
-    { key: 'remove', label: '', visible: true, width: 70, order: 9 },
+    { key: 'product_info', label: 'Produkt', visible: true, width: 320, order: 0 },
+    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(€/pcs)</span></>), visible: true, width: 90, order: 1 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(Wochen)</span></>), visible: true, width: 90, order: 2 },
+    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(pcs)</span></>), visible: true, width: 90, order: 3 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 140, order: 4 },
+    { key: 'status', label: 'Status', visible: true, width: 150, order: 5 },
+    { key: 'remove', label: '', visible: true, width: 50, order: 6 },
   ]), []);
 
   const { 
@@ -194,22 +197,19 @@ export default function Projects() {
     reorderColumns: reorderProductColumns, 
     resetColumns: resetProductColumns 
   } = useTableColumns(
-    'project-detail-product-columns',
+    'project-detail-product-columns-v2',
     defaultProductColumns
   );
 
   // Cross-sell columns for detail view
   const defaultCrossSellColumns = React.useMemo(() => ([
-    { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
-    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
-    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 150, order: 2 },
-    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 3 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 150, order: 4 },
-    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 5 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 200, order: 6 },
-    { key: 'action', label: 'Aktion', visible: true, width: 120, order: 7 },
-    { key: 'description', label: 'Beschreibung', visible: false, width: 300, order: 8 },
-    { key: 'remove', label: 'Entfernen', visible: true, width: 70, order: 9 },
+    { key: 'product_info', label: 'Produkt', visible: true, width: 320, order: 0 },
+    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(€/pcs)</span></>), visible: true, width: 90, order: 1 },
+    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(Wochen)</span></>), visible: true, width: 90, order: 2 },
+    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(pcs)</span></>), visible: true, width: 90, order: 3 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 140, order: 4 },
+    { key: 'action', label: 'Aktion', visible: true, width: 150, order: 5 },
+    { key: 'remove', label: '', visible: true, width: 50, order: 6 },
   ]), []);
 
   const { 
@@ -1790,134 +1790,150 @@ export default function Projects() {
 
                                 return (
                                 <React.Fragment key={`prod-${productName}-${idx}`}>
-                                  <TableRow key={idx} className={hasAlternatives && isExpanded ? 'bg-muted/50' : ''}>
+                                  <TableRow key={idx} className={cn("align-top", hasAlternatives && isExpanded ? 'bg-muted/50' : '')}>
                                      {visibleProductColumns.map((column) => {
                                        let value: any = '-';
-                                       if (column.key === 'product') {
+                                       if (column.key === 'product_info') {
+                                         const detailParts = [details?.manufacturer, details?.product_family].filter(Boolean);
                                          value = (
-                                           <div className="flex items-center gap-2">
-                                             <span>{productName}</span>
-                                             {hasAlternatives && (
-                                               <Replace 
-                                                 className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   toggleAlternatives(productName);
-                                                 }}
-                                               />
-                                             )}
+                                           <div className="flex items-start gap-3 py-2">
+                                             <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                               <Package className="h-5 w-5 text-muted-foreground" />
+                                             </div>
+                                             <div className="flex flex-col min-w-0 flex-1">
+                                               <div className="flex items-center gap-2">
+                                                 <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary"
+                                                   onClick={(e) => {
+                                                     e.stopPropagation();
+                                                     setSelectedProductForQuickView(details || { product: productName });
+                                                     setProductQuickViewOpen(true);
+                                                   }}
+                                                 >
+                                                   {productName}
+                                                 </span>
+                                                 {hasAlternatives && (
+                                                   <Replace 
+                                                     className={`h-4 w-4 text-primary cursor-pointer transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                                                     onClick={(e) => {
+                                                       e.stopPropagation();
+                                                       toggleAlternatives(productName);
+                                                     }}
+                                                   />
+                                                 )}
+                                               </div>
+                                               {detailParts.length > 0 && (
+                                                 <span className="text-sm text-muted-foreground truncate">
+                                                   {detailParts.join(' • ')}
+                                                 </span>
+                                               )}
+                                               {details?.product_description && (
+                                                 <span className="text-sm text-muted-foreground truncate">
+                                                   {truncateText(details.product_description, 60)}
+                                                 </span>
+                                               )}
+                                             </div>
                                            </div>
                                          );
                                         } else if (column.key === 'status') {
-                                          const isRegistered = productStatus === 'Registriert';
-                                          value = productStatus ? (
-                                            <Select
-                                              value={productStatus}
-                                              disabled={isRegistered}
-                                              onValueChange={(newStatus) => 
-                                                handleUpdateCrossSellStatus(
-                                                  project.customer, 
-                                                  project.project_name, 
-                                                  productName, 
-                                                  newStatus,
-                                                  'cross_sell'
-                                                )
-                                              }
-                                            >
-                                              <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
-                                                <SelectValue />
-                                              </SelectTrigger>
-                                               <SelectContent>
-                                                 <SelectItem value="Identifiziert">Identifiziert</SelectItem>
-                                                 <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
-                                                 <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
-                                                 <SelectItem value="Registriert">Registriert</SelectItem>
-                                                 <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
-                                               </SelectContent>
-                                            </Select>
-                                          ) : '-';
-                                        } else if (column.key === 'remove') {
-                                          // Show remove button only for added products (not for original "Registriert" products)
-                                          const isAddedProduct = productStatus && productStatus !== 'Registriert';
-                                          value = isAddedProduct ? (
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleRemoveAddedProduct(
-                                                  project.customer,
-                                                  project.project_name,
-                                                  productName,
-                                                  'cross_sell'
-                                                );
-                                              }}
-                                            >
-                                              <X className="h-4 w-4" />
-                                            </Button>
-                                          ) : null;
+                                           const isRegistered = productStatus === 'Registriert';
+                                           value = productStatus ? (
+                                             <Select
+                                               value={productStatus}
+                                               disabled={isRegistered}
+                                               onValueChange={(newStatus) => 
+                                                 handleUpdateCrossSellStatus(
+                                                   project.customer, 
+                                                   project.project_name, 
+                                                   productName, 
+                                                   newStatus,
+                                                   'cross_sell'
+                                                 )
+                                               }
+                                             >
+                                               <SelectTrigger className="w-[140px]" onClick={(e) => e.stopPropagation()}>
+                                                 <SelectValue />
+                                               </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="Identifiziert">Identifiziert</SelectItem>
+                                                  <SelectItem value="Vorgeschlagen">Vorgeschlagen</SelectItem>
+                                                  <SelectItem value="Akzeptiert">Akzeptiert</SelectItem>
+                                                  <SelectItem value="Registriert">Registriert</SelectItem>
+                                                  <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
+                                                </SelectContent>
+                                             </Select>
+                                           ) : '-';
+                                         } else if (column.key === 'remove') {
+                                           const isAddedProduct = productStatus && productStatus !== 'Registriert';
+                                           value = isAddedProduct ? (
+                                             <Button
+                                               variant="ghost"
+                                               size="sm"
+                                               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                               onClick={(e) => {
+                                                 e.stopPropagation();
+                                                 handleRemoveAddedProduct(
+                                                   project.customer,
+                                                   project.project_name,
+                                                   productName,
+                                                   'cross_sell'
+                                                 );
+                                               }}
+                                             >
+                                               <X className="h-4 w-4" />
+                                             </Button>
+                                           ) : null;
                                           } else if (details) {
-                                          if (column.key === 'manufacturer') value = details.manufacturer || '-';
-                                          if (column.key === 'product_family') value = details.product_family || '-';
-                                          if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
-                                          if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
-                                          if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
-                                          if (column.key === 'description') value = details.product_description || '-';
-                                          if (column.key === 'product_tags') {
-                                            const badges = [];
-                                            if (details.product_lifecycle) {
-                                              badges.push(
-                                                <Badge 
-                                                  key="lifecycle"
-                                                  variant={
-                                                    details.product_lifecycle === 'Active' ? 'default' :
-                                                    details.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                                    details.product_lifecycle === 'NFND' ? 'outline' :
-                                                    'destructive'
-                                                  }
-                                                >
-                                                  {details.product_lifecycle}
-                                                </Badge>
-                                              );
-                                            }
-                                            if (details.product_new === 'Y') {
-                                              badges.push(
-                                                <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
-                                              );
-                                            }
-                                            if (details.product_top === 'Y') {
-                                              badges.push(
-                                                <Badge key="top" variant="default" className="bg-amber-600">Top Seller</Badge>
-                                              );
-                                            }
-                                            value = badges.length > 0 ? (
-                                              <div className="flex flex-col gap-1">{badges}</div>
-                                            ) : '-';
-                                          }
-                                        }
+                                           if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
+                                           if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
+                                           if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
+                                           if (column.key === 'product_tags') {
+                                             const badges = [];
+                                             if (details.product_lifecycle) {
+                                               badges.push(
+                                                 <Badge 
+                                                   key="lifecycle"
+                                                   variant={
+                                                     details.product_lifecycle === 'Active' ? 'default' :
+                                                     details.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                     details.product_lifecycle === 'NFND' ? 'outline' :
+                                                     'destructive'
+                                                   }
+                                                   className="text-xs"
+                                                 >
+                                                   {details.product_lifecycle}
+                                                 </Badge>
+                                               );
+                                             }
+                                             if (details.product_new === 'Y') {
+                                               badges.push(
+                                                 <Badge key="new" variant="default" className="bg-green-600 text-xs">Neu</Badge>
+                                               );
+                                             }
+                                             if (details.product_top === 'Y') {
+                                               badges.push(
+                                                 <Badge key="top" variant="default" className="bg-amber-600 text-xs">Top</Badge>
+                                               );
+                                             }
+                                             value = badges.length > 0 ? (
+                                               <div className="flex flex-wrap gap-1">{badges}</div>
+                                             ) : '-';
+                                           }
+                                         }
 
                                         return (
-                                          <TableCell 
-                                            key={column.key}
-                                            className={
-                                              column.key === 'product' ? 'font-medium cursor-pointer text-primary hover:underline' :
-                                              ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
-                                              ''
-                                            }
-                                            style={{ width: `${column.width}px` }}
-                                            onClick={(e) => {
-                                              if (column.key === 'product') {
-                                                e.stopPropagation();
-                                                setSelectedProductForQuickView(details || { product: productName });
-                                                setProductQuickViewOpen(true);
-                                              }
-                                            }}
-                                          >
-                                            {value}
-                                          </TableCell>
-                                        );
-                                     })}
+                                           <TableCell 
+                                             key={column.key}
+                                             className={cn(
+                                               "align-top",
+                                               column.key === 'product_info' ? 'p-0' : 'py-3',
+                                               ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''
+                                             )}
+                                             style={{ width: `${column.width}px` }}
+                                           >
+                                             {value}
+                                           </TableCell>
+                                         );
+                                      })}
                                   </TableRow>
                                   
                                     {/* Alternative Products - Expandable - Only show alternatives that have NOT been added yet */}
@@ -1933,35 +1949,51 @@ export default function Projects() {
                                       const isAlreadyInProject = project.products.includes(alt.alternative_product);
                                       
                                       return (
-                                        <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                        <TableRow key={`alt-${idx}-${altIdx}`} className="bg-muted/70 align-top">
                                           {visibleProductColumns.map((column) => {
-                                            if (column.key === 'product') {
+                                            if (column.key === 'product_info') {
+                                              const altDetailParts = [altDetails?.manufacturer, altDetails?.product_family].filter(Boolean);
                                               return (
                                                 <TableCell 
                                                   key={column.key}
-                                                  className="font-medium cursor-pointer text-primary hover:underline"
+                                                  className="p-0"
                                                   style={{ width: `${column.width}px` }}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
-                                                    setProductQuickViewOpen(true);
-                                                  }}
                                                 >
-                                                  <div className="flex items-center gap-2 pl-6">
-                                                    <span className="text-muted-foreground text-sm">↳</span>
-                                                    <span>{alt.alternative_product}</span>
-                                                    {alt.similarity && (
-                                                      <Badge variant="secondary" className="text-xs">
-                                                        {alt.similarity}% ähnlich
-                                                      </Badge>
-                                                    )}
+                                                  <div className="flex items-start gap-3 py-2 pl-8">
+                                                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                                      <Package className="h-5 w-5 text-muted-foreground" />
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0 flex-1">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="text-muted-foreground text-sm">↳</span>
+                                                        <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
+                                                            setProductQuickViewOpen(true);
+                                                          }}
+                                                        >
+                                                          {alt.alternative_product}
+                                                        </span>
+                                                        {alt.similarity && (
+                                                          <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                                            {alt.similarity}%
+                                                          </Badge>
+                                                        )}
+                                                      </div>
+                                                      {altDetailParts.length > 0 && (
+                                                        <span className="text-sm text-muted-foreground truncate">
+                                                          {altDetailParts.join(' • ')}
+                                                        </span>
+                                                      )}
+                                                    </div>
                                                   </div>
                                                 </TableCell>
                                               );
                                             } else if (column.key === 'status') {
                                               const isRegistered = altStatus === 'Registriert';
                                               return (
-                                                <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                <TableCell key={column.key} className="align-top py-3" style={{ width: `${column.width}px` }}>
                                                   {altStatus ? (
                                                     <Select
                                                       value={altStatus}
@@ -1976,7 +2008,7 @@ export default function Projects() {
                                                         )
                                                       }
                                                     >
-                                                      <SelectTrigger className="w-[180px]" onClick={(e) => e.stopPropagation()}>
+                                                      <SelectTrigger className="w-[140px]" onClick={(e) => e.stopPropagation()}>
                                                         <SelectValue />
                                                       </SelectTrigger>
                                                        <SelectContent>
@@ -2005,10 +2037,9 @@ export default function Projects() {
                                                 </TableCell>
                                               );
                                              } else if (column.key === 'remove') {
-                                               // Show remove button only for added alternative products (not for original "Registriert" products)
                                                const isAddedProduct = altStatus && altStatus !== 'Registriert';
                                                return (
-                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                 <TableCell key={column.key} className="align-top py-3" style={{ width: `${column.width}px` }}>
                                                    {isAddedProduct ? (
                                                      <Button
                                                        variant="ghost"
@@ -2030,19 +2061,42 @@ export default function Projects() {
                                                  </TableCell>
                                                );
                                              } else {
-                                               let value = '-';
+                                               let value: any = '-';
                                                if (altDetails) {
-                                                 if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                                 if (column.key === 'product_family') value = altDetails.product_family || '-';
                                                  if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
                                                  if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
                                                  if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
-                                                 if (column.key === 'description') value = altDetails.product_description || '-';
+                                                 if (column.key === 'product_tags') {
+                                                   const badges = [];
+                                                   if (altDetails.product_lifecycle) {
+                                                     badges.push(
+                                                       <Badge 
+                                                         key="lifecycle"
+                                                         variant={
+                                                           altDetails.product_lifecycle === 'Active' ? 'default' :
+                                                           altDetails.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                           altDetails.product_lifecycle === 'NFND' ? 'outline' :
+                                                           'destructive'
+                                                         }
+                                                         className="text-xs"
+                                                       >
+                                                         {altDetails.product_lifecycle}
+                                                       </Badge>
+                                                     );
+                                                   }
+                                                   value = badges.length > 0 ? (
+                                                     <div className="flex flex-wrap gap-1">{badges}</div>
+                                                   ) : '-';
+                                                 }
                                                }
 
                                                return (
                                                  <TableCell 
                                                    key={column.key}
+                                                   className={cn(
+                                                     "align-top py-3",
+                                                     ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''
+                                                   )}
                                                    style={{ width: `${column.width}px` }}
                                                  >
                                                    {value}
@@ -2115,33 +2169,52 @@ export default function Projects() {
                                   
                                   return (
                                     <React.Fragment key={`cs-${cs.cross_sell_product}-${idx}`}>
-                                      <TableRow key={idx}>
+                                      <TableRow key={idx} className="align-top">
                                           {visibleCrossSellColumns.map((column) => {
-                                           const isProductColumn = column.key === 'product';
-
-                                           if (column.key === 'product') {
+                                           if (column.key === 'product_info') {
+                                             const detailParts = [details?.manufacturer, details?.product_family].filter(Boolean);
                                              return (
                                                <TableCell 
                                                  key={column.key}
-                                                 className="font-medium cursor-pointer text-primary hover:underline"
+                                                 className="p-0"
                                                  style={{ width: `${column.width}px` }}
-                                                 onClick={(e) => {
-                                                   e.stopPropagation();
-                                                   setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                                   setProductQuickViewOpen(true);
-                                                 }}
                                                >
-                                                 <div className="flex items-center gap-2">
-                                                   <span>{cs.cross_sell_product}</span>
-                                                   {hasAlternatives && (
-                                                     <Replace 
-                                                       className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                                       onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         toggleAlternatives(cs.cross_sell_product);
-                                                       }}
-                                                     />
-                                                   )}
+                                                 <div className="flex items-start gap-3 py-2">
+                                                   <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                                     <Package className="h-5 w-5 text-muted-foreground" />
+                                                   </div>
+                                                   <div className="flex flex-col min-w-0 flex-1">
+                                                     <div className="flex items-center gap-2">
+                                                       <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary"
+                                                         onClick={(e) => {
+                                                           e.stopPropagation();
+                                                           setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                                           setProductQuickViewOpen(true);
+                                                         }}
+                                                       >
+                                                         {cs.cross_sell_product}
+                                                       </span>
+                                                       {hasAlternatives && (
+                                                         <Replace 
+                                                           className={`h-4 w-4 text-primary cursor-pointer transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                                                           onClick={(e) => {
+                                                             e.stopPropagation();
+                                                             toggleAlternatives(cs.cross_sell_product);
+                                                           }}
+                                                         />
+                                                       )}
+                                                     </div>
+                                                     {detailParts.length > 0 && (
+                                                       <span className="text-sm text-muted-foreground truncate">
+                                                         {detailParts.join(' • ')}
+                                                       </span>
+                                                     )}
+                                                     {details?.product_description && (
+                                                       <span className="text-sm text-muted-foreground truncate">
+                                                         {truncateText(details.product_description, 60)}
+                                                       </span>
+                                                     )}
+                                                   </div>
                                                  </div>
                                                </TableCell>
                                              );
@@ -2149,7 +2222,7 @@ export default function Projects() {
 
                                           if (column.key === 'action') {
                                             return (
-                                              <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                              <TableCell key={column.key} className="align-top py-3" style={{ width: `${column.width}px` }}>
                                                 <Button
                                                   size="sm"
                                                   variant="outline"
@@ -2167,7 +2240,7 @@ export default function Projects() {
 
                                           if (column.key === 'remove') {
                                             return (
-                                              <TableCell key={column.key} className="text-right w-16 pr-4" style={{ width: `${column.width}px` }} onClick={(e) => e.stopPropagation()}>
+                                              <TableCell key={column.key} className="align-top py-3" style={{ width: `${column.width}px` }} onClick={(e) => e.stopPropagation()}>
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <Button
@@ -2194,12 +2267,9 @@ export default function Projects() {
                                           // Default details columns
                                           let value: any = '-';
                                           if (details) {
-                                            if (column.key === 'manufacturer') value = details.manufacturer || '-';
-                                            if (column.key === 'product_family') value = details.product_family || '-';
                                             if (column.key === 'product_price') value = details.product_price ? `€ ${Number(details.product_price).toFixed(2)}` : '-';
                                             if (column.key === 'product_lead_time') value = details.product_lead_time ? String(Math.ceil(details.product_lead_time / 7)) : '-';
                                             if (column.key === 'product_inventory') value = (details.product_inventory !== null && details.product_inventory !== undefined) ? String(details.product_inventory) : '-';
-                                            if (column.key === 'description') value = details.product_description || '-';
                                             if (column.key === 'product_tags') {
                                               const badges = [];
                                               if (details.product_lifecycle) {
@@ -2212,6 +2282,7 @@ export default function Projects() {
                                                       details.product_lifecycle === 'NFND' ? 'outline' :
                                                       'destructive'
                                                     }
+                                                    className="text-xs"
                                                   >
                                                     {details.product_lifecycle}
                                                   </Badge>
@@ -2219,16 +2290,16 @@ export default function Projects() {
                                               }
                                               if (details.product_new === 'Y') {
                                                 badges.push(
-                                                  <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                                  <Badge key="new" variant="default" className="bg-green-600 text-xs">Neu</Badge>
                                                 );
                                               }
                                               if (details.product_top === 'Y') {
                                                 badges.push(
-                                                  <Badge key="top" variant="default" className="bg-amber-600">Top Seller</Badge>
+                                                  <Badge key="top" variant="default" className="bg-amber-600 text-xs">Top</Badge>
                                                 );
                                               }
                                               value = badges.length > 0 ? (
-                                                <div className="flex flex-col gap-1">{badges}</div>
+                                                <div className="flex flex-wrap gap-1">{badges}</div>
                                               ) : '-';
                                             }
                                           }
@@ -2236,11 +2307,10 @@ export default function Projects() {
                                            return (
                                              <TableCell 
                                                key={column.key}
-                                               className={
-                                                 isProductColumn ? 'font-medium cursor-pointer text-primary hover:underline' :
-                                                 ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
-                                                 ''
-                                               }
+                                               className={cn(
+                                                 "align-top py-3",
+                                                 ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''
+                                               )}
                                                style={{ width: `${column.width}px` }}
                                              >
                                                {value}
@@ -2253,42 +2323,57 @@ export default function Projects() {
                                      {hasAlternatives && isExpanded && alternatives.map((alt: any, altIdx: number) => {
                                        const altDetails = getProductDetails(alt.alternative_product);
                                        const altStatus = getOptimizationStatus(project.customer, project.project_name, alt.alternative_product, 'alternative');
-                                       // Check if product is currently in customer_projects
                                        const isAlreadyInProject = projects?.some((p: any) => 
                                          p.customer === project.customer &&
                                          p.project_name === project.project_name &&
                                          p.product === alt.alternative_product
                                        ) || false;
+                                       const altDetailParts = [altDetails?.manufacturer, altDetails?.product_family].filter(Boolean);
                                        
                                        return (
-                                         <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70">
+                                         <TableRow key={`cs-alt-${idx}-${altIdx}`} className="bg-muted/70 align-top">
                                            {visibleCrossSellColumns.map((column) => {
-                                             if (column.key === 'product') {
+                                             if (column.key === 'product_info') {
                                                return (
                                                  <TableCell 
                                                    key={column.key}
-                                                   className="font-medium cursor-pointer text-primary hover:underline"
+                                                   className="p-0"
                                                    style={{ width: `${column.width}px` }}
-                                                   onClick={(e) => {
-                                                     e.stopPropagation();
-                                                     setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
-                                                     setProductQuickViewOpen(true);
-                                                   }}
                                                  >
-                                                   <div className="flex items-center gap-2 pl-6">
-                                                     <span className="text-muted-foreground text-sm">↳</span>
-                                                     <span>{alt.alternative_product}</span>
-                                                     {alt.similarity && (
-                                                       <Badge variant="secondary" className="text-xs">
-                                                         {alt.similarity}% ähnlich
-                                                       </Badge>
-                                                     )}
+                                                   <div className="flex items-start gap-3 py-2 pl-8">
+                                                     <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                                       <Package className="h-5 w-5 text-muted-foreground" />
+                                                     </div>
+                                                     <div className="flex flex-col min-w-0 flex-1">
+                                                       <div className="flex items-center gap-2">
+                                                         <span className="text-muted-foreground text-sm">↳</span>
+                                                         <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary"
+                                                           onClick={(e) => {
+                                                             e.stopPropagation();
+                                                             setSelectedProductForQuickView(altDetails || { product: alt.alternative_product });
+                                                             setProductQuickViewOpen(true);
+                                                           }}
+                                                         >
+                                                           {alt.alternative_product}
+                                                         </span>
+                                                         {alt.similarity && (
+                                                           <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                                             {alt.similarity}%
+                                                           </Badge>
+                                                         )}
+                                                       </div>
+                                                       {altDetailParts.length > 0 && (
+                                                         <span className="text-sm text-muted-foreground truncate">
+                                                           {altDetailParts.join(' • ')}
+                                                         </span>
+                                                       )}
+                                                     </div>
                                                    </div>
                                                  </TableCell>
                                                );
                                              } else if (column.key === 'action') {
                                                return (
-                                                 <TableCell key={column.key} style={{ width: `${column.width}px` }}>
+                                                 <TableCell key={column.key} className="align-top py-3" style={{ width: `${column.width}px` }}>
                                                    {isAlreadyInProject && altStatus ? (
                                                      <Select
                                                        value={altStatus}
@@ -2303,7 +2388,7 @@ export default function Projects() {
                                                          )
                                                        }
                                                      >
-                                                       <SelectTrigger className="w-[150px]" onClick={(e) => e.stopPropagation()}>
+                                                       <SelectTrigger className="w-[140px]" onClick={(e) => e.stopPropagation()}>
                                                          <SelectValue />
                                                        </SelectTrigger>
                                                         <SelectContent>
@@ -2330,19 +2415,42 @@ export default function Projects() {
                                                  </TableCell>
                                                );
                                               } else {
-                                                let value = '-';
+                                                let value: any = '-';
                                                 if (altDetails) {
-                                                  if (column.key === 'manufacturer') value = altDetails.manufacturer || '-';
-                                                  if (column.key === 'product_family') value = altDetails.product_family || '-';
                                                   if (column.key === 'product_price') value = altDetails.product_price ? `€ ${Number(altDetails.product_price).toFixed(2)}` : '-';
                                                   if (column.key === 'product_lead_time') value = altDetails.product_lead_time ? String(Math.ceil(altDetails.product_lead_time / 7)) : '-';
                                                   if (column.key === 'product_inventory') value = (altDetails.product_inventory !== null && altDetails.product_inventory !== undefined) ? String(altDetails.product_inventory) : '-';
-                                                  if (column.key === 'description') value = altDetails.product_description || '-';
+                                                  if (column.key === 'product_tags') {
+                                                    const badges = [];
+                                                    if (altDetails.product_lifecycle) {
+                                                      badges.push(
+                                                        <Badge 
+                                                          key="lifecycle"
+                                                          variant={
+                                                            altDetails.product_lifecycle === 'Active' ? 'default' :
+                                                            altDetails.product_lifecycle === 'Coming Soon' ? 'secondary' :
+                                                            altDetails.product_lifecycle === 'NFND' ? 'outline' :
+                                                            'destructive'
+                                                          }
+                                                          className="text-xs"
+                                                        >
+                                                          {altDetails.product_lifecycle}
+                                                        </Badge>
+                                                      );
+                                                    }
+                                                    value = badges.length > 0 ? (
+                                                      <div className="flex flex-wrap gap-1">{badges}</div>
+                                                    ) : '-';
+                                                  }
                                                 }
 
                                                return (
                                                  <TableCell 
                                                    key={column.key}
+                                                   className={cn(
+                                                     "align-top py-3",
+                                                     ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''
+                                                   )}
                                                    style={{ width: `${column.width}px` }}
                                                  >
                                                    {value}
