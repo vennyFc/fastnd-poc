@@ -12,7 +12,7 @@ All colors MUST be HSL.
     --background: 0 0% 100%;
     --foreground: 215 25% 15%;
 
-    --card: 210 12% 97%;
+    --card: 0 0% 100%;
     --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
@@ -38,8 +38,8 @@ All colors MUST be HSL.
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 90%;
+    --border: 210 20% 90%;
+    --input: 210 15% 92%;
     --ring: 188 75% 42%;
 
     --radius: 0.5rem;
