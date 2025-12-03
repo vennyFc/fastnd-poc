@@ -80,7 +80,7 @@ export const renderNeuBadge = () => {
       className={`${neuBadgeConfig.bg} ${neuBadgeConfig.text} ${neuBadgeConfig.border} rounded-full text-xs border`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${neuBadgeConfig.dot} animate-pulse mr-1.5`} />
-      Neu
+      NPI
     </Badge>
   );
 };
