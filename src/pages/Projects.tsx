@@ -302,13 +302,13 @@ export default function Projects() {
 
   // Recommendation Score Bar Component
   const RecommendationScoreBar = ({ score }: { score: number | null }) => {
-    if (score === null || score === undefined) return <span className="text-muted-foreground">-</span>;
+    if (score === null || score === undefined) return <span className="text-muted-foreground text-center block">-</span>;
     
     const filledBlocks = Math.round(score / 10);
     
     return (
-      <div className="flex items-center justify-center gap-1">
-        <span className="font-semibold text-2xs min-w-[28px]">{score}%</span>
+      <div className="flex items-center justify-center gap-1 w-full">
+        <span className="font-semibold text-2xs">{score}%</span>
         <div className="flex gap-px">
           {Array.from({ length: 10 }).map((_, i) => (
             <div
@@ -2155,7 +2155,7 @@ export default function Projects() {
                                                </TableCell>;
                                 }
                                 if (column.key === 'rec_score') {
-                                  return <TableCell key={column.key} className="align-top py-3 text-center" style={{
+                                  return <TableCell key={column.key} className="align-middle py-3 text-center" style={{
                                     width: `${column.width}px`
                                   }}>
                                     <RecommendationScoreBar score={cs.rec_score} />
@@ -2576,7 +2576,7 @@ export default function Projects() {
                             );
                           case 'rec_score':
                             return (
-                              <TableCell key={col.key} className="py-3 text-center" style={{ width: col.width }}>
+                              <TableCell key={col.key} className="py-3 text-center align-middle" style={{ width: col.width }}>
                                 <RecommendationScoreBar score={cs.rec_score} />
                               </TableCell>
                             );
