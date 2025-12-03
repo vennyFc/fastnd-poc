@@ -2085,7 +2085,10 @@ export default function Projects() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setCrossSellsFullViewOpen(true)}
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setCrossSellsFullViewOpen(true);
+                          }}
                         >
                           <Maximize2 className="h-4 w-4 mr-2" />
                           Alles anzeigen
