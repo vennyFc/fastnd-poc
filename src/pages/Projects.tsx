@@ -117,6 +117,8 @@ export default function Projects() {
   const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
   const [lastRemovedProduct, setLastRemovedProduct] = useState<string | null>(null);
   const [metadataExpanded, setMetadataExpanded] = useState(false);
+  const [customerQuickViewOpen, setCustomerQuickViewOpen] = useState(false);
+  const [selectedCustomerForQuickView, setSelectedCustomerForQuickView] = useState<string>('');
   const {
     isFavorite,
     toggleFavorite
@@ -420,6 +422,24 @@ export default function Projects() {
         data,
         error
       } = await supabase.from('app_insights').select('*').eq('tenant_id', activeTenant.id);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!activeTenant
+  });
+
+  // Fetch customers data for quick view
+  const {
+    data: customersData = [],
+    isLoading: customersLoading
+  } = useQuery({
+    queryKey: ['customers', activeTenant?.id],
+    queryFn: async () => {
+      if (!activeTenant) return [];
+      const {
+        data,
+        error
+      } = await supabase.from('customers').select('*').eq('tenant_id', activeTenant.id);
       if (error) throw error;
       return data as any[];
     },
@@ -1485,6 +1505,90 @@ export default function Projects() {
             </SheetContent>
           </Sheet>
 
+          {/* Customer Quick View Sheet */}
+          <Sheet open={customerQuickViewOpen} onOpenChange={setCustomerQuickViewOpen}>
+            <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto z-[2000]">
+              <SheetHeader>
+                <Breadcrumb className="mb-4">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink className="cursor-pointer" onClick={() => {
+                        setCustomerQuickViewOpen(false);
+                      }}>
+                        Projekte
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{selectedCustomerForQuickView}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+                <SheetTitle className="text-2xl">{selectedCustomerForQuickView}</SheetTitle>
+                <SheetDescription>Kundendetails und Informationen</SheetDescription>
+              </SheetHeader>
+              {customersLoading ? <div className="mt-6 space-y-6">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                </div> : selectedCustomerForQuickView ? (() => {
+              const customerData = customersData.find((c: any) => 
+                c.customer_name === selectedCustomerForQuickView || 
+                c.customer_name?.toLowerCase() === selectedCustomerForQuickView?.toLowerCase()
+              );
+              return customerData ? <div className="mt-6 space-y-6">
+                    {customerData.industry && <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Branche</h3>
+                        <Badge variant="secondary">{customerData.industry}</Badge>
+                      </div>}
+                    {customerData.customer_category && <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Kategorie</h3>
+                        <Badge variant="outline">{customerData.customer_category}</Badge>
+                      </div>}
+                    {(customerData.country || customerData.city) && <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Standort</h3>
+                        <p className="text-base">
+                          {[customerData.city, customerData.country].filter(Boolean).join(', ') || '-'}
+                        </p>
+                      </div>}
+                    <div className="pt-4 border-t">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => {
+                          setCustomerQuickViewOpen(false);
+                          setSelectedCustomer(selectedCustomerForQuickView);
+                          setSelectedProject(null);
+                        }}
+                      >
+                        Alle Projekte dieses Kunden anzeigen
+                      </Button>
+                    </div>
+                  </div> : <div className="mt-6 space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Keine detaillierten Informationen für diesen Kunden verfügbar.
+                    </p>
+                    <div className="pt-4 border-t">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => {
+                          setCustomerQuickViewOpen(false);
+                          setSelectedCustomer(selectedCustomerForQuickView);
+                          setSelectedProject(null);
+                        }}
+                      >
+                        Alle Projekte dieses Kunden anzeigen
+                      </Button>
+                    </div>
+                  </div>;
+            })() : <div className="mt-6">
+                  <p className="text-sm text-muted-foreground">
+                    Kein Kunde ausgewählt.
+                  </p>
+                </div>}
+            </SheetContent>
+          </Sheet>
+
           {detailProjects.map((project: any) => <Card key={project.id}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -1509,8 +1613,8 @@ export default function Projects() {
                               className="font-medium cursor-pointer hover:underline hover:text-primary transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedCustomer(project.customer);
-                                setSelectedProject(null);
+                                setSelectedCustomerForQuickView(project.customer);
+                                setCustomerQuickViewOpen(true);
                               }}
                             >
                               {project.customer}
