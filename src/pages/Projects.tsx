@@ -225,27 +225,27 @@ export default function Projects() {
     key: 'product_price',
     label: 'Preis',
     labelTooltip: 'in €/pcs',
-    visible: true,
+    visible: false,
     width: 80,
     order: 1
   }, {
     key: 'product_lead_time',
     label: 'Lieferzeit',
     labelTooltip: 'in Wochen',
-    visible: true,
+    visible: false,
     width: 90,
     order: 2
   }, {
     key: 'product_inventory',
     label: 'Lagerbestand',
     labelTooltip: 'in pcs',
-    visible: true,
+    visible: false,
     width: 100,
     order: 3
   }, {
     key: 'product_tags',
     label: 'Tags',
-    visible: true,
+    visible: false,
     width: 140,
     order: 4
   }, {
@@ -312,27 +312,27 @@ export default function Projects() {
     key: 'product_price',
     label: 'Preis',
     labelTooltip: 'in €/pcs',
-    visible: true,
+    visible: false,
     width: 80,
     order: 2
   }, {
     key: 'product_lead_time',
     label: 'Lieferzeit',
     labelTooltip: 'in Wochen',
-    visible: true,
+    visible: false,
     width: 90,
     order: 3
   }, {
     key: 'product_inventory',
     label: 'Lagerbestand',
     labelTooltip: 'in pcs',
-    visible: true,
+    visible: false,
     width: 100,
     order: 4
   }, {
     key: 'product_tags',
     label: 'Tags',
-    visible: true,
+    visible: false,
     width: 140,
     order: 5
   }, {
@@ -1986,7 +1986,7 @@ export default function Projects() {
                                                          <SelectItem value="Registriert">Registriert</SelectItem>
                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                        </SelectContent>
-                                                    </Select> : !isAlreadyInProject && <Button size="sm" variant="outline" onClick={e => {
+                                                    </Select> : !isAlreadyInProject && <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
                                       e.stopPropagation();
                                       handleAddAlternative(project, alt.alternative_product);
                                     }}>
@@ -2118,7 +2118,7 @@ export default function Projects() {
                                   return <TableCell key={column.key} className="align-top py-3" style={{
                                     width: `${column.width}px`
                                   }}>
-                                                <Button size="sm" variant="outline" onClick={e => {
+                                                <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
                                       e.stopPropagation();
                                       handleAddCrossSell(project, cs.cross_sell_product);
                                     }}>
@@ -2247,7 +2247,7 @@ export default function Projects() {
                                                           <SelectItem value="Registriert">Registriert</SelectItem>
                                                           <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                         </SelectContent>
-                                                     </Select> : <Button size="sm" variant="outline" onClick={e => {
+                                                     </Select> : <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
                                         e.stopPropagation();
                                         handleAddAlternative(project, alt.alternative_product);
                                       }}>
