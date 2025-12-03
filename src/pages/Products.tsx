@@ -54,7 +54,7 @@ export default function Products() {
     { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 150, order: 3 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 3 },
     { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
     { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 5 },
     { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 6 },
@@ -752,32 +752,42 @@ export default function Products() {
                           } else if (column.key === 'product_tags') {
                             const badges = [];
                             if (product.product_lifecycle) {
+                              const lifecycleConfig = {
+                                'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                                'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                                'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                                'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                              };
+                              const config = lifecycleConfig[product.product_lifecycle as keyof typeof lifecycleConfig] || lifecycleConfig['Active'];
                               badges.push(
                                 <Badge 
                                   key="lifecycle"
-                                  variant={
-                                    product.product_lifecycle === 'Active' ? 'default' :
-                                    product.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                    product.product_lifecycle === 'NFND' ? 'outline' :
-                                    'destructive'
-                                  }
+                                  variant="outline"
+                                  className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}
                                 >
+                                  <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
                                   {product.product_lifecycle}
                                 </Badge>
                               );
                             }
                             if (product.product_new === 'Y') {
                               badges.push(
-                                <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                <Badge key="new" variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent text-xs px-1.5 py-0">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+                                  Neu
+                                </Badge>
                               );
                             }
                             if (product.product_top === 'Y') {
                               badges.push(
-                                <Badge key="top" variant="default" className="bg-amber-600">Top</Badge>
+                                <Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent text-xs px-1.5 py-0">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
+                                  Top
+                                </Badge>
                               );
                             }
                             value = badges.length > 0 ? (
-                              <div className="flex flex-col gap-1">{badges}</div>
+                              <div className="flex flex-col gap-0.5">{badges}</div>
                             ) : '-';
                           } else {
                             value = product[column.key] || '-';
@@ -852,32 +862,42 @@ export default function Products() {
                             } else if (column.key === 'product_tags') {
                               const badges = [];
                               if (altProduct.product_lifecycle) {
+                                const lifecycleConfig = {
+                                  'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                                  'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                                  'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                                  'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                                };
+                                const config = lifecycleConfig[altProduct.product_lifecycle as keyof typeof lifecycleConfig] || lifecycleConfig['Active'];
                                 badges.push(
                                   <Badge 
                                     key="lifecycle"
-                                    variant={
-                                      altProduct.product_lifecycle === 'Active' ? 'default' :
-                                      altProduct.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                                      altProduct.product_lifecycle === 'NFND' ? 'outline' :
-                                      'destructive'
-                                    }
+                                    variant="outline"
+                                    className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}
                                   >
+                                    <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
                                     {altProduct.product_lifecycle}
                                   </Badge>
                                 );
                               }
                               if (altProduct.product_new === 'Y') {
                                 badges.push(
-                                  <Badge key="new" variant="default" className="bg-green-600">Neu</Badge>
+                                  <Badge key="new" variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent text-xs px-1.5 py-0">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+                                    Neu
+                                  </Badge>
                                 );
                               }
                               if (altProduct.product_top === 'Y') {
                                 badges.push(
-                                  <Badge key="top" variant="default" className="bg-amber-600">Top</Badge>
+                                  <Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent text-xs px-1.5 py-0">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
+                                    Top
+                                  </Badge>
                                 );
                               }
                               value = badges.length > 0 ? (
-                                <div className="flex flex-col gap-1">{badges}</div>
+                                <div className="flex flex-col gap-0.5">{badges}</div>
                               ) : '-';
                             } else {
                               value = altProduct[column.key] || '-';
