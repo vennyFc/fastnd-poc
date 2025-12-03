@@ -508,23 +508,23 @@ export default function Products() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Select
-              value={selectedApplication}
-              onValueChange={setSelectedApplication}
-            >
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Alle Applikationen" />
-              </SelectTrigger>
-              <SelectContent className="bg-background">
-                <SelectItem value="all">Alle Applikationen</SelectItem>
-                {uniqueApplications.map((app: string) => (
-                  <SelectItem key={app} value={app}>
-                    {app}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <div className="flex items-center gap-2">
+              <Select
+                value={selectedApplication}
+                onValueChange={setSelectedApplication}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Alle Applikationen" />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="all">Alle Applikationen</SelectItem>
+                  {uniqueApplications.map((app: string) => (
+                    <SelectItem key={app} value={app}>
+                      {app}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
