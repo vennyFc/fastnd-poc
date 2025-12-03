@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, BarChart3, Activity, Boxes } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, BarChart3, Activity, Boxes, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -17,7 +17,7 @@ export function AppSidebar() {
     t
   } = useLanguage();
   const location = useLocation();
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   
   const allMenuItems = [{
     title: t('nav.cockpit'),
@@ -133,6 +133,16 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <div className="flex justify-end px-2 py-1">
+              <button 
+                onClick={toggleSidebar}
+                className="h-8 w-8 flex items-center justify-center hover:bg-muted rounded-lg transition-colors"
+              >
+                {state === "collapsed" ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              </button>
+            </div>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={signOut}>
               <LogOut className="h-4 w-4" />
