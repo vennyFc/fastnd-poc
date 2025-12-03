@@ -427,7 +427,7 @@ export default function Products() {
       <Card className="shadow-card">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <div className="relative flex-1">
+            <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
