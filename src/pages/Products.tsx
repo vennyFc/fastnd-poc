@@ -55,11 +55,11 @@ export default function Products() {
     { key: 'product', label: 'Bauteil', visible: true, width: 280, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: false, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 3 },
-    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
-    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 5 },
-    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 6 },
-    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 7 },
+    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 4 },
+    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 5 },
+    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 6 },
+    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 7 },
     { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 8 },
   ], []);
 
