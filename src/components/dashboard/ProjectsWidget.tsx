@@ -246,33 +246,33 @@ export function ProjectsWidget() {
     };
     return <div className="space-y-1">
         {/* Column Headers */}
-        <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground border-b">
-          <div className="h-7 w-7" /> {/* Spacer for favorite button */}
+        <div className="flex items-center gap-2 px-2 py-1.5 text-2xs font-medium text-muted-foreground border-b">
+          <div className="h-6 w-6" /> {/* Spacer for favorite button */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">Projekt / Kunde</div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="w-24 text-right">Status</span>
-                <span className="w-28 text-right">
+                <span className="w-20 text-right">Status</span>
+                <span className="w-24 text-right">
                   {showViewedTime ? 'Zuletzt angesehen' : 'Erstellt am'}
                 </span>
               </div>
             </div>
           </div>
         </div>
-        {projects.slice(0, 5).map((project: any) => <div key={project.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => {
+        {projects.slice(0, 5).map((project: any) => <div key={project.id} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors group">
+            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => {
           e.stopPropagation();
           const targetId = project.sourceIds?.[0] || project.id;
           toggleFavorite(targetId);
         }}>
-              <Star className={`h-3.5 w-3.5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+              <Star className={`h-3 w-3 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
             </Button>
             <Link to={`/projects?search=${encodeURIComponent(project.project_name)}`} className="flex-1 min-w-0" onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="font-medium text-base truncate">{project.project_name}</div>
-                  <div className="flex items-center gap-2 flex-wrap text-sm">
+                  <div className="font-medium text-sm truncate">{project.project_name}</div>
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
                     <Link to={`/projects?customer=${encodeURIComponent(project.customer)}`} onClick={e => e.stopPropagation()} className="hover:underline text-black">
                       {project.customer}
                     </Link>
@@ -288,22 +288,22 @@ export function ProjectsWidget() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={getOptimizationStatus(project) === 'Abgeschlossen' ? 'default' : getOptimizationStatus(project) === 'Validierung' ? 'secondary' : 'outline'} className="text-sm whitespace-nowrap">
+                  <Badge variant={getOptimizationStatus(project) === 'Abgeschlossen' ? 'default' : getOptimizationStatus(project) === 'Validierung' ? 'secondary' : 'outline'} className="whitespace-nowrap">
                     {getOptimizationStatus(project)}
                   </Badge>
-                  {showViewedTime && getViewedTime(project) ? <span className="text-sm text-muted-foreground whitespace-nowrap">
+                  {showViewedTime && getViewedTime(project) ? <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDistanceToNow(new Date(getViewedTime(project)!), {
                   addSuffix: true,
                   locale: de
                 })}
-                    </span> : project.created_at && !showViewedTime ? <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    </span> : project.created_at && !showViewedTime ? <span className="text-xs text-muted-foreground whitespace-nowrap">
                       {format(new Date(project.created_at), 'dd.MM.yyyy')}
                     </span> : null}
                 </div>
               </div>
             </Link>
           </div>)}
-        {projects.length > 5 && <Link to="/projects" className="block text-center py-2 text-sm text-primary hover:underline">
+        {projects.length > 5 && <Link to="/projects" className="block text-center py-2 text-xs text-primary hover:underline">
             Alle {projects.length} Projekte anzeigen
           </Link>}
       </div>;

@@ -13,15 +13,15 @@ import { useAuth } from '@/contexts/AuthContext';
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border shadow-lg rounded-md p-3">
-        <p className="font-semibold text-sm mb-2">{label}</p>
+      <div className="bg-card border border-border shadow-lg rounded-md p-2">
+        <p className="font-semibold text-xs mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-1.5">
             <div 
-              className="h-2 w-2 rounded-full" 
+              className="h-1.5 w-1.5 rounded-full" 
               style={{ backgroundColor: entry.color }}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
             </p>
           </div>
@@ -164,15 +164,15 @@ export function AddedProductsWidget() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+              <TrendingUp className="h-4 w-4" />
               Hinzugefügte Produkte nach Status
             </CardTitle>
-            <CardDescription className="mt-2">
+            <CardDescription className="mt-1">
               Cross-Sells und Alternativen, die zu Projekten hinzugefügt wurden
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -187,37 +187,37 @@ export function AddedProductsWidget() {
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-64 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-56 w-full" />
           </div>
         ) : totalProducts === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium">Keine hinzugefügten Produkte im ausgewählten Zeitraum</p>
-            <p className="text-sm mt-2">
+          <div className="text-center py-10 text-muted-foreground">
+            <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p className="text-sm font-medium">Keine hinzugefügten Produkte im ausgewählten Zeitraum</p>
+            <p className="text-xs mt-1">
               Fügen Sie Cross-Sells oder Alternativen zu Projekten hinzu, um sie hier zu sehen
             </p>
           </div>
         ) : (
           <>
-            <div className="mb-4 grid grid-cols-3 gap-4 min-h-[88px]">
+            <div className="mb-3 grid grid-cols-3 gap-3 min-h-[72px]">
               <div className="text-center p-2 rounded-lg bg-muted/50 flex flex-col justify-center">
-                <p className="text-xs text-muted-foreground">Gesamt</p>
-                <p className="text-2xl font-bold text-foreground">{totalProducts}</p>
+                <p className="text-2xs text-muted-foreground">Gesamt</p>
+                <p className="text-xl font-bold text-foreground">{totalProducts}</p>
               </div>
               <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
-                <p className="text-xs text-muted-foreground">Cross-Sells</p>
-                <p className="text-2xl font-bold" style={{ color: '#3b82f6' }}>{totalCrossSells}</p>
+                <p className="text-2xs text-muted-foreground">Cross-Sells</p>
+                <p className="text-xl font-bold" style={{ color: '#3b82f6' }}>{totalCrossSells}</p>
               </div>
               <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
-                <p className="text-xs text-muted-foreground">Alternativen</p>
-                <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>{totalAlternatives}</p>
+                <p className="text-2xs text-muted-foreground">Alternativen</p>
+                <p className="text-xl font-bold" style={{ color: '#8b5cf6' }}>{totalAlternatives}</p>
               </div>
             </div>
             
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={chartData} margin={{ top: 15, right: 20, left: 15, bottom: 5 }}>
                 <defs>
                   {chartData.map((item) => {
                     const gradientId = `gradient-${item.status.replace(/\s+/g, '-')}`;
@@ -233,11 +233,11 @@ export function AddedProductsWidget() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
                   dataKey="status" 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                   stroke="hsl(var(--border))"
                 />
                 <YAxis 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                   stroke="hsl(var(--border))"
                   allowDecimals={false}
                 />
@@ -263,30 +263,30 @@ export function AddedProductsWidget() {
               </BarChart>
             </ResponsiveContainer>
 
-            <div className="mt-6">
-              <p className="text-sm font-medium mb-3">Verteilung nach Status:</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="mt-4">
+              <p className="text-xs font-medium mb-2">Verteilung nach Status:</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {chartData.map((item) => (
                   <div 
                     key={item.status} 
-                    className="p-3 rounded-lg border"
+                    className="p-2 rounded-lg border"
                     style={{ backgroundColor: `${item.fill}10` }}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 mb-1">
                       <div 
-                        className="h-3 w-3 rounded-full" 
+                        className="h-2 w-2 rounded-full" 
                         style={{ backgroundColor: statusColors[item.status] || item.fill }}
                       />
-                      <p className="text-sm font-medium">{item.status}</p>
+                      <p className="text-xs font-medium">{item.status}</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-1 text-2xs">
                       <div>
                         <p className="text-muted-foreground">Cross-Sells</p>
-                        <p className="font-bold text-lg">{item.crossSells}</p>
+                        <p className="font-bold text-base">{item.crossSells}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Alternativen</p>
-                        <p className="font-bold text-lg">{item.alternativen}</p>
+                        <p className="font-bold text-base">{item.alternativen}</p>
                       </div>
                     </div>
                   </div>

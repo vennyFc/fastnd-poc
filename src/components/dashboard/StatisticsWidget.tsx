@@ -26,58 +26,58 @@ export function StatisticsWidget({ projects, products, crossSells }: StatisticsW
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
           <Tooltip>
             <TooltipTrigger asChild>
               <Card className="shadow-card cursor-help">
-                <CardHeader className="py-3 text-center">
-                  <CardTitle className="text-sm">Projekte</CardTitle>
+                <CardHeader className="py-2 text-center">
+                  <CardTitle className="text-xs">Projekte</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-2 text-center">
-                  <p className="text-2xl font-bold text-primary">{projectCount}</p>
-                  <p className="text-xs text-muted-foreground mt-1">In der Datenbank</p>
+                <CardContent className="pt-1 text-center">
+                  <p className="text-xl font-bold text-primary">{projectCount}</p>
+                  <p className="text-2xs text-muted-foreground mt-0.5">In der Datenbank</p>
                 </CardContent>
               </Card>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="font-semibold">Projektübersicht</p>
-              <p className="text-sm">Alle aktiven Kundenprojekte in der Datenbank</p>
+              <p className="font-semibold text-xs">Projektübersicht</p>
+              <p className="text-xs">Alle aktiven Kundenprojekte in der Datenbank</p>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
               <Card className="shadow-card cursor-help">
-                <CardHeader className="py-3 text-center">
-                  <CardTitle className="text-sm">Produkte</CardTitle>
+                <CardHeader className="py-2 text-center">
+                  <CardTitle className="text-xs">Produkte</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-2 text-center">
-                  <p className="text-2xl font-bold text-primary">{products?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Verfügbar</p>
+                <CardContent className="pt-1 text-center">
+                  <p className="text-xl font-bold text-primary">{products?.length || 0}</p>
+                  <p className="text-2xs text-muted-foreground mt-0.5">Verfügbar</p>
                 </CardContent>
               </Card>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="font-semibold">Produktkatalog</p>
-              <p className="text-sm">Alle verfügbaren Produkte für Optimierungen</p>
+              <p className="font-semibold text-xs">Produktkatalog</p>
+              <p className="text-xs">Alle verfügbaren Produkte für Optimierungen</p>
             </TooltipContent>
           </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
               <Card className="shadow-card cursor-help">
-                <CardHeader className="py-3 text-center">
-                  <CardTitle className="text-sm">Cross-Selling</CardTitle>
+                <CardHeader className="py-2 text-center">
+                  <CardTitle className="text-xs">Cross-Selling</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-2 text-center">
-                  <p className="text-2xl font-bold text-primary">{crossSells?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Möglichkeiten</p>
+                <CardContent className="pt-1 text-center">
+                  <p className="text-xl font-bold text-primary">{crossSells?.length || 0}</p>
+                  <p className="text-2xs text-muted-foreground mt-0.5">Möglichkeiten</p>
                 </CardContent>
               </Card>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p className="font-semibold">Cross-Selling Potenzial</p>
-              <p className="text-sm">Identifizierte Verkaufschancen für zusätzliche Produkte</p>
+              <p className="font-semibold text-xs">Cross-Selling Potenzial</p>
+              <p className="text-xs">Identifizierte Verkaufschancen für zusätzliche Produkte</p>
             </TooltipContent>
           </Tooltip>
       </div>

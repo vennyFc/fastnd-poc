@@ -14,15 +14,15 @@ import { Badge } from '@/components/ui/badge';
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border shadow-lg rounded-md p-3">
-        <p className="font-semibold text-sm mb-2">{label}</p>
+      <div className="bg-card border border-border shadow-lg rounded-md p-2">
+        <p className="font-semibold text-xs mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-1.5">
             <div 
-              className="h-2 w-2 rounded-full" 
+              className="h-1.5 w-1.5 rounded-full" 
               style={{ backgroundColor: entry.color }}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
             </p>
           </div>
@@ -318,16 +318,16 @@ export function OptimizationStatusWidget() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+              <Calendar className="h-4 w-4" />
               Projekte nach Optimierungsstatus
               {isGlobalView && (
                 <Badge variant="outline" className="ml-2 gap-1">
-                  <Globe className="h-3 w-3" />
+                  <Globe className="h-2.5 w-2.5" />
                   Alle Mandanten
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription className="mt-2">
+            <CardDescription className="mt-1">
               {isGlobalView 
                 ? 'Aggregierte Verteilung aller Projekte aus allen Mandanten nach Status'
                 : 'Verteilung der Projekte nach Status im ausgewählten Zeitraum'
@@ -335,7 +335,7 @@ export function OptimizationStatusWidget() {
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -350,24 +350,24 @@ export function OptimizationStatusWidget() {
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         {isLoading ? (
-          <div className="space-y-3">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-64 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-56 w-full" />
           </div>
         ) : totalProjects === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="text-center py-10 text-muted-foreground">
             {isGlobalView ? (
-              <Globe className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <Globe className="h-12 w-12 mx-auto mb-3 opacity-50" />
             ) : (
-              <Calendar className="h-16 w-16 mx-auto mb-4 opacity-50" />
+              <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
             )}
-            <p className="text-lg font-medium">
+            <p className="text-sm font-medium">
               {isGlobalView 
                 ? 'Keine Projekte in den Mandanten gefunden'
                 : 'Keine Projekte im ausgewählten Zeitraum'
               }
             </p>
-            <p className="text-sm mt-2">
+            <p className="text-xs mt-1">
               {isGlobalView
                 ? 'Stellen Sie sicher, dass Mandanten Projektdaten hochgeladen haben'
                 : 'Versuchen Sie einen längeren Zeitraum oder laden Sie Projektdaten hoch'
@@ -376,20 +376,20 @@ export function OptimizationStatusWidget() {
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-center min-h-[88px]">
+            <div className="mb-3 flex items-center justify-center min-h-[72px]">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-xs text-muted-foreground mb-0.5">
                   {isGlobalView ? 'Gesamt (Alle Mandanten)' : 'Gesamt'}
                 </p>
-                <p className="text-3xl font-bold text-foreground">{totalProjects}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-2xl font-bold text-foreground">{totalProjects}</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">
                   {isGlobalView ? 'Projekte mandantenübergreifend' : 'Projekte'}
                 </p>
               </div>
             </div>
             
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={chartData} margin={{ top: 15, right: 20, left: 15, bottom: 5 }}>
                 <defs>
                   <linearGradient id="gradientNeu" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
@@ -415,12 +415,12 @@ export function OptimizationStatusWidget() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                 <XAxis 
                   dataKey="status" 
-                  className="text-sm"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 />
                 <YAxis 
-                  className="text-sm"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                   allowDecimals={false}
                 />
                 <Tooltip content={<CustomTooltip />} />
@@ -443,9 +443,9 @@ export function OptimizationStatusWidget() {
               </BarChart>
             </ResponsiveContainer>
 
-            <div className="mt-6">
-              <p className="text-sm font-medium mb-3">Verteilung nach Status:</p>
-              <div className="grid grid-cols-5 gap-3">
+            <div className="mt-4">
+              <p className="text-xs font-medium mb-2">Verteilung nach Status:</p>
+              <div className="grid grid-cols-5 gap-2">
               {chartData.map((item) => {
                 const percentage = totalProjects > 0 
                   ? Math.round((item.anzahl / totalProjects) * 100) 
