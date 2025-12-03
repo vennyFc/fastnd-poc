@@ -174,7 +174,7 @@ export default function Projects() {
   }, {
     key: 'products',
     label: 'Produkt',
-    visible: true,
+    visible: false,
     width: 200,
     order: 3
   }, {
