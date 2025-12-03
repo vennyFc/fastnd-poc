@@ -530,10 +530,17 @@ export default function Projects() {
       if (!isAddedRow) return true;
       return hasActiveOptimizationForProduct(project.project_number, prod);
     };
+    
+    // Ensure we extract string value in case application is an object
+    const appValue = typeof project.application === 'object' && project.application !== null 
+      ? project.application?.application 
+      : project.application;
+    const safeAppValue = appValue ? String(appValue) : null;
+    
     if (existing) {
       // Add application and product if not already included
-      if (project.application && !existing.applications.includes(project.application)) {
-        existing.applications.push(project.application);
+      if (safeAppValue && !existing.applications.includes(safeAppValue)) {
+        existing.applications.push(safeAppValue);
       }
       if (includeProduct(project.product) && !existing.products.includes(project.product)) {
         existing.products.push(project.product);
@@ -572,7 +579,7 @@ export default function Projects() {
         id: project.id,
         customer: project.customer,
         project_name: project.project_name,
-        applications: project.application ? [project.application] : [],
+        applications: safeAppValue ? [safeAppValue] : [],
         products: includeProduct(project.product) ? [project.product] : [],
         sourceIds: [project.id],
         created_at: project.created_at,
@@ -765,9 +772,16 @@ export default function Projects() {
       const customerProjects = projects.filter(p => p.customer === selectedCustomer);
       const grouped = customerProjects.reduce((acc: any[], project: any) => {
         const existing = acc.find(p => p.project_name === project.project_name);
+        
+        // Ensure we extract string value in case application is an object
+        const appValue = typeof project.application === 'object' && project.application !== null 
+          ? project.application?.application 
+          : project.application;
+        const safeAppValue = appValue ? String(appValue) : null;
+        
         if (existing) {
-          if (project.application && !existing.applications.includes(project.application)) {
-            existing.applications.push(project.application);
+          if (safeAppValue && !existing.applications.includes(safeAppValue)) {
+            existing.applications.push(safeAppValue);
           }
           if (project.product && !existing.products.includes(project.product)) {
             existing.products.push(project.product);
@@ -782,7 +796,7 @@ export default function Projects() {
             customer: project.customer,
             project_name: project.project_name,
             project_number: project.project_number,
-            applications: project.application ? [project.application] : [],
+            applications: safeAppValue ? [safeAppValue] : [],
             products: project.product ? [project.product] : [],
             created_at: project.created_at
           });
@@ -798,7 +812,12 @@ export default function Projects() {
         customer: selectedProject.customer,
         project_name: selectedProject.project_name,
         project_number: projectData[0]?.project_number || null,
-        applications: projectData.map(p => p.application).filter(Boolean),
+        applications: projectData.map(p => {
+          const appVal = typeof p.application === 'object' && p.application !== null 
+            ? p.application?.application 
+            : p.application;
+          return appVal ? String(appVal) : null;
+        }).filter(Boolean),
         products: projectData.map(p => p.product).filter(Boolean),
         created_at: selectedProject.created_at
       }];
