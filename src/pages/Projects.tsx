@@ -1732,13 +1732,13 @@ export default function Projects() {
                                                     <div className="flex flex-col min-w-0 flex-1">
                                                       <div className="flex items-center gap-2">
                                                         <span className="text-muted-foreground text-sm">↳</span>
-                                                        <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary" onClick={e => {
+                                                        <span onClick={e => {
                                             e.stopPropagation();
                                             setSelectedProductForQuickView(altDetails || {
                                               product: alt.alternative_product
                                             });
                                             setProductQuickViewOpen(true);
-                                          }}>
+                                          }} className="font-semibold truncate cursor-pointer hover:underline text-black">
                                                           {alt.alternative_product}
                                                         </span>
                                                         {alt.similarity && <Badge variant="secondary" className="text-xs flex-shrink-0">
