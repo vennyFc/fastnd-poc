@@ -52,8 +52,8 @@ export default function Products() {
   const queryClient = useQueryClient();
 
   const defaultColumns = React.useMemo(() => [
-    { key: 'product', label: 'Produkt', visible: true, width: 200, order: 0 },
-    { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
+    { key: 'product', label: 'Bauteil', visible: true, width: 280, order: 0 },
+    { key: 'product_family', label: 'Produktfamilie', visible: false, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
     { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 3 },
     { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
@@ -728,7 +728,14 @@ export default function Products() {
                             const hasAlternative = productsWithAlternatives.has(product.product);
                             value = (
                               <div className="flex items-center gap-2">
-                                <span>{product[column.key] || '-'}</span>
+                                <div className="flex flex-col">
+                                  <span>{product.product || '-'}</span>
+                                  {product.product_family && (
+                                    <span className="text-sm text-muted-foreground">
+                                      {product.product_family}
+                                    </span>
+                                  )}
+                                </div>
                                 {hasAlternative && (
                                   <Replace 
                                     className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -814,12 +821,21 @@ export default function Products() {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
                                   <span className="text-muted-foreground text-sm">↳</span>
-                                  <span>{altProduct[column.key] || '-'}</span>
-                                  {altProduct.similarity !== null && altProduct.similarity !== undefined && (
-                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                                      {altProduct.similarity}% Ähnlichkeit
-                                    </span>
-                                  )}
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                      <span>{altProduct.product || '-'}</span>
+                                      {altProduct.similarity !== null && altProduct.similarity !== undefined && (
+                                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                          {altProduct.similarity}% Ähnlichkeit
+                                        </span>
+                                      )}
+                                    </div>
+                                    {altProduct.product_family && (
+                                      <span className="text-sm text-muted-foreground">
+                                        {altProduct.product_family}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             } else if (column.key === 'product_price') {
