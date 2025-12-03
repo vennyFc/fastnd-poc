@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         'grotesk': ['Space Grotesk', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
+        'clash': ['Clash Grotesk', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

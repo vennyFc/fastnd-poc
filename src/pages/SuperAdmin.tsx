@@ -447,7 +447,7 @@ export default function SuperAdmin() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
         <Shield className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-bold">Super Admin</h1>
+        <h1 className="text-3xl font-bold font-clash">Super Admin</h1>
       </div>
 
       <Tabs defaultValue="admins" className="space-y-6">
