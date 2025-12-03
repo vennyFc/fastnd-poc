@@ -403,30 +403,28 @@ export default function Customers() {
         </CardHeader>
         <CardContent className="px-0">
           {isLoading ? (
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {visibleColumns.map((column) => (
+                    <TableCell key={column.key}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <TableRow key={i}>
                     {visibleColumns.map((column) => (
                       <TableCell key={column.key}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
                     ))}
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <TableRow key={i}>
-                      {visibleColumns.map((column) => (
-                        <TableCell key={column.key}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           ) : sortedCustomers.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -442,8 +440,7 @@ export default function Customers() {
             </div>
           ) : (
             <>
-              <div className="rounded-lg border">
-                <Table>
+              <Table>
                   <TableHeader>
                     <TableRow>
                       {visibleColumns.map((column, index) => (
@@ -499,7 +496,6 @@ export default function Customers() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
 
               {/* Pagination Footer */}
               <div className="border-t pt-4 mt-4 flex items-center justify-between">

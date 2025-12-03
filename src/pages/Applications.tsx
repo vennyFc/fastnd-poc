@@ -167,12 +167,10 @@ export default function Applications() {
         </CardHeader>
         <CardContent className="px-0">
           {isLoading ? (
-            <div className="rounded-lg border">
-              <div className="space-y-3 p-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+            <div className="space-y-3 p-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           ) : sortedApplications.length === 0 ? (
             <div className="text-center py-12">
@@ -183,7 +181,6 @@ export default function Applications() {
             </div>
           ) : (
             <>
-              <div className="rounded-lg border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -250,7 +247,6 @@ export default function Applications() {
                     )}
                   </TableBody>
                 </Table>
-              </div>
 
               {/* Pagination Footer */}
               <div className="border-t pt-4 mt-4 flex items-center justify-between">
