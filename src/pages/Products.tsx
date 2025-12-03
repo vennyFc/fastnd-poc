@@ -171,7 +171,7 @@ export default function Products() {
       
       const { data, error } = await supabase
         .from('cross_sells')
-        .select('base_product, application, cross_sell_product')
+        .select('base_product, application, cross_sell_product, rec_source, rec_score')
         .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
@@ -1020,21 +1020,6 @@ export default function Products() {
                                 : '-';
                             } else if (column.key === 'product_tags') {
                               const badges = [];
-                              // Add rec_source and rec_score badges
-                              if (csProduct.rec_source) {
-                                badges.push(
-                                  <Badge key="rec_source" variant="outline" className="text-xs">
-                                    {csProduct.rec_source}
-                                  </Badge>
-                                );
-                              }
-                              if (csProduct.rec_score !== null && csProduct.rec_score !== undefined) {
-                                badges.push(
-                                  <Badge key="rec_score" variant="secondary" className="text-xs">
-                                    Score: {csProduct.rec_score}
-                                  </Badge>
-                                );
-                              }
                               // Add lifecycle badges
                               if (csProduct.product_lifecycle) {
                                 badges.push(<span key="lifecycle">{renderLifecycleBadge(csProduct.product_lifecycle)}</span>);
@@ -1044,9 +1029,16 @@ export default function Products() {
                               ) : '-';
                             } else if (column.key === 'cross_sell_count') {
                               value = (
-                                <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-600">
-                                  Cross-Sell
-                                </Badge>
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-600">
+                                    Cross-Sell
+                                  </Badge>
+                                  {csProduct.rec_source && (
+                                    <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400">
+                                      {csProduct.rec_source}
+                                    </Badge>
+                                  )}
+                                </div>
                               );
                             } else {
                               value = csProduct[column.key] || '-';
