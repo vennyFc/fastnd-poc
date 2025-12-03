@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers, Replace, X } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -44,6 +44,8 @@ export default function Products() {
   const [showNewOnly, setShowNewOnly] = useState(false);
   const [showTopOnly, setShowTopOnly] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const queryClient = useQueryClient();
 
@@ -380,6 +382,20 @@ export default function Products() {
     return 0;
   });
 
+  // Pagination logic
+  const totalItems = sortedProducts?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = useMemo(() => {
+    return sortedProducts?.slice(startIndex, endIndex) || [];
+  }, [sortedProducts, startIndex, endIndex]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedApplication, selectedProductFamilies, selectedManufacturers, selectedLifecycle, showNewOnly, showTopOnly]);
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Cycle through: asc -> desc -> null
@@ -415,8 +431,19 @@ export default function Products() {
             <div>
               <CardTitle>Alle Produkte</CardTitle>
               <CardDescription>
-                {filteredProducts?.length || 0} Halbleiter-Komponenten und Spezifikationen
+                {totalItems} Halbleiter-Komponenten und Spezifikationen
               </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <div className="flex items-center gap-2">
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
@@ -633,15 +660,6 @@ export default function Products() {
               />
             </div>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -650,7 +668,8 @@ export default function Products() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : sortedProducts && sortedProducts.length > 0 ? (
+          ) : paginatedProducts && paginatedProducts.length > 0 ? (
+            <>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -683,7 +702,7 @@ export default function Products() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedProducts.map((product: any) => {
+                {paginatedProducts.map((product: any) => {
                   const alternativeProducts = getAlternativeProducts(product.product);
                   const isExpanded = expandedProducts.has(product.product);
                   
@@ -894,6 +913,83 @@ export default function Products() {
                 })}
               </TableBody>
             </Table>
+            
+            {/* Pagination Footer */}
+            <div className="border-t pt-4 mt-4 flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                  <Select 
+                    value={itemsPerPage.toString()} 
+                    onValueChange={(val) => {
+                      setItemsPerPage(Number(val));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="w-[70px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="h-8 px-3"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <div className="flex items-center gap-1 mx-2">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className="h-8 w-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="h-8 px-3"
+                  >
+                    Weiter
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            </>
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               {searchQuery.length >= 2

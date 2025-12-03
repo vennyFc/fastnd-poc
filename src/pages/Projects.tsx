@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -119,6 +119,8 @@ export default function Projects() {
   const [metadataExpanded, setMetadataExpanded] = useState(false);
   const [customerQuickViewOpen, setCustomerQuickViewOpen] = useState(false);
   const [selectedCustomerForQuickView, setSelectedCustomerForQuickView] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const {
     isFavorite,
     toggleFavorite
@@ -714,6 +716,21 @@ export default function Projects() {
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Pagination logic
+  const totalProjectItems = sortedProjects?.length || 0;
+  const totalProjectPages = Math.ceil(totalProjectItems / itemsPerPage);
+  const projectStartIndex = (currentPage - 1) * itemsPerPage;
+  const projectEndIndex = projectStartIndex + itemsPerPage;
+  const paginatedProjects = useMemo(() => {
+    return sortedProjects?.slice(projectStartIndex, projectEndIndex) || [];
+  }, [sortedProjects, projectStartIndex, projectEndIndex]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, quickFilter, statusFilter, selectedCustomer]);
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Cycle through: asc -> desc -> null
@@ -2346,14 +2363,16 @@ export default function Projects() {
             <div>
               <CardTitle>Alle Projekte</CardTitle>
               <CardDescription>
-                {filteredProjects?.length || 0} Kundenprojekte
+                {totalProjectItems} Kundenprojekte
               </CardDescription>
             </div>
-            <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            </div>
+            <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
           </div>
         </CardHeader>
         <CardContent>
@@ -2361,7 +2380,8 @@ export default function Projects() {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
-            </div> : sortedProjects && sortedProjects.length > 0 ? <Table>
+            </div> : paginatedProjects && paginatedProjects.length > 0 ? <>
+            <Table>
               <TableHeader>
                 <TableRow>
                   <th className="w-12"></th>
@@ -2378,7 +2398,7 @@ export default function Projects() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedProjects.map((project: any) => {
+                {paginatedProjects.map((project: any) => {
               return <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleRowClick(project)}>
                     <TableCell className="w-12">
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => {
@@ -2441,7 +2461,54 @@ export default function Projects() {
                   </TableRow>;
             })}
               </TableBody>
-            </Table> : <div className="p-8 text-center text-muted-foreground">
+            </Table>
+            {/* Pagination Footer */}
+            <div className="border-t pt-4 mt-4 flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                {totalProjectItems > 0 ? `${projectStartIndex + 1}-${Math.min(projectEndIndex, totalProjectItems)} von ${totalProjectItems} Ergebnissen` : '0 Ergebnisse'}
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}>
+                    <SelectTrigger className="w-[70px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3">
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <div className="flex items-center gap-1 mx-2">
+                    {Array.from({ length: Math.min(5, totalProjectPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalProjectPages <= 5) { pageNum = i + 1; }
+                      else if (currentPage <= 3) { pageNum = i + 1; }
+                      else if (currentPage >= totalProjectPages - 2) { pageNum = totalProjectPages - 4 + i; }
+                      else { pageNum = currentPage - 2 + i; }
+                      return (
+                        <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)} className="h-8 w-8 p-0">
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalProjectPages, p + 1))} disabled={currentPage === totalProjectPages || totalProjectPages === 0} className="h-8 px-3">
+                    Weiter
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            </> : <div className="p-8 text-center text-muted-foreground">
               {searchQuery.length >= 2 ? 'Keine Projekte gefunden.' : 'Keine Projekte vorhanden. Laden Sie Projektdaten im Datenhub hoch.'}
             </div>}
         </CardContent>
