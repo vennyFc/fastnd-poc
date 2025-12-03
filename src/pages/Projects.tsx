@@ -1872,13 +1872,13 @@ export default function Projects() {
                                                    </div>
                                                    <div className="flex flex-col min-w-0 flex-1">
                                                      <div className="flex items-center gap-2">
-                                                       <span className="font-semibold text-foreground truncate cursor-pointer hover:underline text-primary" onClick={e => {
+                                                       <span onClick={e => {
                                             e.stopPropagation();
                                             setSelectedProductForQuickView(details || {
                                               product: cs.cross_sell_product
                                             });
                                             setProductQuickViewOpen(true);
-                                          }}>
+                                          }} className="font-semibold truncate cursor-pointer hover:underline text-black">
                                                          {cs.cross_sell_product}
                                                        </span>
                                                        {hasAlternatives && <Replace className={`h-4 w-4 text-primary cursor-pointer transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} onClick={e => {
