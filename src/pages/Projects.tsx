@@ -2358,15 +2358,7 @@ export default function Projects() {
 
       {/* Projects Table */}
       <Card className="shadow-card">
-        <CardHeader className="space-y-4">
-          <div className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Alle Projekte</CardTitle>
-              <CardDescription>
-                {totalProjectItems} Kundenprojekte
-              </CardDescription>
-            </div>
-          </div>
+        <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
