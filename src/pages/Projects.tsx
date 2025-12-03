@@ -2136,15 +2136,36 @@ export default function Projects() {
                                   if (column.key === 'product_tags') {
                                     const badges = [];
                                     if (details.product_lifecycle) {
-                                      badges.push(<Badge key="lifecycle" variant={details.product_lifecycle === 'Active' ? 'default' : details.product_lifecycle === 'Coming Soon' ? 'secondary' : details.product_lifecycle === 'NFND' ? 'outline' : 'destructive'} className="text-xs">
-                                                    {details.product_lifecycle}
-                                                  </Badge>);
+                                      const lifecycleConfig: Record<string, { bg: string; text: string; border: string }> = {
+                                        'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', border: 'border-green-500/30' },
+                                        'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', border: 'border-cyan-500/30' },
+                                        'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', border: 'border-orange-500/30' },
+                                        'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', border: 'border-red-500/30' }
+                                      };
+                                      const config = lifecycleConfig[details.product_lifecycle] || lifecycleConfig['Active'];
+                                      const dotColor = details.product_lifecycle === 'Active' ? 'bg-green-500' : details.product_lifecycle === 'Coming Soon' ? 'bg-cyan-500' : details.product_lifecycle === 'NFND' ? 'bg-orange-500' : 'bg-red-500';
+                                      badges.push(
+                                        <Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full text-xs border`}>
+                                          <span className={`h-1.5 w-1.5 rounded-full ${dotColor} animate-pulse mr-1.5`} />
+                                          {details.product_lifecycle}
+                                        </Badge>
+                                      );
                                     }
                                     if (details.product_new === 'Y') {
-                                      badges.push(<Badge key="new" variant="default" className="bg-green-600 text-xs">Neu</Badge>);
+                                      badges.push(
+                                        <Badge key="new" variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 rounded-full text-xs border">
+                                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5" />
+                                          Neu
+                                        </Badge>
+                                      );
                                     }
                                     if (details.product_top === 'Y') {
-                                      badges.push(<Badge key="top" variant="default" className="bg-amber-600 text-xs">Top</Badge>);
+                                      badges.push(
+                                        <Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 rounded-full text-xs border">
+                                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
+                                          Top
+                                        </Badge>
+                                      );
                                     }
                                     value = badges.length > 0 ? <div className="flex flex-wrap gap-1">{badges}</div> : '-';
                                   }
