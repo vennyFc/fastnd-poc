@@ -1637,10 +1637,7 @@ export default function Projects() {
                               let value: any = '-';
                               if (column.key === 'product_info') {
                                 const detailParts = [details?.manufacturer, details?.product_family].filter(Boolean);
-                                value = <div className="flex items-start gap-3 py-2">
-                                             <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                                               <Package className="h-5 w-5 text-muted-foreground" />
-                                             </div>
+                                value = <div className="flex items-start py-2">
                                              <div className="flex flex-col min-w-0 flex-1">
                                                <div className="flex items-center gap-2">
                                                  <span onClick={e => {
@@ -1731,10 +1728,7 @@ export default function Projects() {
                                   return <TableCell key={column.key} className="p-0" style={{
                                     width: `${column.width}px`
                                   }}>
-                                                  <div className="flex items-start gap-3 py-2 pl-8">
-                                                    <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                                                      <Package className="h-5 w-5 text-muted-foreground" />
-                                                    </div>
+                                                  <div className="flex items-start py-2 pl-8">
                                                     <div className="flex flex-col min-w-0 flex-1">
                                                       <div className="flex items-center gap-2">
                                                         <span className="text-muted-foreground text-sm">↳</span>
@@ -1866,10 +1860,7 @@ export default function Projects() {
                                   return <TableCell key={column.key} className="p-0" style={{
                                     width: `${column.width}px`
                                   }}>
-                                                 <div className="flex items-start gap-3 py-2">
-                                                   <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                                                     <Package className="h-5 w-5 text-muted-foreground" />
-                                                   </div>
+                                                 <div className="flex items-start py-2">
                                                    <div className="flex flex-col min-w-0 flex-1">
                                                      <div className="flex items-center gap-2">
                                                        <span onClick={e => {
@@ -1990,10 +1981,7 @@ export default function Projects() {
                                     return <TableCell key={column.key} className="p-0" style={{
                                       width: `${column.width}px`
                                     }}>
-                                                   <div className="flex items-start gap-3 py-2 pl-8">
-                                                     <div className="h-10 w-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                                                       <Package className="h-5 w-5 text-muted-foreground" />
-                                                     </div>
+                                                   <div className="flex items-start py-2 pl-8">
                                                      <div className="flex flex-col min-w-0 flex-1">
                                                        <div className="flex items-center gap-2">
                                                          <span className="text-muted-foreground text-sm">↳</span>
