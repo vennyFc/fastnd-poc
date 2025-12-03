@@ -1851,17 +1851,31 @@ export default function Projects() {
                                 if (column.key === 'product_tags') {
                                   const badges = [];
                                   if (details.product_lifecycle) {
-                                    badges.push(<Badge key="lifecycle" variant={details.product_lifecycle === 'Active' ? 'default' : details.product_lifecycle === 'Coming Soon' ? 'secondary' : details.product_lifecycle === 'NFND' ? 'outline' : 'destructive'} className="text-xs">
-                                                   {details.product_lifecycle}
-                                                 </Badge>);
+                                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                                      'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                                    };
+                                    const config = lifecycleConfig[details.product_lifecycle] || lifecycleConfig['Active'];
+                                    badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}>
+                                                     <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
+                                                     {details.product_lifecycle}
+                                                   </Badge>);
                                   }
                                   if (details.product_new === 'Y') {
-                                    badges.push(<Badge key="new" variant="default" className="bg-green-600 text-xs">Neu</Badge>);
+                                    badges.push(<Badge key="new" variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent text-xs px-1.5 py-0">
+                                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+                                                     Neu
+                                                   </Badge>);
                                   }
                                   if (details.product_top === 'Y') {
-                                    badges.push(<Badge key="top" variant="default" className="bg-amber-600 text-xs">Top</Badge>);
+                                    badges.push(<Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent text-xs px-1.5 py-0">
+                                                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
+                                                     Top
+                                                   </Badge>);
                                   }
-                                  value = badges.length > 0 ? <div className="flex flex-wrap gap-1">{badges}</div> : '-';
+                                  value = badges.length > 0 ? <div className="flex flex-wrap gap-0.5">{badges}</div> : '-';
                                 }
                               }
                               return <TableCell key={column.key} className={cn("align-top", column.key === 'product_info' ? 'p-0' : 'py-3', ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : '')} style={{
@@ -1959,11 +1973,19 @@ export default function Projects() {
                                     if (column.key === 'product_tags') {
                                       const badges = [];
                                       if (altDetails.product_lifecycle) {
-                                        badges.push(<Badge key="lifecycle" variant={altDetails.product_lifecycle === 'Active' ? 'default' : altDetails.product_lifecycle === 'Coming Soon' ? 'secondary' : altDetails.product_lifecycle === 'NFND' ? 'outline' : 'destructive'} className="text-xs">
+                                        const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                                          'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                                          'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                                          'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                                          'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                                        };
+                                        const config = lifecycleConfig[altDetails.product_lifecycle] || lifecycleConfig['Active'];
+                                        badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}>
+                                                         <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
                                                          {altDetails.product_lifecycle}
                                                        </Badge>);
                                       }
-                                      value = badges.length > 0 ? <div className="flex flex-wrap gap-1">{badges}</div> : '-';
+                                      value = badges.length > 0 ? <div className="flex flex-wrap gap-0.5">{badges}</div> : '-';
                                     }
                                   }
                                   return <TableCell key={column.key} className={cn("align-top py-3", ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : '')} style={{
@@ -2267,16 +2289,32 @@ export default function Projects() {
 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
-                  {selectedProductForQuickView.product_lifecycle ? <Badge variant={selectedProductForQuickView.product_lifecycle === 'Active' ? 'default' : selectedProductForQuickView.product_lifecycle === 'Coming Soon' ? 'secondary' : selectedProductForQuickView.product_lifecycle === 'NFND' ? 'outline' : 'destructive'}>
+                  {selectedProductForQuickView.product_lifecycle ? (() => {
+                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                      'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                    };
+                    const config = lifecycleConfig[selectedProductForQuickView.product_lifecycle] || lifecycleConfig['Active'];
+                    return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent px-2 py-0.5`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1.5`} />
                       {selectedProductForQuickView.product_lifecycle}
-                    </Badge> : <p className="text-base">-</p>}
+                    </Badge>;
+                  })() : <p className="text-base">-</p>}
                 </div>
 
                 {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
                     <div className="flex gap-2">
-                      {selectedProductForQuickView.product_new === 'Y' && <Badge variant="default" className="bg-green-600">Neu</Badge>}
-                      {selectedProductForQuickView.product_top === 'Y' && <Badge variant="default" className="bg-amber-600">Top Seller</Badge>}
+                      {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent px-2 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
+                        Neu
+                      </Badge>}
+                      {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent px-2 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
+                        Top Seller
+                      </Badge>}
                     </div>
                   </div>}
 
@@ -2617,16 +2655,32 @@ export default function Projects() {
 
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
-                {selectedProductForQuickView.product_lifecycle ? <Badge variant={selectedProductForQuickView.product_lifecycle === 'Active' ? 'default' : selectedProductForQuickView.product_lifecycle === 'Coming Soon' ? 'secondary' : selectedProductForQuickView.product_lifecycle === 'NFND' ? 'outline' : 'destructive'}>
+                {selectedProductForQuickView.product_lifecycle ? (() => {
+                  const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                    'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                    'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                    'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                    'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                  };
+                  const config = lifecycleConfig[selectedProductForQuickView.product_lifecycle] || lifecycleConfig['Active'];
+                  return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent px-2 py-0.5`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1.5`} />
                     {selectedProductForQuickView.product_lifecycle}
-                  </Badge> : <p className="text-base">-</p>}
+                  </Badge>;
+                })() : <p className="text-base">-</p>}
               </div>
 
               {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
                   <div className="flex gap-2">
-                    {selectedProductForQuickView.product_new === 'Y' && <Badge variant="default" className="bg-green-600">Neu</Badge>}
-                    {selectedProductForQuickView.product_top === 'Y' && <Badge variant="default" className="bg-amber-600">Top Seller</Badge>}
+                    {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent px-2 py-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
+                      Neu
+                    </Badge>}
+                    {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent px-2 py-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
+                      Top Seller
+                    </Badge>}
                   </div>
                 </div>}
 
