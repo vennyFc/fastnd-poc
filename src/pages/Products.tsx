@@ -417,10 +417,7 @@ export default function Products() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Produkte</h1>
-          <p className="text-muted-foreground">
-            Produktkatalog und Halbleiter-Komponenten
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">Produkte</h1>
         </div>
       </div>
 
