@@ -1748,6 +1748,9 @@ export default function Projects() {
                                                       {altDetailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
                                                           {altDetailParts.join(' • ')}
                                                         </span>}
+                                                      {altDetails?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                                          {truncateText(altDetails.product_description, 60)}
+                                                        </span>}
                                                     </div>
                                                   </div>
                                                 </TableCell>;
@@ -2000,6 +2003,9 @@ export default function Projects() {
                                                        </div>
                                                        {altDetailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
                                                            {altDetailParts.join(' • ')}
+                                                         </span>}
+                                                       {altDetails?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                                           {truncateText(altDetails.product_description, 60)}
                                                          </span>}
                                                      </div>
                                                    </div>
