@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export interface ColumnConfig {
   key: string;
   label: string | React.ReactNode;
+  labelTooltip?: string;
   visible: boolean;
   width: number;
   order: number;
@@ -53,6 +54,7 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
           ...def,
           ...(s || {}),
           label: def.label, // Always use label from defaults (not from saved settings)
+          labelTooltip: def.labelTooltip, // Always use labelTooltip from defaults
           order: s?.order !== undefined ? s.order : def.order ?? idx,
         } as ColumnConfig;
       });

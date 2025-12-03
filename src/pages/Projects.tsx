@@ -223,21 +223,24 @@ export default function Projects() {
     order: 0
   }, {
     key: 'product_price',
-    label: <>Preis<br /><span className="text-xs font-normal">(€/pcs)</span></>,
+    label: 'Preis',
+    labelTooltip: 'in €/pcs',
     visible: true,
-    width: 90,
+    width: 80,
     order: 1
   }, {
     key: 'product_lead_time',
-    label: <>Lieferzeit<br /><span className="text-xs font-normal">(Wochen)</span></>,
+    label: 'Lieferzeit',
+    labelTooltip: 'in Wochen',
     visible: true,
     width: 90,
     order: 2
   }, {
     key: 'product_inventory',
-    label: <>Lagerbestand<br /><span className="text-xs font-normal">(pcs)</span></>,
+    label: 'Lagerbestand',
+    labelTooltip: 'in pcs',
     visible: true,
-    width: 90,
+    width: 100,
     order: 3
   }, {
     key: 'product_tags',
@@ -275,21 +278,24 @@ export default function Projects() {
     order: 0
   }, {
     key: 'product_price',
-    label: <>Preis<br /><span className="text-xs font-normal">(€/pcs)</span></>,
+    label: 'Preis',
+    labelTooltip: 'in €/pcs',
     visible: true,
-    width: 90,
+    width: 80,
     order: 1
   }, {
     key: 'product_lead_time',
-    label: <>Lieferzeit<br /><span className="text-xs font-normal">(Wochen)</span></>,
+    label: 'Lieferzeit',
+    labelTooltip: 'in Wochen',
     visible: true,
     width: 90,
     order: 2
   }, {
     key: 'product_inventory',
-    label: <>Lagerbestand<br /><span className="text-xs font-normal">(pcs)</span></>,
+    label: 'Lagerbestand',
+    labelTooltip: 'in pcs',
     visible: true,
-    width: 90,
+    width: 100,
     order: 3
   }, {
     key: 'product_tags',
@@ -1759,7 +1765,7 @@ export default function Projects() {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              {visibleProductColumns.map((column, index) => <ResizableTableHeader key={column.key} label={column.label} width={column.width} onResize={width => updateProductColumnWidth(column.key, width)} sortable={false} draggable={true} className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''} onDragStart={() => setDraggedProductIndex(index)} onDragOver={e => {
+                              {visibleProductColumns.map((column, index) => <ResizableTableHeader key={column.key} label={column.label} labelTooltip={column.labelTooltip} width={column.width} onResize={width => updateProductColumnWidth(column.key, width)} sortable={false} draggable={true} className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''} onDragStart={() => setDraggedProductIndex(index)} onDragOver={e => {
                           e.preventDefault();
                           e.dataTransfer.dropEffect = 'move';
                         }} onDrop={e => {
@@ -1995,7 +2001,7 @@ export default function Projects() {
                           <Table>
                               <TableHeader>
                                 <TableRow>
-                                  {visibleCrossSellColumns.map((column, index) => <ResizableTableHeader key={column.key} label={column.label} width={column.width} onResize={width => updateCrossSellColumnWidth(column.key, width)} sortable={false} draggable={true} className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''} onDragStart={() => setDraggedCrossSellIndex(index)} onDragOver={e => {
+                                  {visibleCrossSellColumns.map((column, index) => <ResizableTableHeader key={column.key} label={column.label} labelTooltip={column.labelTooltip} width={column.width} onResize={width => updateCrossSellColumnWidth(column.key, width)} sortable={false} draggable={true} className={['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' : ''} onDragStart={() => setDraggedCrossSellIndex(index)} onDragOver={e => {
                             e.preventDefault();
                             e.dataTransfer.dropEffect = 'move';
                           }} onDrop={e => {
