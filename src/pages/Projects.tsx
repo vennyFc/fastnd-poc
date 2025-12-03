@@ -307,14 +307,14 @@ export default function Projects() {
     const filledBlocks = Math.round(score / 10);
     
     return (
-      <div className="flex items-center gap-2">
-        <span className="font-semibold text-sm min-w-[36px]">{score}%</span>
-        <div className="flex gap-0.5">
+      <div className="flex items-center gap-1">
+        <span className="font-semibold text-2xs min-w-[28px]">{score}%</span>
+        <div className="flex gap-px">
           {Array.from({ length: 10 }).map((_, i) => (
             <div
               key={i}
               className={cn(
-                "h-4 w-1.5 rounded-sm",
+                "h-2 w-[3px] rounded-sm",
                 i < filledBlocks 
                   ? "bg-emerald-500" 
                   : "bg-muted"
