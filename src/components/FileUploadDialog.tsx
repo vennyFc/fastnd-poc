@@ -58,7 +58,11 @@ const crossSellSchema = z.object({
   cross_sell_product: z.string().trim().min(1, 'Cross-sell product required').max(255, 'Cross-sell product too long'),
   rec_source: z.string().trim().max(255, 'Rec source too long').nullable().optional(),
   rec_score: z.preprocess(
-    (val) => (val === '' || val === null || val === undefined) ? null : Number(val),
+    (val) => {
+      if (val === '' || val === null || val === undefined) return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    },
     z.number().nullable().optional()
   ),
   user_id: z.string().uuid(),
