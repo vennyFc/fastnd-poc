@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { renderLifecycleBadge, renderNeuBadge, renderTopBadge } from '@/lib/productBadgeConfig';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -547,12 +548,6 @@ export default function Collections() {
                 ) : (
                   <div className="space-y-3">
                     {collectionProducts.map((item: any) => {
-                      const lifecycleConfig: Record<string, { bg: string; text: string; dot: string; border: string }> = {
-                        'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', border: 'border-green-500/30' },
-                        'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500', border: 'border-cyan-500/30' },
-                        'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500', border: 'border-orange-500/30' },
-                        'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500', border: 'border-red-500/30' },
-                      };
                       return (
                       <div
                         key={item.id}
@@ -561,21 +556,9 @@ export default function Collections() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="font-medium">{item.products.product}</h4>
-                            {item.products.product_lifecycle && (() => {
-                              const config = lifecycleConfig[item.products.product_lifecycle] || lifecycleConfig['Active'];
-                              return <Badge variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full text-xs px-1.5 py-0`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
-                                {item.products.product_lifecycle}
-                              </Badge>;
-                            })()}
-                            {item.products.product_new === 'Y' && <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 rounded-full text-xs px-1.5 py-0">
-                              <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse mr-1" />
-                              Neu
-                            </Badge>}
-                            {item.products.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 rounded-full text-xs px-1.5 py-0">
-                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
-                              Top
-                            </Badge>}
+                            {item.products.product_lifecycle && renderLifecycleBadge(item.products.product_lifecycle)}
+                            {item.products.product_new === 'Y' && renderNeuBadge()}
+                            {item.products.product_top === 'Y' && renderTopBadge()}
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {item.products.manufacturer} • {item.products.product_family}
