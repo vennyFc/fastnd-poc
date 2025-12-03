@@ -208,7 +208,7 @@ export default function Applications() {
                             <TableCell 
                               key={column.key}
                               style={{ width: `${column.width}px` }}
-                              className={isApplicationColumn ? 'font-medium cursor-pointer text-primary hover:underline' : ''}
+                              className={isApplicationColumn ? 'font-medium cursor-pointer text-foreground hover:underline' : ''}
                               onClick={() => {
                                 if (isApplicationColumn && app.application) {
                                   setSelectedApplicationForQuickView(app.application);
