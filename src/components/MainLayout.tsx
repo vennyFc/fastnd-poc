@@ -279,9 +279,8 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b border-border bg-background sticky top-0 z-50 flex items-center justify-between px-6">
+          <header className="h-16 bg-background sticky top-0 z-40 flex items-center justify-between px-6">
             <div className="flex items-center gap-4 flex-1">
-              <SidebarTrigger className="h-8 w-8" />
               
               <div className="relative flex-1 max-w-2xl" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
