@@ -131,7 +131,7 @@ export default function Applications() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-foreground mb-2 font-clash">Applikationen</h1>
+        <h1 className="text-3xl font-medium text-foreground mb-2 font-clash">Applikationen</h1>
         <p className="text-muted-foreground">
           Übersicht aller Applikationen und zugehörigen Produkte
         </p>

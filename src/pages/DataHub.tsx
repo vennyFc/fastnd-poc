@@ -330,7 +330,7 @@ export default function DataHub() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-foreground mb-2 font-clash">Datenhub</h1>
+          <h1 className="text-3xl font-medium text-foreground mb-2 font-clash">Datenhub</h1>
           <p className="text-muted-foreground">
             Laden Sie Ihre Daten hoch und verwalten Sie Ihre Uploads
           </p>
