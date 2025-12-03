@@ -1837,8 +1837,8 @@ export default function Projects() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <Package className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Produkte im Projekt</h3>
+                        <Package className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold">Produkte im Projekt</h3>
                       </div>
                       <ColumnVisibilityToggle columns={productColumns} onToggle={toggleProductColumn} onReset={resetProductColumns} />
                     </div>
@@ -1895,7 +1895,7 @@ export default function Projects() {
                                           product: productName
                                         });
                                         setProductQuickViewOpen(true);
-                                      }} className="font-semibold truncate cursor-pointer hover:underline text-black">
+                                      }} className="text-xs font-semibold truncate cursor-pointer hover:underline text-foreground">
                                                    {productName}
                                                  </span>
                                                  {hasAlternatives && <Replace className={`h-4 w-4 text-primary cursor-pointer transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} onClick={e => {
@@ -1903,10 +1903,10 @@ export default function Projects() {
                                         toggleAlternatives(productName);
                                       }} />}
                                                </div>
-                                               {detailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
+                                               {detailParts.length > 0 && <span className="text-2xs text-muted-foreground truncate">
                                                    {detailParts.join(' • ')}
                                                  </span>}
-                                               {details?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                               {details?.product_description && <span className="text-2xs text-muted-foreground truncate">
                                                    {truncateText(details.product_description, 60)}
                                                  </span>}
                                              </div>
@@ -1978,24 +1978,24 @@ export default function Projects() {
                                                   <div className="flex items-start py-2 pl-8">
                                                     <div className="flex flex-col min-w-0 flex-1">
                                                       <div className="flex items-center gap-2">
-                                                        <span className="text-muted-foreground text-sm">↳</span>
+                                                        <span className="text-muted-foreground text-xs">↳</span>
                                                         <span onClick={e => {
                                             e.stopPropagation();
                                             setSelectedProductForQuickView(altDetails || {
                                               product: alt.alternative_product
                                             });
                                             setProductQuickViewOpen(true);
-                                          }} className="font-semibold truncate cursor-pointer hover:underline text-black">
+                                          }} className="text-xs font-semibold truncate cursor-pointer hover:underline text-foreground">
                                                           {alt.alternative_product}
                                                         </span>
                                                         {alt.similarity && <Badge variant="secondary" className="text-xs flex-shrink-0">
                                                             {alt.similarity}%
                                                           </Badge>}
                                                       </div>
-                                                      {altDetailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
+                                                      {altDetailParts.length > 0 && <span className="text-2xs text-muted-foreground truncate">
                                                           {altDetailParts.join(' • ')}
                                                         </span>}
-                                                      {altDetails?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                                      {altDetails?.product_description && <span className="text-2xs text-muted-foreground truncate">
                                                           {truncateText(altDetails.product_description, 60)}
                                                         </span>}
                                                     </div>
@@ -2071,8 +2071,8 @@ export default function Projects() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Cross-Sell Opportunities</h3>
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold">Cross-Sell Opportunities</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -2130,13 +2130,13 @@ export default function Projects() {
                                                  <div className="flex items-start py-2 pl-4">
                                                    <div className="flex flex-col min-w-0 flex-1">
                                                      <div className="flex items-center gap-2">
-                                                       <span onClick={e => {
+                                                      <span onClick={e => {
                                             e.stopPropagation();
                                             setSelectedProductForQuickView(details || {
                                               product: cs.cross_sell_product
                                             });
                                             setProductQuickViewOpen(true);
-                                          }} className="font-semibold truncate cursor-pointer hover:underline text-black">
+                                          }} className="text-xs font-semibold truncate cursor-pointer hover:underline text-foreground">
                                                          {cs.cross_sell_product}
                                                        </span>
                                                        {hasAlternatives && <Replace className={`h-4 w-4 text-primary cursor-pointer transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} onClick={e => {
@@ -2144,10 +2144,10 @@ export default function Projects() {
                                             toggleAlternatives(cs.cross_sell_product);
                                           }} />}
                                                      </div>
-                                                     {detailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
+                                                     {detailParts.length > 0 && <span className="text-2xs text-muted-foreground truncate">
                                                          {detailParts.join(' • ')}
                                                        </span>}
-                                                     {details?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                                     {details?.product_description && <span className="text-2xs text-muted-foreground truncate">
                                                          {truncateText(details.product_description, 60)}
                                                        </span>}
                                                    </div>
@@ -2256,24 +2256,24 @@ export default function Projects() {
                                                    <div className="flex items-start py-2 pl-8">
                                                      <div className="flex flex-col min-w-0 flex-1">
                                                        <div className="flex items-center gap-2">
-                                                         <span className="text-muted-foreground text-sm">↳</span>
+                                                         <span className="text-muted-foreground text-xs">↳</span>
                                                          <span onClick={e => {
                                               e.stopPropagation();
                                               setSelectedProductForQuickView(altDetails || {
                                                 product: alt.alternative_product
                                               });
                                               setProductQuickViewOpen(true);
-                                            }} className="font-semibold truncate cursor-pointer hover:underline text-black">
+                                            }} className="text-xs font-semibold truncate cursor-pointer hover:underline text-foreground">
                                                            {alt.alternative_product}
                                                          </span>
                                                          {alt.similarity && <Badge variant="secondary" className="text-xs flex-shrink-0">
                                                              {alt.similarity}%
                                                            </Badge>}
                                                        </div>
-                                                       {altDetailParts.length > 0 && <span className="text-sm text-muted-foreground truncate">
+                                                       {altDetailParts.length > 0 && <span className="text-2xs text-muted-foreground truncate">
                                                            {altDetailParts.join(' • ')}
                                                          </span>}
-                                                       {altDetails?.product_description && <span className="text-sm text-muted-foreground truncate">
+                                                       {altDetails?.product_description && <span className="text-2xs text-muted-foreground truncate">
                                                            {truncateText(altDetails.product_description, 60)}
                                                          </span>}
                                                      </div>
@@ -2517,7 +2517,7 @@ export default function Projects() {
                               <TableCell key={col.key} className="py-3 pl-4" style={{ width: col.width }}>
                                 <div className="flex flex-col gap-0.5">
                                   <span 
-                                    className="font-semibold text-foreground hover:underline cursor-pointer"
+                                    className="text-xs font-semibold text-foreground hover:underline cursor-pointer"
                                     onClick={() => {
                                       setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
                                       setProductQuickViewOpen(true);
@@ -2525,11 +2525,11 @@ export default function Projects() {
                                   >
                                     {cs.cross_sell_product}
                                   </span>
-                                  <span className="text-sm text-muted-foreground">
+                                  <span className="text-2xs text-muted-foreground">
                                     {[details?.manufacturer, details?.product_family].filter(Boolean).join(' • ') || '-'}
                                   </span>
                                   {details?.product_description && (
-                                    <span className="text-sm text-muted-foreground truncate max-w-[250px]">
+                                    <span className="text-2xs text-muted-foreground truncate max-w-[250px]">
                                       {truncateText(details.product_description, 60)}
                                     </span>
                                   )}
@@ -2548,19 +2548,19 @@ export default function Projects() {
                             );
                           case 'product_price':
                             return (
-                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
                                 {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
                               </TableCell>
                             );
                           case 'product_lead_time':
                             return (
-                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
                                 {details?.product_lead_time ? `${details.product_lead_time}` : '-'}
                               </TableCell>
                             );
                           case 'product_inventory':
                             return (
-                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
                                 {details?.product_inventory ?? '-'}
                               </TableCell>
                             );

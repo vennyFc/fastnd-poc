@@ -478,7 +478,7 @@ export function ActionItemsWidget() {
             {/* Open Items */}
             {openItems.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Offen ({openItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">Offen ({openItems.length})</h4>
                 <div className="space-y-2">
                   {openItems.map((item) => (
                     <div key={item.id} className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
@@ -486,31 +486,31 @@ export function ActionItemsWidget() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {getStatusIcon(item.status)}
-                            <span className="font-medium text-sm">{item.title}</span>
-                            <Badge variant={getPriorityColor(item.priority)} className="text-xs">
+                            <span className="font-medium text-xs">{item.title}</span>
+                            <Badge variant={getPriorityColor(item.priority)} className="text-2xs">
                               {item.priority === 'high' ? 'Hoch' : item.priority === 'medium' ? 'Mittel' : 'Niedrig'}
                             </Badge>
                           </div>
                           {item.description && (
-                            <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
+                            <p className="text-2xs text-muted-foreground mb-1">{item.description}</p>
                           )}
                           {(item as any).assigned_user && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
                             </p>
                           )}
                           {item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               📁 {item.project.customer} - {item.project.project_name}
                             </p>
                           )}
                           {item.customer && !item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               🏢 {item.customer.customer}
                             </p>
                           )}
                           {item.due_date && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: de })}
                             </p>
                           )}
@@ -551,7 +551,7 @@ export function ActionItemsWidget() {
             {/* In Progress Items */}
             {inProgressItems.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2 text-muted-foreground">In Bearbeitung ({inProgressItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">In Bearbeitung ({inProgressItems.length})</h4>
                 <div className="space-y-2">
                   {inProgressItems.map((item) => (
                     <div key={item.id} className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
@@ -559,31 +559,31 @@ export function ActionItemsWidget() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {getStatusIcon(item.status)}
-                            <span className="font-medium text-sm">{item.title}</span>
-                            <Badge variant={getPriorityColor(item.priority)} className="text-xs">
+                            <span className="font-medium text-xs">{item.title}</span>
+                            <Badge variant={getPriorityColor(item.priority)} className="text-2xs">
                               {item.priority === 'high' ? 'Hoch' : item.priority === 'medium' ? 'Mittel' : 'Niedrig'}
                             </Badge>
                           </div>
                           {item.description && (
-                            <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
+                            <p className="text-2xs text-muted-foreground mb-1">{item.description}</p>
                           )}
                           {(item as any).assigned_user && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
                             </p>
                           )}
                           {item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               📁 {item.project.customer} - {item.project.project_name}
                             </p>
                           )}
                           {item.customer && !item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               🏢 {item.customer.customer}
                             </p>
                           )}
                           {item.due_date && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: de })}
                             </p>
                           )}
@@ -624,7 +624,7 @@ export function ActionItemsWidget() {
             {/* Completed Items */}
             {completedItems.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2 text-muted-foreground">Abgeschlossen ({completedItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">Abgeschlossen ({completedItems.length})</h4>
                 <div className="space-y-2">
                   {completedItems.slice(0, 3).map((item) => (
                     <div key={item.id} className="p-3 bg-muted/50 rounded-lg opacity-60">
@@ -632,20 +632,20 @@ export function ActionItemsWidget() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             {getStatusIcon(item.status)}
-                            <span className="font-medium text-sm line-through">{item.title}</span>
+                            <span className="font-medium text-xs line-through">{item.title}</span>
                           </div>
                           {(item as any).assigned_user && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               👤 {(item as any).assigned_user.full_name || (item as any).assigned_user.email}
                             </p>
                           )}
                           {item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               📁 {item.project.customer} - {item.project.project_name}
                             </p>
                           )}
                           {item.customer && !item.project && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-2xs text-muted-foreground">
                               🏢 {item.customer.customer}
                             </p>
                           )}

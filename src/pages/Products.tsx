@@ -796,9 +796,9 @@ export default function Products() {
                             value = (
                               <div className="flex items-center gap-2">
                                 <div className="flex flex-col">
-                                  <span>{product.product || '-'}</span>
+                                  <span className="text-xs">{product.product || '-'}</span>
                                   {product.product_family && (
-                                    <span className="text-sm text-muted-foreground">
+                                    <span className="text-2xs text-muted-foreground">
                                       {product.product_family}
                                     </span>
                                   )}
@@ -901,18 +901,18 @@ export default function Products() {
                             } else if (column.key === 'product') {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
-                                  <span className="text-muted-foreground text-sm">↳</span>
+                                  <span className="text-muted-foreground text-xs">↳</span>
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-2">
-                                      <span>{altProduct.product || '-'}</span>
+                                      <span className="text-xs">{altProduct.product || '-'}</span>
                                       {altProduct.similarity !== null && altProduct.similarity !== undefined && (
-                                        <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                        <span className="text-2xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                           {altProduct.similarity}% Ähnlichkeit
                                         </span>
                                       )}
                                     </div>
                                     {altProduct.product_family && (
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className="text-2xs text-muted-foreground">
                                         {altProduct.product_family}
                                       </span>
                                     )}
@@ -995,11 +995,11 @@ export default function Products() {
                             } else if (column.key === 'product') {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
-                                  <span className="text-muted-foreground text-sm">↳</span>
+                                  <span className="text-muted-foreground text-xs">↳</span>
                                   <div className="flex flex-col">
-                                    <span>{csProduct.product || '-'}</span>
+                                    <span className="text-xs">{csProduct.product || '-'}</span>
                                     {csProduct.product_family && (
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className="text-2xs text-muted-foreground">
                                         {csProduct.product_family}
                                       </span>
                                     )}
