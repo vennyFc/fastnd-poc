@@ -25,6 +25,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -121,6 +123,7 @@ export default function Projects() {
   const [selectedCustomerForQuickView, setSelectedCustomerForQuickView] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [filterOpen, setFilterOpen] = useState(false);
   const {
     isFavorite,
     toggleFavorite
@@ -2302,57 +2305,6 @@ export default function Projects() {
         </div>
       </div>
 
-      {/* Search and Filter Bar */}
-      {/* Quick Filter Chips */}
-      <div className="flex gap-2 flex-wrap">
-        <Badge variant={quickFilter === 'favorites' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites');
-        setStatusFilter(null);
-      }}>
-          <Star className={`mr-1.5 h-3.5 w-3.5 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
-          Favoriten
-        </Badge>
-        <Badge variant={quickFilter === 'recent' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent');
-        setStatusFilter(null);
-      }}>
-          Zuletzt angesehen
-        </Badge>
-        
-        <Separator orientation="vertical" className="h-6" />
-        
-        <Badge variant={statusFilter === 'Neu' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setStatusFilter(statusFilter === 'Neu' ? null : 'Neu');
-        setQuickFilter('all');
-      }}>
-          Neu
-        </Badge>
-        <Badge variant={statusFilter === 'Offen' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setStatusFilter(statusFilter === 'Offen' ? null : 'Offen');
-        setQuickFilter('all');
-      }}>
-          Offen
-        </Badge>
-        <Badge variant={statusFilter === 'Prüfung' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setStatusFilter(statusFilter === 'Prüfung' ? null : 'Prüfung');
-        setQuickFilter('all');
-      }}>
-          Prüfung
-        </Badge>
-        <Badge variant={statusFilter === 'Validierung' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setStatusFilter(statusFilter === 'Validierung' ? null : 'Validierung');
-        setQuickFilter('all');
-      }}>
-          Validierung
-        </Badge>
-        <Badge variant={statusFilter === 'Abgeschlossen' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
-        setStatusFilter(statusFilter === 'Abgeschlossen' ? null : 'Abgeschlossen');
-        setQuickFilter('all');
-      }}>
-          Abgeschlossen
-        </Badge>
-      </div>
-
       {/* Projects Table */}
       <Card className="shadow-card">
         <CardHeader>
@@ -2361,7 +2313,73 @@ export default function Projects() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
-            <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
+            <div className="flex items-center gap-2">
+              <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filter
+                    {(quickFilter !== 'all' || statusFilter) && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
+                        {(quickFilter !== 'all' ? 1 : 0) + (statusFilter ? 1 : 0)}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64" align="end">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">Filter</h4>
+                      <p className="text-sm text-muted-foreground">Projekte nach Kriterien filtern</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Ansicht</Label>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge 
+                          variant={quickFilter === 'favorites' ? 'default' : 'outline'} 
+                          className="cursor-pointer text-xs" 
+                          onClick={() => { setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites'); setStatusFilter(null); }}
+                        >
+                          <Star className={`mr-1 h-3 w-3 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
+                          Favoriten
+                        </Badge>
+                        <Badge 
+                          variant={quickFilter === 'recent' ? 'default' : 'outline'} 
+                          className="cursor-pointer text-xs" 
+                          onClick={() => { setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent'); setStatusFilter(null); }}
+                        >
+                          Zuletzt angesehen
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Status</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].map(status => (
+                          <Badge 
+                            key={status}
+                            variant={statusFilter === status ? 'default' : 'outline'} 
+                            className="cursor-pointer text-xs" 
+                            onClick={() => { setStatusFilter(statusFilter === status ? null : status); setQuickFilter('all'); }}
+                          >
+                            {status}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {(quickFilter !== 'all' || statusFilter) && (
+                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setQuickFilter('all'); setStatusFilter(null); }}>
+                        Alle Filter zurücksetzen
+                      </Button>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
