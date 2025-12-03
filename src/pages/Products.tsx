@@ -877,7 +877,7 @@ export default function Products() {
                       {isExpanded && alternativeProducts.map((altProduct: any) => (
                         <TableRow 
                           key={`alt-${altProduct.id}`}
-                          className="cursor-pointer hover:bg-muted/50 bg-muted/30"
+                          className="cursor-pointer hover:bg-muted/50 bg-primary/5 border-l-2 border-l-primary"
                           onClick={() => {
                             setSelectedProduct(altProduct);
                             setIsSheetOpen(true);
