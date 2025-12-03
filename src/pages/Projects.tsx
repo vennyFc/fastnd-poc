@@ -1505,7 +1505,16 @@ export default function Projects() {
                           {/* Kunde */}
                           <div>
                             <span className="text-sm text-muted-foreground block">Kunde</span>
-                            <span className="font-medium">{project.customer}</span>
+                            <span 
+                              className="font-medium cursor-pointer hover:underline hover:text-primary transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCustomer(project.customer);
+                                setSelectedProject(null);
+                              }}
+                            >
+                              {project.customer}
+                            </span>
                           </div>
                           
                           {/* Applikation */}
@@ -1514,7 +1523,22 @@ export default function Projects() {
                             <span className="font-medium">
                               {[...new Set(project.applications.map((app: string) => 
                                 typeof app === 'string' ? app : (app as any)?.application || ''
-                              ))].join(', ') || '-'}
+                              ))].map((appName: string, idx: number, arr: string[]) => (
+                                <span key={idx}>
+                                  <span 
+                                    className="cursor-pointer hover:underline hover:text-primary transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedApplicationForQuickView(appName);
+                                      setApplicationQuickViewOpen(true);
+                                    }}
+                                  >
+                                    {appName}
+                                  </span>
+                                  {idx < arr.length - 1 && ', '}
+                                </span>
+                              ))}
+                              {project.applications.length === 0 && '-'}
                             </span>
                           </div>
                           
