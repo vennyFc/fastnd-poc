@@ -2261,15 +2261,6 @@ export default function Projects() {
       </div>
 
       {/* Search and Filter Bar */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Quick Filter Chips */}
       <div className="flex gap-2 flex-wrap">
         <Badge variant={quickFilter === 'favorites' ? 'default' : 'outline'} className="cursor-pointer px-3 py-1.5 text-sm hover:bg-accent transition-colors" onClick={() => {
@@ -2322,14 +2313,20 @@ export default function Projects() {
 
       {/* Projects Table */}
       <Card className="shadow-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Alle Projekte</CardTitle>
-            <CardDescription>
-              {filteredProjects?.length || 0} Kundenprojekte
-            </CardDescription>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Alle Projekte</CardTitle>
+              <CardDescription>
+                {filteredProjects?.length || 0} Kundenprojekte
+              </CardDescription>
+            </div>
+            <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
           </div>
-          <ColumnVisibilityToggle columns={columns} onToggle={toggleColumn} onReset={resetColumns} />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? <div className="space-y-2">
