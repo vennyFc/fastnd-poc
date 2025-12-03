@@ -134,8 +134,7 @@ export default function Applications() {
 
       <Card className="shadow-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Alle Applikationen</CardTitle>
+          <div className="flex items-center justify-end">
             <div className="flex gap-2">
               <ColumnVisibilityToggle
                 columns={columns}
