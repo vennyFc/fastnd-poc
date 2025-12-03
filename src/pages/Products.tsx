@@ -995,7 +995,7 @@ export default function Products() {
                             } else if (column.key === 'product') {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
-                                  <Network className="h-4 w-4 text-purple-500" />
+                                  <span className="text-muted-foreground text-sm">↳</span>
                                   <div className="flex flex-col">
                                     <span>{csProduct.product || '-'}</span>
                                     {csProduct.product_family && (
