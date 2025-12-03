@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Star, Package, AlertCircle } from 'lucide-react';
+import { Clock, Star, Package, AlertCircle, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 export function ProjectsWidget() {
-  const [activeTab, setActiveTab] = useState('new');
+  const [activeTab, setActiveTab] = useState('alle');
   const {
     user,
     activeTenant,
@@ -390,7 +390,14 @@ export function ProjectsWidget() {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="alle" className="gap-2">
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">Alle</span>
+              <Badge variant="secondary" className="ml-1">
+                {allProjects.length}
+              </Badge>
+            </TabsTrigger>
             <TabsTrigger value="recent" className="gap-2">
               <Clock className="h-4 w-4" />
               <span className="hidden sm:inline">Zuletzt</span>
@@ -420,6 +427,10 @@ export function ProjectsWidget() {
               </Badge>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="alle" className="mt-4">
+            {renderProjectList(allProjects)}
+          </TabsContent>
 
           <TabsContent value="recent" className="mt-4">
             {renderProjectList(recentProjects, true)}
