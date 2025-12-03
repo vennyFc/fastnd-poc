@@ -278,7 +278,7 @@ export default function Customers() {
       </div>
 
       <Card>
-        <CardHeader className="px-0">
+        <CardHeader>
           <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -401,7 +401,7 @@ export default function Customers() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0">
+        <CardContent>
           {isLoading ? (
             <Table>
               <TableHeader>
