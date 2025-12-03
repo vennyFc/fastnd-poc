@@ -225,7 +225,7 @@ export function UserPreferencesPopover() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="p-2 hover:bg-muted rounded-md">
+        <button className="p-2 hover:bg-muted rounded-full transition-colors">
           <Settings className="h-5 w-5 text-muted-foreground" />
         </button>
       </PopoverTrigger>

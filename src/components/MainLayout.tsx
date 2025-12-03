@@ -279,7 +279,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50 flex items-center justify-between px-6">
+          <header className="h-16 border-b border-border bg-background sticky top-0 z-50 flex items-center justify-between px-6">
             <div className="flex items-center gap-4 flex-1">
               <SidebarTrigger className="h-8 w-8" />
               
@@ -288,7 +288,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <input
                   type="text"
                   placeholder={t('search.placeholder')}
-                  className="w-full pl-10 pr-4 py-2 border border-input rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -456,17 +456,17 @@ export function MainLayout({ children }: MainLayoutProps) {
               )}
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {/* Tenant Display for User and Tenant Admin */}
               {!isSuperAdmin && activeTenant && (
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground px-3 py-1.5 rounded-full bg-muted/50">
                   <Building2 className="h-4 w-4" />
                   <span>{activeTenant.name}</span>
                 </div>
               )}
               <LanguageSelector />
               <UserPreferencesPopover />
-              <button className="p-2 hover:bg-muted rounded-md">
+              <button className="p-2 hover:bg-muted rounded-full transition-colors">
                 <HelpCircle className="h-5 w-5 text-muted-foreground" />
               </button>
               <NotificationPopover />
