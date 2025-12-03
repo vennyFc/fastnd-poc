@@ -1134,18 +1134,19 @@ export default function Products() {
 
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
-                {selectedProduct.product_lifecycle ? (
-                  <Badge 
-                    variant={
-                      selectedProduct.product_lifecycle === 'Active' ? 'default' :
-                      selectedProduct.product_lifecycle === 'Coming Soon' ? 'secondary' :
-                      selectedProduct.product_lifecycle === 'NFND' ? 'outline' :
-                      'destructive'
-                    }
-                  >
+                {selectedProduct.product_lifecycle ? (() => {
+                  const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                    'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                    'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                    'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                    'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                  };
+                  const config = lifecycleConfig[selectedProduct.product_lifecycle] || lifecycleConfig['Active'];
+                  return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent px-2 py-0.5`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1.5`} />
                     {selectedProduct.product_lifecycle}
-                  </Badge>
-                ) : (
+                  </Badge>;
+                })() : (
                   <p className="text-base">-</p>
                 )}
               </div>
@@ -1155,10 +1156,16 @@ export default function Products() {
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
                   <div className="flex gap-2">
                     {selectedProduct.product_new === 'Y' && (
-                      <Badge variant="default" className="bg-green-600">Neu</Badge>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent px-2 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
+                        Neu
+                      </Badge>
                     )}
                     {selectedProduct.product_top === 'Y' && (
-                      <Badge variant="default" className="bg-amber-600">Top</Badge>
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent px-2 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
+                        Top
+                      </Badge>
                     )}
                   </div>
                 </div>

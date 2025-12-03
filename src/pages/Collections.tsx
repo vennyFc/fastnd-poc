@@ -546,13 +546,37 @@ export default function Collections() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {collectionProducts.map((item: any) => (
+                    {collectionProducts.map((item: any) => {
+                      const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
+                        'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
+                        'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+                        'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
+                        'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                      };
+                      return (
                       <div
                         key={item.id}
                         className="p-4 bg-muted rounded-lg flex items-start justify-between"
                       >
                         <div className="flex-1">
-                          <h4 className="font-medium">{item.products.product}</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-medium">{item.products.product}</h4>
+                            {item.products.product_lifecycle && (() => {
+                              const config = lifecycleConfig[item.products.product_lifecycle] || lifecycleConfig['Active'];
+                              return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
+                                {item.products.product_lifecycle}
+                              </Badge>;
+                            })()}
+                            {item.products.product_new === 'Y' && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent text-xs px-1.5 py-0">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+                              Neu
+                            </Badge>}
+                            {item.products.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent text-xs px-1.5 py-0">
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
+                              Top
+                            </Badge>}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {item.products.manufacturer} • {item.products.product_family}
                           </p>
@@ -580,7 +604,7 @@ export default function Collections() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    ))}
+                    );})}
                   </div>
                 )}
               </CardContent>
