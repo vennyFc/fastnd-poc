@@ -14,6 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
+        'sans': ['Inter', 'sans-serif'],
         'grotesk': ['Space Grotesk', 'sans-serif'],
         'inter': ['Inter', 'sans-serif'],
         'clash': ['Clash Grotesk', 'sans-serif'],
