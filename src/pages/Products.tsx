@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers, Replace, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace, X, ChevronLeft, ChevronRight, Network } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -39,6 +39,7 @@ export default function Products() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>('');
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [expandedCrossSells, setExpandedCrossSells] = useState<Set<string>>(new Set());
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
   const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
@@ -193,6 +194,43 @@ export default function Products() {
       }
     });
     return relevantCrossSells.length;
+  };
+
+  // Function to get cross-sell products with rec_source and rec_score
+  const getCrossSellProducts = (baseProductName: string) => {
+    const relevantCrossSells = crossSells.filter((cs: any) => {
+      if (cs.base_product !== baseProductName) return false;
+      
+      if (selectedApplication === 'all') {
+        return cs.application === 'GENERIC';
+      } else {
+        return cs.application === selectedApplication;
+      }
+    });
+
+    return relevantCrossSells.map((cs: any) => {
+      const product = allProducts?.find((p: any) => p.product === cs.cross_sell_product);
+      return product ? { 
+        ...product, 
+        rec_source: cs.rec_source,
+        rec_score: cs.rec_score,
+        cs_application: cs.application
+      } : null;
+    }).filter(Boolean);
+  };
+
+  // Toggle cross-sells expanded state
+  const toggleCrossSellsExpanded = (productName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedCrossSells(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productName)) {
+        newSet.delete(productName);
+      } else {
+        newSet.add(productName);
+      }
+      return newSet;
+    });
   };
 
   // Create a Set of products that have alternatives
@@ -802,10 +840,17 @@ export default function Products() {
                             ) : '-';
                           } else if (column.key === 'cross_sell_count') {
                             const count = getCrossSellCount(product.product);
+                            const isCrossExpanded = expandedCrossSells.has(product.product);
                             value = count > 0 ? (
-                              <Badge variant="secondary" className="text-xs">
-                                {count}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {count}
+                                </Badge>
+                                <Network 
+                                  className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isCrossExpanded ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                                  onClick={(e) => toggleCrossSellsExpanded(product.product, e)}
+                                />
+                              </div>
                             ) : '-';
                           } else {
                             value = product[column.key] || '-';
@@ -902,6 +947,110 @@ export default function Products() {
                               ) : '-';
                             } else {
                               value = altProduct[column.key] || '-';
+                            }
+                            
+                            return (
+                              <TableCell 
+                                key={column.key}
+                                className={
+                                  column.key === 'product' ? 'font-medium' : 
+                                  column.key === 'product_description' ? 'max-w-xs truncate' : 
+                                  ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
+                                  ''
+                                }
+                                style={{ width: `${column.width}px` }}
+                              >
+                                {value}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      ))}
+
+                      {/* Cross-Sell Products */}
+                      {expandedCrossSells.has(product.product) && getCrossSellProducts(product.product).map((csProduct: any) => (
+                        <TableRow 
+                          key={`cs-${csProduct.id}`}
+                          className="cursor-pointer hover:bg-muted/50 bg-primary/5 border-l-2 border-l-primary"
+                          onClick={() => {
+                            setSelectedProduct(csProduct);
+                            setIsSheetOpen(true);
+                          }}
+                        >
+                          {visibleColumns.map((column) => {
+                            let value: any;
+                            
+                            if (column.key === 'manufacturer_link') {
+                              value = csProduct.manufacturer_link ? (
+                                <a
+                                  href={csProduct.manufacturer_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-primary hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </a>
+                              ) : '-';
+                            } else if (column.key === 'product') {
+                              value = (
+                                <div className="flex items-center gap-2 pl-6">
+                                  <Network className="h-4 w-4 text-primary" />
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                      <span>{csProduct.product || '-'}</span>
+                                      <Badge variant="outline" className="text-xs bg-primary/10 border-primary/30 text-primary">
+                                        Cross-Sell
+                                      </Badge>
+                                    </div>
+                                    {csProduct.product_family && (
+                                      <span className="text-sm text-muted-foreground">
+                                        {csProduct.product_family}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            } else if (column.key === 'product_price') {
+                              value = csProduct.product_price 
+                                ? `€ ${Number(csProduct.product_price).toFixed(2)}` 
+                                : '-';
+                            } else if (column.key === 'product_lead_time') {
+                              value = csProduct.product_lead_time 
+                                ? String(Math.ceil(csProduct.product_lead_time / 7))
+                                : '-';
+                            } else if (column.key === 'product_inventory') {
+                              value = csProduct.product_inventory !== null && csProduct.product_inventory !== undefined
+                                ? csProduct.product_inventory.toString()
+                                : '-';
+                            } else if (column.key === 'product_tags') {
+                              const badges = [];
+                              // Add rec_source and rec_score badges
+                              if (csProduct.rec_source) {
+                                badges.push(
+                                  <Badge key="rec_source" variant="outline" className="text-xs">
+                                    {csProduct.rec_source}
+                                  </Badge>
+                                );
+                              }
+                              if (csProduct.rec_score !== null && csProduct.rec_score !== undefined) {
+                                badges.push(
+                                  <Badge key="rec_score" variant="secondary" className="text-xs">
+                                    Score: {csProduct.rec_score}
+                                  </Badge>
+                                );
+                              }
+                              // Add lifecycle badges
+                              if (csProduct.product_lifecycle) {
+                                badges.push(<span key="lifecycle">{renderLifecycleBadge(csProduct.product_lifecycle)}</span>);
+                              }
+                              value = badges.length > 0 ? (
+                                <div className="flex flex-col gap-0.5">{badges}</div>
+                              ) : '-';
+                            } else if (column.key === 'cross_sell_count') {
+                              value = '-';
+                            } else {
+                              value = csProduct[column.key] || '-';
                             }
                             
                             return (
