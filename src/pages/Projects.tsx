@@ -1513,8 +1513,8 @@ export default function Projects() {
                   <BreadcrumbList>
                     <BreadcrumbItem>
                       <BreadcrumbLink className="cursor-pointer" onClick={() => {
-                        setCustomerQuickViewOpen(false);
-                      }}>
+                      setCustomerQuickViewOpen(false);
+                    }}>
                         Projekte
                       </BreadcrumbLink>
                     </BreadcrumbItem>
@@ -1531,10 +1531,7 @@ export default function Projects() {
                   <Skeleton className="h-20 w-full" />
                   <Skeleton className="h-32 w-full" />
                 </div> : selectedCustomerForQuickView ? (() => {
-              const customerData = customersData.find((c: any) => 
-                c.customer_name === selectedCustomerForQuickView || 
-                c.customer_name?.toLowerCase() === selectedCustomerForQuickView?.toLowerCase()
-              );
+              const customerData = customersData.find((c: any) => c.customer_name === selectedCustomerForQuickView || c.customer_name?.toLowerCase() === selectedCustomerForQuickView?.toLowerCase());
               return customerData ? <div className="mt-6 space-y-6">
                     {customerData.industry && <div>
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Branche</h3>
@@ -1551,15 +1548,11 @@ export default function Projects() {
                         </p>
                       </div>}
                     <div className="pt-4 border-t">
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => {
-                          setCustomerQuickViewOpen(false);
-                          setSelectedCustomer(selectedCustomerForQuickView);
-                          setSelectedProject(null);
-                        }}
-                      >
+                      <Button variant="outline" className="w-full" onClick={() => {
+                    setCustomerQuickViewOpen(false);
+                    setSelectedCustomer(selectedCustomerForQuickView);
+                    setSelectedProject(null);
+                  }}>
                         Alle Projekte dieses Kunden anzeigen
                       </Button>
                     </div>
@@ -1568,15 +1561,11 @@ export default function Projects() {
                       Keine detaillierten Informationen für diesen Kunden verfügbar.
                     </p>
                     <div className="pt-4 border-t">
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => {
-                          setCustomerQuickViewOpen(false);
-                          setSelectedCustomer(selectedCustomerForQuickView);
-                          setSelectedProject(null);
-                        }}
-                      >
+                      <Button variant="outline" className="w-full" onClick={() => {
+                    setCustomerQuickViewOpen(false);
+                    setSelectedCustomer(selectedCustomerForQuickView);
+                    setSelectedProject(null);
+                  }}>
                         Alle Projekte dieses Kunden anzeigen
                       </Button>
                     </div>
@@ -1597,10 +1586,7 @@ export default function Projects() {
                       <CollapsibleTrigger asChild>
                         <div className="flex items-center gap-2 cursor-pointer group">
                           <CardTitle className="text-xl">{project.project_name}</CardTitle>
-                          <ChevronUp className={cn(
-                            "h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground",
-                            !metadataExpanded && "rotate-180"
-                          )} />
+                          <ChevronUp className={cn("h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground", !metadataExpanded && "rotate-180")} />
                         </div>
                       </CollapsibleTrigger>
                       
@@ -1609,14 +1595,11 @@ export default function Projects() {
                           {/* Kunde */}
                           <div>
                             <span className="text-sm text-muted-foreground block">Kunde</span>
-                            <span 
-                              className="font-medium cursor-pointer hover:underline hover:text-primary transition-colors"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCustomerForQuickView(project.customer);
-                                setCustomerQuickViewOpen(true);
-                              }}
-                            >
+                            <span onClick={e => {
+                          e.stopPropagation();
+                          setSelectedCustomerForQuickView(project.customer);
+                          setCustomerQuickViewOpen(true);
+                        }} className="font-medium cursor-pointer hover:underline transition-colors text-black">
                               {project.customer}
                             </span>
                           </div>
@@ -1625,23 +1608,16 @@ export default function Projects() {
                           <div>
                             <span className="text-sm text-muted-foreground block">Applikation</span>
                             <span className="font-medium">
-                              {[...new Set(project.applications.map((app: string) => 
-                                typeof app === 'string' ? app : (app as any)?.application || ''
-                              ))].map((appName: string, idx: number, arr: string[]) => (
-                                <span key={idx}>
-                                  <span 
-                                    className="cursor-pointer hover:underline hover:text-primary transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedApplicationForQuickView(appName);
-                                      setApplicationQuickViewOpen(true);
-                                    }}
-                                  >
+                              {[...new Set(project.applications.map((app: string) => typeof app === 'string' ? app : (app as any)?.application || ''))].map((appName: string, idx: number, arr: string[]) => <span key={idx}>
+                                  <span className="cursor-pointer hover:underline hover:text-primary transition-colors" onClick={e => {
+                              e.stopPropagation();
+                              setSelectedApplicationForQuickView(appName);
+                              setApplicationQuickViewOpen(true);
+                            }}>
                                     {appName}
                                   </span>
                                   {idx < arr.length - 1 && ', '}
-                                </span>
-                              ))}
+                                </span>)}
                               {project.applications.length === 0 && '-'}
                             </span>
                           </div>
@@ -1650,9 +1626,7 @@ export default function Projects() {
                           <div>
                             <span className="text-sm text-muted-foreground block">Erstellt</span>
                             <span className="font-medium">
-                              {project.created_at 
-                                ? new Date(project.created_at).toLocaleDateString('de-DE')
-                                : '-'}
+                              {project.created_at ? new Date(project.created_at).toLocaleDateString('de-DE') : '-'}
                             </span>
                           </div>
                         </div>
@@ -1729,11 +1703,7 @@ export default function Projects() {
                         <Package className="h-5 w-5 text-primary" />
                         <h3 className="text-lg font-semibold">Produkte im Projekt</h3>
                       </div>
-                      <ColumnVisibilityToggle 
-                        columns={productColumns} 
-                        onToggle={toggleProductColumn} 
-                        onReset={resetProductColumns}
-                      />
+                      <ColumnVisibilityToggle columns={productColumns} onToggle={toggleProductColumn} onReset={resetProductColumns} />
                     </div>
                     <Separator className="mb-4" />
                     {project.products.length > 0 ? <div className="rounded-lg border">
@@ -1971,11 +1941,7 @@ export default function Projects() {
                         <TrendingUp className="h-5 w-5 text-primary" />
                         <h3 className="text-lg font-semibold">Cross-Sell Opportunities</h3>
                       </div>
-                      <ColumnVisibilityToggle 
-                        columns={crossSellColumns} 
-                        onToggle={toggleCrossSellColumn} 
-                        onReset={resetCrossSellColumns}
-                      />
+                      <ColumnVisibilityToggle columns={crossSellColumns} onToggle={toggleCrossSellColumn} onReset={resetCrossSellColumns} />
                     </div>
                     <Separator className="mb-4" />
                     {(() => {
