@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Building2, MapPin, Briefcase, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, Building2, MapPin, Briefcase, Tag, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -44,6 +45,14 @@ export default function Customers() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  
+  // Filter states
+  const [filterIndustry, setFilterIndustry] = useState<string>('');
+  const [filterCountry, setFilterCountry] = useState<string>('');
+  const [filterCity, setFilterCity] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<string>('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -61,24 +70,72 @@ export default function Customers() {
     defaultColumns
   );
 
+  // Compute unique filter options
+  const filterOptions = useMemo(() => {
+    const industries = new Set<string>();
+    const countries = new Set<string>();
+    const cities = new Set<string>();
+    const categories = new Set<string>();
+    
+    customers.forEach(customer => {
+      if (customer.industry) industries.add(customer.industry);
+      if (customer.country) countries.add(customer.country);
+      if (customer.city) cities.add(customer.city);
+      if (customer.customer_category) categories.add(customer.customer_category);
+    });
+    
+    return {
+      industries: Array.from(industries).sort(),
+      countries: Array.from(countries).sort(),
+      cities: Array.from(cities).sort(),
+      categories: Array.from(categories).sort(),
+    };
+  }, [customers]);
+
+  // Count active filters
+  const activeFilterCount = [filterIndustry, filterCountry, filterCity, filterCategory].filter(Boolean).length;
+
   useEffect(() => {
     loadCustomers();
   }, [activeTenant?.id]);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredCustomers(customers);
-    } else {
-      const filtered = customers.filter(customer =>
+    let filtered = customers;
+    
+    // Apply search
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(customer =>
         customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.industry?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         customer.city?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredCustomers(filtered);
     }
+    
+    // Apply filters
+    if (filterIndustry) {
+      filtered = filtered.filter(c => c.industry === filterIndustry);
+    }
+    if (filterCountry) {
+      filtered = filtered.filter(c => c.country === filterCountry);
+    }
+    if (filterCity) {
+      filtered = filtered.filter(c => c.city === filterCity);
+    }
+    if (filterCategory) {
+      filtered = filtered.filter(c => c.customer_category === filterCategory);
+    }
+    
+    setFilteredCustomers(filtered);
     setCurrentPage(1);
-  }, [searchTerm, customers]);
+  }, [searchTerm, customers, filterIndustry, filterCountry, filterCity, filterCategory]);
+
+  const clearAllFilters = () => {
+    setFilterIndustry('');
+    setFilterCountry('');
+    setFilterCity('');
+    setFilterCategory('');
+  };
 
   const sortedCustomers = [...filteredCustomers].sort((a, b) => {
     if (!sortField || !sortDirection) return 0;
@@ -224,11 +281,101 @@ export default function Customers() {
                 className="pl-9"
               />
             </div>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
+            <div className="flex items-center gap-2">
+              <Popover open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="relative">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter
+                    {activeFilterCount > 0 && (
+                      <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        {activeFilterCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="end">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Filter</h4>
+                      {activeFilterCount > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-auto p-1 text-xs">
+                          <X className="h-3 w-3 mr-1" />
+                          Zurücksetzen
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Branche</label>
+                        <Select value={filterIndustry} onValueChange={setFilterIndustry}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Alle Branchen" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Alle Branchen</SelectItem>
+                            {filterOptions.industries.map(industry => (
+                              <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Land</label>
+                        <Select value={filterCountry} onValueChange={setFilterCountry}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Alle Länder" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Alle Länder</SelectItem>
+                            {filterOptions.countries.map(country => (
+                              <SelectItem key={country} value={country}>{country}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Stadt</label>
+                        <Select value={filterCity} onValueChange={setFilterCity}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Alle Städte" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Alle Städte</SelectItem>
+                            {filterOptions.cities.map(city => (
+                              <SelectItem key={city} value={city}>{city}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Kategorie</label>
+                        <Select value={filterCategory} onValueChange={setFilterCategory}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Alle Kategorien" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Alle Kategorien</SelectItem>
+                            {filterOptions.categories.map(category => (
+                              <SelectItem key={category} value={category}>{category}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <ColumnVisibilityToggle
+                columns={columns}
+                onToggle={toggleColumn}
+                onReset={resetColumns}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -262,8 +409,13 @@ export default function Customers() {
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">Keine Kunden gefunden</h3>
               <p className="text-muted-foreground">
-                {searchTerm ? 'Versuchen Sie einen anderen Suchbegriff' : 'Beginnen Sie mit dem Hochladen von Kundendaten'}
+                {searchTerm || activeFilterCount > 0 ? 'Versuchen Sie andere Suchkriterien oder Filter' : 'Beginnen Sie mit dem Hochladen von Kundendaten'}
               </p>
+              {activeFilterCount > 0 && (
+                <Button variant="outline" size="sm" onClick={clearAllFilters} className="mt-4">
+                  Filter zurücksetzen
+                </Button>
+              )}
             </div>
           ) : (
             <>
