@@ -290,12 +290,7 @@ export default function Collections() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-medium font-clash">Sammlungen</h1>
-          <p className="text-muted-foreground mt-1">
-            Organisieren Sie Ihre Produkte in Sammlungen
-          </p>
-        </div>
+        <h1 className="text-3xl font-medium font-clash">Sammlungen</h1>
         <Dialog open={open} onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) resetForm();
