@@ -42,7 +42,7 @@ export function NotificationPopover() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative p-2 hover:bg-muted rounded-md transition-colors">
+        <button className="relative p-2 hover:bg-muted rounded-full transition-colors">
           <Bell className="h-5 w-5 text-muted-foreground" />
           {unreadCount > 0 && (
             <Badge
