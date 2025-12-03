@@ -269,6 +269,32 @@ export default function Projects() {
     resetColumns: resetProductColumns
   } = useTableColumns('project-detail-product-columns-v2', defaultProductColumns);
 
+  // Recommendation Score Bar Component
+  const RecommendationScoreBar = ({ score }: { score: number | null }) => {
+    if (score === null || score === undefined) return <span className="text-muted-foreground">-</span>;
+    
+    const filledBlocks = Math.round(score / 10);
+    
+    return (
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-sm min-w-[36px]">{score}%</span>
+        <div className="flex gap-0.5">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "h-4 w-1.5 rounded-sm",
+                i < filledBlocks 
+                  ? "bg-emerald-500" 
+                  : "bg-muted"
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   // Cross-sell columns for detail view
   const defaultCrossSellColumns = React.useMemo(() => [{
     key: 'product_info',
@@ -277,44 +303,50 @@ export default function Projects() {
     width: 320,
     order: 0
   }, {
+    key: 'rec_score',
+    label: 'Empfehlung',
+    visible: true,
+    width: 150,
+    order: 1
+  }, {
     key: 'product_price',
     label: 'Preis',
     labelTooltip: 'in €/pcs',
     visible: true,
     width: 80,
-    order: 1
+    order: 2
   }, {
     key: 'product_lead_time',
     label: 'Lieferzeit',
     labelTooltip: 'in Wochen',
     visible: true,
     width: 90,
-    order: 2
+    order: 3
   }, {
     key: 'product_inventory',
     label: 'Lagerbestand',
     labelTooltip: 'in pcs',
     visible: true,
     width: 100,
-    order: 3
+    order: 4
   }, {
     key: 'product_tags',
     label: 'Tags',
     visible: true,
     width: 140,
-    order: 4
+    order: 5
   }, {
     key: 'action',
     label: 'Aktion',
     visible: true,
     width: 150,
-    order: 5
+    order: 6
   }, {
     key: 'remove',
     label: '',
     visible: true,
     width: 50,
-    order: 6
+    order: 7
   }], []);
   const {
     columns: crossSellColumns,
@@ -2074,6 +2106,13 @@ export default function Projects() {
                                                    </div>
                                                  </div>
                                                </TableCell>;
+                                }
+                                if (column.key === 'rec_score') {
+                                  return <TableCell key={column.key} className="align-top py-3" style={{
+                                    width: `${column.width}px`
+                                  }}>
+                                    <RecommendationScoreBar score={cs.rec_score} />
+                                  </TableCell>;
                                 }
                                 if (column.key === 'action') {
                                   return <TableCell key={column.key} className="align-top py-3" style={{
