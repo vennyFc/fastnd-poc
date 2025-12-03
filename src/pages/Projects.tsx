@@ -1851,26 +1851,26 @@ export default function Projects() {
                                 if (column.key === 'product_tags') {
                                   const badges = [];
                                   if (details.product_lifecycle) {
-                                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
-                                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
-                                      'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-                                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
-                                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string; border: string }> = {
+                                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', border: 'border-green-500/30' },
+                                      'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500', border: 'border-cyan-500/30' },
+                                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500', border: 'border-orange-500/30' },
+                                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500', border: 'border-red-500/30' },
                                     };
                                     const config = lifecycleConfig[details.product_lifecycle] || lifecycleConfig['Active'];
-                                    badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}>
+                                    badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full text-xs px-1.5 py-0`}>
                                                      <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
                                                      {details.product_lifecycle}
                                                    </Badge>);
                                   }
                                   if (details.product_new === 'Y') {
-                                    badges.push(<Badge key="new" variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent text-xs px-1.5 py-0">
-                                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />
+                                    badges.push(<Badge key="new" variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 rounded-full text-xs px-1.5 py-0">
+                                                     <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse mr-1" />
                                                      Neu
                                                    </Badge>);
                                   }
                                   if (details.product_top === 'Y') {
-                                    badges.push(<Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent text-xs px-1.5 py-0">
+                                    badges.push(<Badge key="top" variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 rounded-full text-xs px-1.5 py-0">
                                                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1" />
                                                      Top
                                                    </Badge>);
@@ -1973,14 +1973,14 @@ export default function Projects() {
                                     if (column.key === 'product_tags') {
                                       const badges = [];
                                       if (altDetails.product_lifecycle) {
-                                        const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
-                                          'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
-                                          'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-                                          'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
-                                          'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                                        const lifecycleConfig: Record<string, { bg: string; text: string; dot: string; border: string }> = {
+                                          'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', border: 'border-green-500/30' },
+                                          'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500', border: 'border-cyan-500/30' },
+                                          'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500', border: 'border-orange-500/30' },
+                                          'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500', border: 'border-red-500/30' },
                                         };
                                         const config = lifecycleConfig[altDetails.product_lifecycle] || lifecycleConfig['Active'];
-                                        badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} border-transparent text-xs px-1.5 py-0`}>
+                                        badges.push(<Badge key="lifecycle" variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full text-xs px-1.5 py-0`}>
                                                          <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1`} />
                                                          {altDetails.product_lifecycle}
                                                        </Badge>);
@@ -2290,14 +2290,14 @@ export default function Projects() {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
                   {selectedProductForQuickView.product_lifecycle ? (() => {
-                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
-                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
-                      'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
-                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                    const lifecycleConfig: Record<string, { bg: string; text: string; dot: string; border: string }> = {
+                      'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', border: 'border-green-500/30' },
+                      'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500', border: 'border-cyan-500/30' },
+                      'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500', border: 'border-orange-500/30' },
+                      'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500', border: 'border-red-500/30' },
                     };
                     const config = lifecycleConfig[selectedProductForQuickView.product_lifecycle] || lifecycleConfig['Active'];
-                    return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent px-2 py-0.5`}>
+                    return <Badge variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full px-2 py-0.5`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1.5`} />
                       {selectedProductForQuickView.product_lifecycle}
                     </Badge>;
@@ -2307,11 +2307,11 @@ export default function Projects() {
                 {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
                     <div className="flex gap-2">
-                      {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent px-2 py-0.5">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
+                      {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 rounded-full px-2 py-0.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5" />
                         Neu
                       </Badge>}
-                      {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent px-2 py-0.5">
+                      {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 rounded-full px-2 py-0.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
                         Top Seller
                       </Badge>}
@@ -2656,14 +2656,14 @@ export default function Projects() {
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
                 {selectedProductForQuickView.product_lifecycle ? (() => {
-                  const lifecycleConfig: Record<string, { bg: string; text: string; dot: string }> = {
-                    'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500' },
-                    'Coming Soon': { bg: 'bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-                    'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500' },
-                    'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+                  const lifecycleConfig: Record<string, { bg: string; text: string; dot: string; border: string }> = {
+                    'Active': { bg: 'bg-green-500/10', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', border: 'border-green-500/30' },
+                    'Coming Soon': { bg: 'bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400', dot: 'bg-cyan-500', border: 'border-cyan-500/30' },
+                    'NFND': { bg: 'bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400', dot: 'bg-orange-500', border: 'border-orange-500/30' },
+                    'Discontinued': { bg: 'bg-red-500/10', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500', border: 'border-red-500/30' },
                   };
                   const config = lifecycleConfig[selectedProductForQuickView.product_lifecycle] || lifecycleConfig['Active'];
-                  return <Badge variant="outline" className={`${config.bg} ${config.text} border-transparent px-2 py-0.5`}>
+                  return <Badge variant="outline" className={`${config.bg} ${config.text} ${config.border} rounded-full px-2 py-0.5`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${config.dot} animate-pulse mr-1.5`} />
                     {selectedProductForQuickView.product_lifecycle}
                   </Badge>;
@@ -2673,11 +2673,11 @@ export default function Projects() {
               {(selectedProductForQuickView.product_new === 'Y' || selectedProductForQuickView.product_top === 'Y') && <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Produkt-Tags</h3>
                   <div className="flex gap-2">
-                    {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-transparent px-2 py-0.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5" />
+                    {selectedProductForQuickView.product_new === 'Y' && <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30 rounded-full px-2 py-0.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5" />
                       Neu
                     </Badge>}
-                    {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-transparent px-2 py-0.5">
+                    {selectedProductForQuickView.product_top === 'Y' && <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 rounded-full px-2 py-0.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5" />
                       Top Seller
                     </Badge>}
