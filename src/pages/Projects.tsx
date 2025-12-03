@@ -2298,10 +2298,7 @@ export default function Projects() {
   return <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Projekte</h1>
-          <p className="text-muted-foreground">
-            Übersicht aller Kundenprojekte mit Opportunity-Scores
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">Projekte</h1>
         </div>
       </div>
 
