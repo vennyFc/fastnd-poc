@@ -401,7 +401,7 @@ export default function Customers() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {isLoading ? (
             <div className="rounded-lg border">
               <Table>
