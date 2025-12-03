@@ -1,4 +1,4 @@
-import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, BarChart3, Activity, Boxes, CheckSquare } from 'lucide-react';
+import { LayoutDashboard, Upload, FolderKanban, Package, Users, LogOut, Shield, Layers, BarChart3, Activity, Boxes } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -47,14 +47,10 @@ export function AppSidebar() {
     title: t('nav.reports'),
     url: '/reports',
     icon: BarChart3
-  }, {
-    title: 'Aufgaben',
-    url: '/tasks',
-    icon: CheckSquare
   }];
 
-  // Hide Projekte, Produkte, Kunden, Sammlungen, Applikationen, Aufgaben for Super Admins in Global view
-  const disabledUrls = ['/projects', '/products', '/customers', '/collections', '/applications', '/tasks'];
+  // Hide Projekte, Produkte, Kunden, Sammlungen, Applikationen for Super Admins in Global view
+  const disabledUrls = ['/projects', '/products', '/customers', '/collections', '/applications'];
   const isGlobalView = isSuperAdmin && activeTenant?.id === 'global';
   const menuItems = allMenuItems.filter(item => !isGlobalView || !disabledUrls.includes(item.url));
   const tenantAdminMenuItems = [{
