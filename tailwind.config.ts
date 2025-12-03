@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        '2xs': ['0.625rem', { lineHeight: '0.875rem' }], // 10px
+      },
       fontFamily: {
         'sans': ['Inter', 'sans-serif'],
         'grotesk': ['Space Grotesk', 'sans-serif'],

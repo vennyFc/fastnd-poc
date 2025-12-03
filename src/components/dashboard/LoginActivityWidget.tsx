@@ -24,15 +24,15 @@ const timeRangeLabels: Record<TimeRange, string> = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border shadow-lg rounded-md p-3">
-        <p className="font-semibold text-sm mb-2">{label}</p>
+      <div className="bg-card border border-border shadow-lg rounded-md p-2">
+        <p className="font-semibold text-xs mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-1.5">
             <div 
-              className="h-2 w-2 rounded-full" 
+              className="h-1.5 w-1.5 rounded-full" 
               style={{ backgroundColor: entry.color }}
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {entry.name}: <span className="font-semibold text-foreground">{entry.value}</span>
             </p>
           </div>
@@ -199,18 +199,18 @@ export function LoginActivityWidget() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <LogIn className="h-5 w-5 text-primary" />
+              <LogIn className="h-4 w-4 text-primary" />
               Login-Aktivität
-              <span className="ml-2 px-2 py-0.5 text-xs bg-primary/10 text-primary rounded">
+              <span className="ml-2 px-1.5 py-0.5 text-2xs bg-primary/10 text-primary rounded">
                 Admin
               </span>
             </CardTitle>
-            <CardDescription className="mt-2">
+            <CardDescription className="mt-1">
               Login-Verlauf im ausgewählten Zeitraum
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -226,32 +226,32 @@ export function LoginActivityWidget() {
       <CardContent className="flex-1 flex flex-col">
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Skeleton className="w-full h-[300px]" />
+            <Skeleton className="w-full h-[250px]" />
           </div>
         ) : (
           <>
             {/* Statistics Cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Gesamt Logins</p>
-                <p className="text-2xl font-bold">{statistics.totalLogins}</p>
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-0.5">Gesamt Logins</p>
+                <p className="text-xl font-bold">{statistics.totalLogins}</p>
               </div>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Aktive Benutzer</p>
-                <p className="text-2xl font-bold">{statistics.uniqueUsers}</p>
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-0.5">Aktive Benutzer</p>
+                <p className="text-xl font-bold">{statistics.uniqueUsers}</p>
               </div>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Ø Logins/Benutzer</p>
-                <p className="text-2xl font-bold">{statistics.avgLoginsPerUser}</p>
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-0.5">Ø Logins/Benutzer</p>
+                <p className="text-xl font-bold">{statistics.avgLoginsPerUser}</p>
               </div>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Ø Logins/Tag</p>
-                <p className="text-2xl font-bold">{statistics.avgLoginsPerDay}</p>
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-0.5">Ø Logins/Tag</p>
+                <p className="text-xl font-bold">{statistics.avgLoginsPerDay}</p>
               </div>
             </div>
 
             {/* Chart */}
-            <div className="flex-1 min-h-[250px]">
+            <div className="flex-1 min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
@@ -264,14 +264,14 @@ export function LoginActivityWidget() {
                   <XAxis 
                     dataKey="date" 
                     stroke="hsl(var(--foreground))"
-                    fontSize={12}
+                    fontSize={10}
                     angle={-45}
                     textAnchor="end"
-                    height={80}
+                    height={60}
                   />
                   <YAxis 
                     stroke="hsl(var(--foreground))"
-                    fontSize={12}
+                    fontSize={10}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area 
@@ -281,15 +281,15 @@ export function LoginActivityWidget() {
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     fill="url(#colorLogins)"
-                    dot={{ fill: 'hsl(var(--primary))', r: 4 }}
-                    activeDot={{ r: 6 }}
+                    dot={{ fill: 'hsl(var(--primary))', r: 3 }}
+                    activeDot={{ r: 5 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-xs text-muted-foreground">
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-2xs text-muted-foreground">
                 Zeitraum: {format(getDateThreshold(), 'dd. MMM yyyy', { locale: de })} - {format(new Date(), 'dd. MMM yyyy', { locale: de })}
                 {' • '}
                 Granularität: {granularity === 'day' ? 'Täglich' : granularity === 'week' ? 'Wöchentlich' : 'Monatlich'}
