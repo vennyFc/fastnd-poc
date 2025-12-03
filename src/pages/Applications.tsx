@@ -165,7 +165,7 @@ export default function Applications() {
             />
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {isLoading ? (
             <div className="rounded-lg border">
               <div className="space-y-3 p-4">
