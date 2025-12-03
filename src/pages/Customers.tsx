@@ -309,12 +309,12 @@ export default function Customers() {
                     <div className="space-y-3">
                       <div>
                         <label className="text-sm font-medium mb-1.5 block">Branche</label>
-                        <Select value={filterIndustry} onValueChange={setFilterIndustry}>
+                        <Select value={filterIndustry || '__all__'} onValueChange={(val) => setFilterIndustry(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Alle Branchen" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Alle Branchen</SelectItem>
+                            <SelectItem value="__all__">Alle Branchen</SelectItem>
                             {filterOptions.industries.map(industry => (
                               <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                             ))}
@@ -324,12 +324,12 @@ export default function Customers() {
                       
                       <div>
                         <label className="text-sm font-medium mb-1.5 block">Land</label>
-                        <Select value={filterCountry} onValueChange={setFilterCountry}>
+                        <Select value={filterCountry || '__all__'} onValueChange={(val) => setFilterCountry(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Alle Länder" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Alle Länder</SelectItem>
+                            <SelectItem value="__all__">Alle Länder</SelectItem>
                             {filterOptions.countries.map(country => (
                               <SelectItem key={country} value={country}>{country}</SelectItem>
                             ))}
@@ -339,12 +339,12 @@ export default function Customers() {
                       
                       <div>
                         <label className="text-sm font-medium mb-1.5 block">Stadt</label>
-                        <Select value={filterCity} onValueChange={setFilterCity}>
+                        <Select value={filterCity || '__all__'} onValueChange={(val) => setFilterCity(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Alle Städte" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Alle Städte</SelectItem>
+                            <SelectItem value="__all__">Alle Städte</SelectItem>
                             {filterOptions.cities.map(city => (
                               <SelectItem key={city} value={city}>{city}</SelectItem>
                             ))}
@@ -354,12 +354,12 @@ export default function Customers() {
                       
                       <div>
                         <label className="text-sm font-medium mb-1.5 block">Kategorie</label>
-                        <Select value={filterCategory} onValueChange={setFilterCategory}>
+                        <Select value={filterCategory || '__all__'} onValueChange={(val) => setFilterCategory(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Alle Kategorien" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Alle Kategorien</SelectItem>
+                            <SelectItem value="__all__">Alle Kategorien</SelectItem>
                             {filterOptions.categories.map(category => (
                               <SelectItem key={category} value={category}>{category}</SelectItem>
                             ))}
