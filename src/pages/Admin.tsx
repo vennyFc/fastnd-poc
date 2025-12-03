@@ -290,7 +290,7 @@ export default function Admin() {
       
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Benutzerverwaltung</h1>
+          <h1 className="text-3xl font-bold tracking-tight font-clash">Benutzerverwaltung</h1>
           <p className="text-muted-foreground mt-2">
             Verwalten Sie Benutzer, deren Rollen und Einstellungen
           </p>
