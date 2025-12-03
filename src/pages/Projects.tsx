@@ -1392,14 +1392,9 @@ export default function Projects() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Zurück
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                {selectedCustomer ? `Kunde: ${selectedCustomer}` : `Projekt: ${selectedProject?.project_name}`}
-              </h1>
-              <p className="text-muted-foreground">
-                {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
-              </p>
-            </div>
+            <p className="text-muted-foreground">
+              {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
+            </p>
           </div>
           <MultiColumnVisibilityToggle groups={[{
           label: 'Produkte',
