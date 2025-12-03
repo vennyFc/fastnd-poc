@@ -65,8 +65,8 @@ const dataTypes = [
   {
     id: 'cross_sells',
     title: 'Cross-Sells',
-    description: 'Applikation, Basis_Produkt, Cross_Sell_Produkt',
-    fields: ['application', 'base_product', 'cross_sell_product'],
+    description: 'Applikation, Basis_Produkt, Cross_Sell_Produkt, Rec_Source, Rec_Score',
+    fields: ['application', 'base_product', 'cross_sell_product', 'rec_source', 'rec_score'],
     icon: FileSpreadsheet,
   },
   {

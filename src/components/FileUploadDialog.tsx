@@ -56,6 +56,8 @@ const crossSellSchema = z.object({
   application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
   base_product: z.string().trim().min(1, 'Base product required').max(255, 'Base product too long'),
   cross_sell_product: z.string().trim().min(1, 'Cross-sell product required').max(255, 'Cross-sell product too long'),
+  rec_source: z.string().trim().max(255, 'Rec source too long').nullable(),
+  rec_score: z.number().nullable(),
   user_id: z.string().uuid(),
   upload_id: z.string().uuid(),
 }).passthrough();

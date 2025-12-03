@@ -412,6 +412,8 @@ export type Database = {
           created_at: string
           cross_sell_product: string
           id: string
+          rec_score: number | null
+          rec_source: string | null
           tenant_id: string | null
           upload_id: string | null
           user_id: string
@@ -422,6 +424,8 @@ export type Database = {
           created_at?: string
           cross_sell_product: string
           id?: string
+          rec_score?: number | null
+          rec_source?: string | null
           tenant_id?: string | null
           upload_id?: string | null
           user_id: string
@@ -432,6 +436,8 @@ export type Database = {
           created_at?: string
           cross_sell_product?: string
           id?: string
+          rec_score?: number | null
+          rec_source?: string | null
           tenant_id?: string | null
           upload_id?: string | null
           user_id?: string
