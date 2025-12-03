@@ -2382,10 +2382,10 @@ export default function Projects() {
                       handleCustomerClick(project.customer);
                     }
                   }}>
-                          {column.key === 'customer' ? <span className="text-primary hover:underline cursor-pointer">
+                          {column.key === 'customer' ? <span className="text-foreground hover:underline cursor-pointer">
                               {value}
                             </span> : column.key === 'applications' ? <div className="flex flex-wrap gap-1">
-                              {project.applications.length > 0 ? project.applications.map((appName: string, idx: number) => <span key={idx} className="text-primary hover:underline cursor-pointer text-sm" onClick={e => {
+                              {project.applications.length > 0 ? project.applications.map((appName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
                         e.stopPropagation();
                         setSelectedApplicationForQuickView(appName);
                         setApplicationQuickViewOpen(true);
@@ -2394,7 +2394,7 @@ export default function Projects() {
                                     {idx < project.applications.length - 1 && ', '}
                                   </span>) : '-'}
                             </div> : column.key === 'products' ? <div className="flex flex-wrap gap-1">
-                              {project.products.length > 0 ? project.products.map((productName: string, idx: number) => <span key={idx} className="text-primary hover:underline cursor-pointer text-sm" onClick={e => {
+                              {project.products.length > 0 ? project.products.map((productName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
                         e.stopPropagation();
                         const details = getProductDetails(productName);
                         setSelectedProductForQuickView(details || {
