@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BlockDiagramViewer } from '@/components/BlockDiagramViewer';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 type SortField = 'project_name' | 'customer' | 'applications' | 'products' | 'optimization_status' | 'created_at';
 type SortDirection = 'asc' | 'desc' | null;
@@ -115,6 +116,7 @@ export default function Projects() {
   const [undoModalOpen, setUndoModalOpen] = useState(false);
   const [lastRemovedId, setLastRemovedId] = useState<string | null>(null);
   const [lastRemovedProduct, setLastRemovedProduct] = useState<string | null>(null);
+  const [metadataExpanded, setMetadataExpanded] = useState(false);
   const {
     isFavorite,
     toggleFavorite
@@ -1505,23 +1507,7 @@ export default function Projects() {
                   <div className="flex-1">
                     <CardTitle className="text-xl">{project.project_name}</CardTitle>
                     <CardDescription className="mt-1">
-                      <span className="font-medium">{project.customer}</span>
-                      {project.applications.length > 0 && <span className="ml-2 text-primary hover:underline cursor-pointer" onClick={e => {
-                    e.stopPropagation();
-                    const appName = typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || '';
-                    console.log('🔍 Application Quick View clicked:', appName);
-                    console.log('📊 Current project:', project.project_name);
-
-                    // Ensure selectedProject is set for the breadcrumb
-                    if (!selectedProject || selectedProject.id !== project.id) {
-                      setSelectedProject(project);
-                    }
-                    setSelectedApplicationForQuickView(appName);
-                    setApplicationQuickViewOpen(true);
-                    console.log('✅ Application Quick View state updated');
-                  }}>
-                          • {typeof project.applications[0] === 'string' ? project.applications[0] : project.applications[0]?.application || ''}
-                        </span>}
+                      Projektnummer: {project.project_numbers?.[0] || project.project_number || '-'}
                     </CardDescription>
                     
                     {/* Optimization Status Progress Bar */}
@@ -1584,6 +1570,65 @@ export default function Projects() {
                     <Star className={`h-5 w-5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
                   </Button>
                 </div>
+                
+                {/* Collapsible Metadaten-Sektion */}
+                <Collapsible open={metadataExpanded} onOpenChange={setMetadataExpanded} className="mt-4">
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full justify-between hover:bg-muted/50">
+                      <span className="text-sm text-muted-foreground">Zusätzliche Informationen</span>
+                      <ChevronDown className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                        metadataExpanded && "rotate-180"
+                      )} />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border rounded-md p-4 mt-2 bg-muted/20">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* Kunde */}
+                        <div>
+                          <span className="text-sm text-muted-foreground">Kunde</span>
+                          <p className="font-medium">{project.customer}</p>
+                        </div>
+                        
+                        {/* Applikation */}
+                        <div>
+                          <span className="text-sm text-muted-foreground">Applikation</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {project.applications.map((app: string, idx: number) => (
+                              <Badge 
+                                key={idx} 
+                                variant="secondary" 
+                                className="cursor-pointer hover:bg-secondary/80"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const appName = typeof app === 'string' ? app : (app as any)?.application || '';
+                                  if (!selectedProject || selectedProject.id !== project.id) {
+                                    setSelectedProject(project);
+                                  }
+                                  setSelectedApplicationForQuickView(appName);
+                                  setApplicationQuickViewOpen(true);
+                                }}
+                              >
+                                {typeof app === 'string' ? app : (app as any)?.application || ''}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Erstellungsdatum */}
+                        <div>
+                          <span className="text-sm text-muted-foreground">Erstellungsdatum</span>
+                          <p className="font-medium">
+                            {project.created_at 
+                              ? new Date(project.created_at).toLocaleDateString('de-DE')
+                              : '-'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
