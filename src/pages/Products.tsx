@@ -971,7 +971,7 @@ export default function Products() {
                       {expandedCrossSells.has(product.product) && getCrossSellProducts(product.product).map((csProduct: any) => (
                         <TableRow 
                           key={`cs-${csProduct.id}`}
-                          className="cursor-pointer hover:bg-muted/50 bg-primary/5 border-l-2 border-l-primary"
+                          className="cursor-pointer hover:bg-muted/50 bg-purple-500/5 border-l-2 border-l-purple-500"
                           onClick={() => {
                             setSelectedProduct(csProduct);
                             setIsSheetOpen(true);
@@ -1034,7 +1034,7 @@ export default function Products() {
                                     Cross-Sell
                                   </Badge>
                                   {csProduct.rec_source && (
-                                    <Badge variant="outline" className="text-xs bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400">
+                                    <Badge variant="outline" className="text-xs bg-muted border-border text-muted-foreground">
                                       {csProduct.rec_source}
                                     </Badge>
                                   )}
