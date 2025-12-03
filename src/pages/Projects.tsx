@@ -1517,7 +1517,7 @@ export default function Projects() {
                       </CollapsibleTrigger>
                       
                       <CollapsibleContent>
-                        <div className="flex flex-wrap gap-8 mt-4">
+                        <div className="flex flex-row flex-wrap gap-12 mt-4">
                           {/* Kunde */}
                           <div>
                             <span className="text-sm text-muted-foreground block">Kunde</span>
@@ -1528,9 +1528,9 @@ export default function Projects() {
                           <div>
                             <span className="text-sm text-muted-foreground block">Applikation</span>
                             <span className="font-medium">
-                              {project.applications.map((app: string) => 
+                              {[...new Set(project.applications.map((app: string) => 
                                 typeof app === 'string' ? app : (app as any)?.application || ''
-                              ).join(', ') || '-'}
+                              ))].join(', ') || '-'}
                             </span>
                           </div>
                           
