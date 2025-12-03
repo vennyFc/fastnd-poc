@@ -436,16 +436,31 @@ export default function Products() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Select
+              value={selectedApplication}
+              onValueChange={setSelectedApplication}
+            >
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Alle Applikationen" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="all">Alle Applikationen</SelectItem>
+                {uniqueApplications.map((app: string) => (
+                  <SelectItem key={app} value={app}>
+                    {app}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="flex items-center gap-2">
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Filter className="mr-2 h-4 w-4" />
                     Filter
-                    {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
+                    {(selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
                       <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                         {[
-                          selectedApplication !== 'all' ? 1 : 0,
                           selectedProductFamilies.length,
                           selectedManufacturers.length,
                           selectedLifecycle !== 'all' ? 1 : 0,
@@ -463,26 +478,6 @@ export default function Products() {
                     <p className="text-sm text-muted-foreground">
                       Produkte nach Kriterien filtern
                     </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="application-filter">Applikation</Label>
-                    <Select
-                      value={selectedApplication}
-                      onValueChange={setSelectedApplication}
-                    >
-                      <SelectTrigger id="application-filter">
-                        <SelectValue placeholder="Nach Applikation filtern" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Alle Applikationen</SelectItem>
-                        {uniqueApplications.map((app: string) => (
-                          <SelectItem key={app} value={app}>
-                            {app}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
 
                   <div className="space-y-2">
