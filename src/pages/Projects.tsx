@@ -106,7 +106,7 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'detail' | 'crossSellsView'>('list');
   const [quickFilter, setQuickFilter] = useState<'all' | 'favorites' | 'recent' | 'open'>('all');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [expandedAlternatives, setExpandedAlternatives] = useState<Record<string, boolean>>({});
@@ -128,7 +128,6 @@ export default function Projects() {
   const [filterOpen, setFilterOpen] = useState(false);
   
   // Cross-sells full view state
-  const [crossSellsFullViewOpen, setCrossSellsFullViewOpen] = useState(false);
   const [crossSellsProject, setCrossSellsProject] = useState<any>(null);
   const [crossSellSearchQuery, setCrossSellSearchQuery] = useState('');
   const [crossSellsPage, setCrossSellsPage] = useState(1);
@@ -300,36 +299,6 @@ export default function Projects() {
             />
           ))}
         </div>
-      </div>
-    );
-  };
-
-  // Margin Indicator Component (based on inventory)
-  const MarginIndicator = ({ inventory }: { inventory: number | null }) => {
-    if (inventory === null || inventory === undefined) return <span className="text-muted-foreground">-</span>;
-    
-    let filledDots = 1;
-    let color = 'bg-destructive';
-    
-    if (inventory > 1000) {
-      filledDots = 3;
-      color = 'bg-emerald-500';
-    } else if (inventory >= 100) {
-      filledDots = 2;
-      color = 'bg-yellow-500';
-    }
-    
-    return (
-      <div className="flex items-center gap-1">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              "h-2.5 w-2.5 rounded-full",
-              i < filledDots ? color : "bg-muted"
-            )}
-          />
-        ))}
       </div>
     );
   };
@@ -2091,7 +2060,7 @@ export default function Projects() {
                             setCrossSellsProject(project);
                             setCrossSellSearchQuery('');
                             setCrossSellsPage(1);
-                            setCrossSellsFullViewOpen(true);
+                            setViewMode('crossSellsView');
                           }}
                         >
                           <Maximize2 className="h-4 w-4 mr-2" />
@@ -2408,37 +2377,65 @@ export default function Projects() {
               </div>}
           </SheetContent>
         </Sheet>
+      </div>;
+  }
 
-        {/* Cross-Sells Full View Dialog */}
-        <Dialog open={crossSellsFullViewOpen} onOpenChange={(open) => {
-          setCrossSellsFullViewOpen(open);
-          if (!open) setCrossSellsProject(null);
-        }}>
-          <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader className="flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Projekte / {crossSellsProject?.project_name}
-                  </p>
-                  <DialogTitle className="text-2xl font-medium font-clash">
-                    Cross Sells
-                  </DialogTitle>
-                </div>
-                <Button variant="ghost" onClick={() => setCrossSellsFullViewOpen(false)}>
-                  <X className="h-4 w-4 mr-2" />
-                  Schließen
-                </Button>
-              </div>
-            </DialogHeader>
+  // Cross-Sells Full View as Page
+  if (viewMode === 'crossSellsView' && crossSellsProject) {
+    const allCrossSells = getCrossSells(crossSellsProject.products, crossSellsProject.customer, crossSellsProject.project_name);
+    
+    // Filter by search
+    const filteredCrossSells = allCrossSells.filter((cs: any) => {
+      if (!crossSellSearchQuery || crossSellSearchQuery.length < 2) return true;
+      const details = getProductDetails(cs.cross_sell_product);
+      const searchLower = crossSellSearchQuery.toLowerCase();
+      return (
+        cs.cross_sell_product?.toLowerCase().includes(searchLower) ||
+        details?.manufacturer?.toLowerCase().includes(searchLower) ||
+        details?.product_family?.toLowerCase().includes(searchLower) ||
+        details?.product_description?.toLowerCase().includes(searchLower) ||
+        cs.rec_source?.toLowerCase().includes(searchLower)
+      );
+    });
 
-            {/* Search & Filters */}
-            <div className="flex items-center justify-between gap-4 py-4 border-b">
-              <div className="relative flex-1 max-w-md">
+    // Pagination
+    const totalCrossSells = filteredCrossSells.length;
+    const totalCrossSellPages = Math.ceil(totalCrossSells / crossSellsPerPage);
+    const crossSellStartIndex = (crossSellsPage - 1) * crossSellsPerPage;
+    const crossSellEndIndex = crossSellStartIndex + crossSellsPerPage;
+    const paginatedCrossSells = filteredCrossSells.slice(crossSellStartIndex, crossSellEndIndex);
+
+    return (
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">
+              Projekte / {crossSellsProject.project_name}
+            </p>
+            <h1 className="text-3xl font-medium text-foreground font-clash">Cross Sells</h1>
+          </div>
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              setViewMode('detail');
+              setCrossSellsProject(null);
+            }}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Schließen
+          </Button>
+        </div>
+
+        {/* Card with Table */}
+        <Card className="shadow-card">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
                   placeholder="Suchen..." 
-                  className="pl-10"
+                  className="pl-10 bg-muted/50"
                   value={crossSellSearchQuery}
                   onChange={(e) => {
                     setCrossSellSearchQuery(e.target.value);
@@ -2453,229 +2450,276 @@ export default function Projects() {
                 </Button>
               </div>
             </div>
-
-            {/* Table with ScrollArea */}
-            <ScrollArea className="flex-1 min-h-0">
-              {(() => {
-                if (!crossSellsProject) return null;
-                
-                const allCrossSells = getCrossSells(crossSellsProject.products, crossSellsProject.customer, crossSellsProject.project_name);
-                
-                // Filter by search
-                const filteredCrossSells = allCrossSells.filter((cs: any) => {
-                  if (!crossSellSearchQuery || crossSellSearchQuery.length < 2) return true;
-                  const details = getProductDetails(cs.cross_sell_product);
-                  const searchLower = crossSellSearchQuery.toLowerCase();
-                  return (
-                    cs.cross_sell_product?.toLowerCase().includes(searchLower) ||
-                    details?.manufacturer?.toLowerCase().includes(searchLower) ||
-                    details?.product_family?.toLowerCase().includes(searchLower) ||
-                    details?.product_description?.toLowerCase().includes(searchLower) ||
-                    cs.rec_source?.toLowerCase().includes(searchLower)
-                  );
-                });
-
-                // Pagination
-                const totalCrossSells = filteredCrossSells.length;
-                const totalCrossSellPages = Math.ceil(totalCrossSells / crossSellsPerPage);
-                const crossSellStartIndex = (crossSellsPage - 1) * crossSellsPerPage;
-                const crossSellEndIndex = crossSellStartIndex + crossSellsPerPage;
-                const paginatedCrossSells = filteredCrossSells.slice(crossSellStartIndex, crossSellEndIndex);
-
-                return (
-                  <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead style={{ width: '220px' }}>Bauteil</TableHead>
-                          <TableHead style={{ width: '120px' }}>Hersteller</TableHead>
-                          <TableHead style={{ width: '200px' }}>Parameter</TableHead>
-                          <TableHead style={{ width: '90px' }} className="text-right">Lieferzeit</TableHead>
-                          <TableHead style={{ width: '100px' }} className="text-right">Preis/100</TableHead>
-                          <TableHead style={{ width: '80px' }}>Marge</TableHead>
-                          <TableHead style={{ width: '120px' }}>Grund</TableHead>
-                          <TableHead style={{ width: '150px' }}>Score</TableHead>
-                          <TableHead style={{ width: '160px' }}>Aktion</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedCrossSells.map((cs: any, idx: number) => {
-                          const details = getProductDetails(cs.cross_sell_product);
-                          return (
-                            <TableRow key={`detailview-cs-${cs.cross_sell_product}-${idx}`}>
-                              {/* Bauteil */}
-                              <TableCell className="py-3">
-                                <div className="flex flex-col">
-                                  <span 
-                                    className="font-semibold text-foreground hover:underline cursor-pointer"
-                                    onClick={() => {
-                                      setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                      setProductQuickViewOpen(true);
-                                    }}
-                                  >
-                                    {cs.cross_sell_product}
-                                  </span>
-                                  {details?.product_family && (
-                                    <span className="text-sm text-muted-foreground">{details.product_family}</span>
-                                  )}
-                                </div>
-                              </TableCell>
-                              {/* Hersteller */}
-                              <TableCell className="py-3 text-sm">
-                                {details?.manufacturer || '-'}
-                              </TableCell>
-                              {/* Parameter */}
-                              <TableCell className="py-3 text-sm text-muted-foreground">
-                                {truncateText(details?.product_description, 50) || '-'}
-                              </TableCell>
-                              {/* Lieferzeit */}
-                              <TableCell className="py-3 text-sm text-right">
-                                {details?.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} w` : '-'}
-                              </TableCell>
-                              {/* Preis */}
-                              <TableCell className="py-3 text-sm text-right">
-                                {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
-                              </TableCell>
-                              {/* Marge */}
-                              <TableCell className="py-3">
-                                <MarginIndicator inventory={details?.product_inventory} />
-                              </TableCell>
-                              {/* Grund */}
-                              <TableCell className="py-3">
-                                {cs.rec_source ? (
-                                  <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
-                                    {cs.rec_source}
-                                  </Badge>
-                                ) : '-'}
-                              </TableCell>
-                              {/* Score */}
-                              <TableCell className="py-3">
-                                <RecommendationScoreBar score={cs.rec_score} />
-                              </TableCell>
-                              {/* Aktion */}
-                              <TableCell className="py-3">
-                                <div className="flex items-center gap-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="h-8 text-xs"
-                                    onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
-                                  >
-                                    <Plus className="h-3.5 w-3.5 mr-1" />
-                                    Hinzufügen
-                                  </Button>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                        <ThumbsDown className="h-4 w-4 text-destructive" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="left" align="end">
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                        Technischer Fit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                        Commercial Fit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                        Anderer Lieferant
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                        Kein Bedarf
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                        Sonstige
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-
-                    {/* Pagination Footer */}
-                    <div className="border-t pt-4 mt-4 flex items-center justify-between px-2">
-                      <div className="text-sm text-muted-foreground">
-                        {totalCrossSells > 0 
-                          ? `${crossSellStartIndex + 1}-${Math.min(crossSellEndIndex, totalCrossSells)} von ${totalCrossSells} Ergebnissen` 
-                          : '0 Ergebnisse'}
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
-                          <Select 
-                            value={crossSellsPerPage.toString()} 
-                            onValueChange={(val) => { 
-                              setCrossSellsPerPage(Number(val)); 
-                              setCrossSellsPage(1); 
-                            }}
-                          >
-                            <SelectTrigger className="w-[70px] h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="10">10</SelectItem>
-                              <SelectItem value="25">25</SelectItem>
-                              <SelectItem value="50">50</SelectItem>
-                              <SelectItem value="100">100</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setCrossSellsPage(p => Math.max(1, p - 1))} 
-                            disabled={crossSellsPage === 1} 
-                            className="h-8 px-3"
-                          >
-                            <ChevronLeft className="h-4 w-4 mr-1" />
-                            Zurück
-                          </Button>
-                          <div className="flex items-center gap-1 mx-2">
-                            {Array.from({ length: Math.min(5, totalCrossSellPages) }, (_, i) => {
-                              let pageNum;
-                              if (totalCrossSellPages <= 5) { pageNum = i + 1; }
-                              else if (crossSellsPage <= 3) { pageNum = i + 1; }
-                              else if (crossSellsPage >= totalCrossSellPages - 2) { pageNum = totalCrossSellPages - 4 + i; }
-                              else { pageNum = crossSellsPage - 2 + i; }
-                              return (
-                                <Button 
-                                  key={pageNum} 
-                                  variant={crossSellsPage === pageNum ? "default" : "outline"} 
-                                  size="sm" 
-                                  onClick={() => setCrossSellsPage(pageNum)} 
-                                  className="h-8 w-8 p-0"
-                                >
-                                  {pageNum}
-                                </Button>
-                              );
-                            })}
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead style={{ width: '220px' }}>Bauteil</TableHead>
+                    <TableHead style={{ width: '120px' }}>Hersteller</TableHead>
+                    <TableHead style={{ width: '200px' }}>Parameter</TableHead>
+                    <TableHead style={{ width: '90px' }} className="text-right">Lieferzeit</TableHead>
+                    <TableHead style={{ width: '100px' }} className="text-right">Preis/100</TableHead>
+                    <TableHead style={{ width: '120px' }}>Grund</TableHead>
+                    <TableHead style={{ width: '150px' }}>Score</TableHead>
+                    <TableHead style={{ width: '160px' }}>Aktion</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedCrossSells.map((cs: any, idx: number) => {
+                    const details = getProductDetails(cs.cross_sell_product);
+                    return (
+                      <TableRow key={`crosssellsview-cs-${cs.cross_sell_product}-${idx}`}>
+                        {/* Bauteil */}
+                        <TableCell className="py-3">
+                          <div className="flex flex-col">
+                            <span 
+                              className="font-semibold text-foreground hover:underline cursor-pointer"
+                              onClick={() => {
+                                setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                setProductQuickViewOpen(true);
+                              }}
+                            >
+                              {cs.cross_sell_product}
+                            </span>
+                            {details?.product_family && (
+                              <span className="text-sm text-muted-foreground">{details.product_family}</span>
+                            )}
                           </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setCrossSellsPage(p => Math.min(totalCrossSellPages, p + 1))} 
-                            disabled={crossSellsPage === totalCrossSellPages || totalCrossSellPages === 0} 
-                            className="h-8 px-3"
-                          >
-                            Weiter
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
-      </div>;
+                        </TableCell>
+                        {/* Hersteller */}
+                        <TableCell className="py-3 text-sm">
+                          {details?.manufacturer || '-'}
+                        </TableCell>
+                        {/* Parameter */}
+                        <TableCell className="py-3 text-sm text-muted-foreground">
+                          {truncateText(details?.product_description, 50) || '-'}
+                        </TableCell>
+                        {/* Lieferzeit */}
+                        <TableCell className="py-3 text-sm text-right">
+                          {details?.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} w` : '-'}
+                        </TableCell>
+                        {/* Preis */}
+                        <TableCell className="py-3 text-sm text-right">
+                          {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
+                        </TableCell>
+                        {/* Grund */}
+                        <TableCell className="py-3">
+                          {cs.rec_source ? (
+                            <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
+                              {cs.rec_source}
+                            </Badge>
+                          ) : '-'}
+                        </TableCell>
+                        {/* Score */}
+                        <TableCell className="py-3">
+                          <RecommendationScoreBar score={cs.rec_score} />
+                        </TableCell>
+                        {/* Aktion */}
+                        <TableCell className="py-3">
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-8 text-xs"
+                              onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" />
+                              Hinzufügen
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                  <ThumbsDown className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent side="left" align="end">
+                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                  Technischer Fit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                  Commercial Fit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                  Anderer Lieferant
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                  Kein Bedarf
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                  Sonstige
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination Footer */}
+            <div className="flex items-center justify-between py-4 mt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                {totalCrossSells > 0 
+                  ? `${crossSellStartIndex + 1}-${Math.min(crossSellEndIndex, totalCrossSells)} von ${totalCrossSells} Ergebnissen` 
+                  : '0 Ergebnisse'}
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                  <Select 
+                    value={crossSellsPerPage.toString()} 
+                    onValueChange={(val) => { 
+                      setCrossSellsPerPage(Number(val)); 
+                      setCrossSellsPage(1); 
+                    }}
+                  >
+                    <SelectTrigger className="w-[70px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCrossSellsPage(p => Math.max(1, p - 1))} 
+                    disabled={crossSellsPage === 1} 
+                    className="h-8 px-3"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Zurück
+                  </Button>
+                  <div className="flex items-center gap-1 mx-2">
+                    {Array.from({ length: Math.min(5, totalCrossSellPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalCrossSellPages <= 5) { pageNum = i + 1; }
+                      else if (crossSellsPage <= 3) { pageNum = i + 1; }
+                      else if (crossSellsPage >= totalCrossSellPages - 2) { pageNum = totalCrossSellPages - 4 + i; }
+                      else { pageNum = crossSellsPage - 2 + i; }
+                      return (
+                        <Button 
+                          key={pageNum} 
+                          variant={crossSellsPage === pageNum ? "default" : "outline"} 
+                          size="sm" 
+                          onClick={() => setCrossSellsPage(pageNum)} 
+                          className="h-8 w-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setCrossSellsPage(p => Math.min(totalCrossSellPages, p + 1))} 
+                    disabled={crossSellsPage === totalCrossSellPages || totalCrossSellPages === 0} 
+                    className="h-8 px-3"
+                  >
+                    Weiter
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Quick View Sheet */}
+        <Sheet open={productQuickViewOpen} onOpenChange={setProductQuickViewOpen}>
+          <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
+            <SheetHeader>
+              <Breadcrumb className="mb-4">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink className="cursor-pointer" onClick={() => setProductQuickViewOpen(false)}>
+                      Cross Sells
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{selectedProductForQuickView?.product}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+              <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
+              <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
+            </SheetHeader>
+            {selectedProductForQuickView && (
+              <div className="mt-6 space-y-6">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
+                  <Badge variant="secondary">
+                    {selectedProductForQuickView.product_family || 'Nicht zugeordnet'}
+                  </Badge>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Hersteller</h3>
+                  <p className="text-base font-semibold">{selectedProductForQuickView.manufacturer || '-'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Lifecycle Status</h3>
+                  {selectedProductForQuickView.product_lifecycle ? renderLifecycleBadge(selectedProductForQuickView.product_lifecycle) : <p className="text-base">-</p>}
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                  <p className="text-base leading-relaxed">
+                    {selectedProductForQuickView.product_description || 'Keine Beschreibung verfügbar'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
+
+        {/* Removal Reason Modal */}
+        {removalDialogOpen && (
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">Cross-Sell Opportunity entfernen</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Bitte wählen Sie einen Grund für das Entfernen von "{selectedCrossSellForRemoval?.crossSellProduct}" aus diesem Projekt.
+                </p>
+              </div>
+              <div className="grid gap-3 py-2">
+                <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('technischer_fit')}>
+                  Technischer Fit
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('commercial_fit')}>
+                  Commercial Fit
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('anderer_lieferant')}>
+                  Anderer Lieferant
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('kein_bedarf')}>
+                  Kein Bedarf
+                </Button>
+                <Button variant="outline" className="justify-start" onClick={() => handleConfirmRemoval('sonstige')}>
+                  Sonstige
+                </Button>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>Abbrechen</Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   }
+
   return <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -3198,272 +3242,6 @@ export default function Projects() {
             </div>
           </div>
         </div>}
-
-      {/* Cross-Sells Full View Dialog */}
-      <Dialog open={crossSellsFullViewOpen} onOpenChange={(open) => {
-        setCrossSellsFullViewOpen(open);
-        if (!open) setCrossSellsProject(null);
-      }}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Projekte / {crossSellsProject?.project_name}
-                </p>
-                <DialogTitle className="text-2xl font-medium font-clash">
-                  Cross Sells
-                </DialogTitle>
-              </div>
-              <Button variant="ghost" onClick={() => setCrossSellsFullViewOpen(false)}>
-                <X className="h-4 w-4 mr-2" />
-                Schließen
-              </Button>
-            </div>
-          </DialogHeader>
-
-          {/* Search & Filters */}
-          <div className="flex items-center justify-between gap-4 py-4 border-b">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Suchen..." 
-                className="pl-10"
-                value={crossSellSearchQuery}
-                onChange={(e) => {
-                  setCrossSellSearchQuery(e.target.value);
-                  setCrossSellsPage(1);
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-            </div>
-          </div>
-
-          {/* Table with ScrollArea */}
-          <ScrollArea className="flex-1 min-h-0">
-            {(() => {
-              if (!crossSellsProject) return null;
-              
-              const allCrossSells = getCrossSells(crossSellsProject.products, crossSellsProject.customer, crossSellsProject.project_name);
-              
-              // Filter by search
-              const filteredCrossSells = allCrossSells.filter((cs: any) => {
-                if (!crossSellSearchQuery || crossSellSearchQuery.length < 2) return true;
-                const details = getProductDetails(cs.cross_sell_product);
-                const searchLower = crossSellSearchQuery.toLowerCase();
-                return (
-                  cs.cross_sell_product?.toLowerCase().includes(searchLower) ||
-                  details?.manufacturer?.toLowerCase().includes(searchLower) ||
-                  details?.product_family?.toLowerCase().includes(searchLower) ||
-                  details?.product_description?.toLowerCase().includes(searchLower) ||
-                  cs.rec_source?.toLowerCase().includes(searchLower)
-                );
-              });
-
-              // Pagination
-              const totalCrossSells = filteredCrossSells.length;
-              const totalCrossSellPages = Math.ceil(totalCrossSells / crossSellsPerPage);
-              const crossSellStartIndex = (crossSellsPage - 1) * crossSellsPerPage;
-              const crossSellEndIndex = crossSellStartIndex + crossSellsPerPage;
-              const paginatedCrossSells = filteredCrossSells.slice(crossSellStartIndex, crossSellEndIndex);
-
-              return (
-                <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead style={{ width: '220px' }}>Bauteil</TableHead>
-                        <TableHead style={{ width: '120px' }}>Hersteller</TableHead>
-                        <TableHead style={{ width: '200px' }}>Parameter</TableHead>
-                        <TableHead style={{ width: '90px' }} className="text-right">Lieferzeit</TableHead>
-                        <TableHead style={{ width: '100px' }} className="text-right">Preis/100</TableHead>
-                        <TableHead style={{ width: '80px' }}>Marge</TableHead>
-                        <TableHead style={{ width: '120px' }}>Grund</TableHead>
-                        <TableHead style={{ width: '150px' }}>Score</TableHead>
-                        <TableHead style={{ width: '160px' }}>Aktion</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paginatedCrossSells.map((cs: any, idx: number) => {
-                        const details = getProductDetails(cs.cross_sell_product);
-                        return (
-                          <TableRow key={`fullview-cs-${cs.cross_sell_product}-${idx}`}>
-                            {/* Bauteil */}
-                            <TableCell className="py-3">
-                              <div className="flex flex-col">
-                                <span 
-                                  className="font-semibold text-foreground hover:underline cursor-pointer"
-                                  onClick={() => {
-                                    setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                    setProductQuickViewOpen(true);
-                                  }}
-                                >
-                                  {cs.cross_sell_product}
-                                </span>
-                                {details?.product_family && (
-                                  <span className="text-sm text-muted-foreground">{details.product_family}</span>
-                                )}
-                              </div>
-                            </TableCell>
-                            {/* Hersteller */}
-                            <TableCell className="py-3 text-sm">
-                              {details?.manufacturer || '-'}
-                            </TableCell>
-                            {/* Parameter */}
-                            <TableCell className="py-3 text-sm text-muted-foreground">
-                              {truncateText(details?.product_description, 50) || '-'}
-                            </TableCell>
-                            {/* Lieferzeit */}
-                            <TableCell className="py-3 text-sm text-right">
-                              {details?.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} w` : '-'}
-                            </TableCell>
-                            {/* Preis */}
-                            <TableCell className="py-3 text-sm text-right">
-                              {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
-                            </TableCell>
-                            {/* Marge */}
-                            <TableCell className="py-3">
-                              <MarginIndicator inventory={details?.product_inventory} />
-                            </TableCell>
-                            {/* Grund */}
-                            <TableCell className="py-3">
-                              {cs.rec_source ? (
-                                <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
-                                  {cs.rec_source}
-                                </Badge>
-                              ) : '-'}
-                            </TableCell>
-                            {/* Score */}
-                            <TableCell className="py-3">
-                              <RecommendationScoreBar score={cs.rec_score} />
-                            </TableCell>
-                            {/* Aktion */}
-                            <TableCell className="py-3">
-                              <div className="flex items-center gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="h-8 text-xs"
-                                  onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
-                                >
-                                  <Plus className="h-3.5 w-3.5 mr-1" />
-                                  Hinzufügen
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                      <ThumbsDown className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent side="left" align="end">
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                      Technischer Fit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                      Commercial Fit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                      Anderer Lieferant
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                      Kein Bedarf
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                      Sonstige
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-
-                  {/* Pagination Footer */}
-                  <div className="border-t pt-4 mt-4 flex items-center justify-between px-2">
-                    <div className="text-sm text-muted-foreground">
-                      {totalCrossSells > 0 
-                        ? `${crossSellStartIndex + 1}-${Math.min(crossSellEndIndex, totalCrossSells)} von ${totalCrossSells} Ergebnissen` 
-                        : '0 Ergebnisse'}
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
-                        <Select 
-                          value={crossSellsPerPage.toString()} 
-                          onValueChange={(val) => { 
-                            setCrossSellsPerPage(Number(val)); 
-                            setCrossSellsPage(1); 
-                          }}
-                        >
-                          <SelectTrigger className="w-[70px] h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="25">25</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                            <SelectItem value="100">100</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setCrossSellsPage(p => Math.max(1, p - 1))} 
-                          disabled={crossSellsPage === 1} 
-                          className="h-8 px-3"
-                        >
-                          <ChevronLeft className="h-4 w-4 mr-1" />
-                          Zurück
-                        </Button>
-                        <div className="flex items-center gap-1 mx-2">
-                          {Array.from({ length: Math.min(5, totalCrossSellPages) }, (_, i) => {
-                            let pageNum;
-                            if (totalCrossSellPages <= 5) { pageNum = i + 1; }
-                            else if (crossSellsPage <= 3) { pageNum = i + 1; }
-                            else if (crossSellsPage >= totalCrossSellPages - 2) { pageNum = totalCrossSellPages - 4 + i; }
-                            else { pageNum = crossSellsPage - 2 + i; }
-                            return (
-                              <Button 
-                                key={pageNum} 
-                                variant={crossSellsPage === pageNum ? "default" : "outline"} 
-                                size="sm" 
-                                onClick={() => setCrossSellsPage(pageNum)} 
-                                className="h-8 w-8 p-0"
-                              >
-                                {pageNum}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => setCrossSellsPage(p => Math.min(totalCrossSellPages, p + 1))} 
-                          disabled={crossSellsPage === totalCrossSellPages || totalCrossSellPages === 0} 
-                          className="h-8 px-3"
-                        >
-                          Weiter
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
 
     </div>;
 }
