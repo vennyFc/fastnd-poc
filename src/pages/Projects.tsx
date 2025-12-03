@@ -2155,7 +2155,7 @@ export default function Projects() {
                                                </TableCell>;
                                 }
                                 if (column.key === 'rec_score') {
-                                  return <TableCell key={column.key} className="align-top py-3" style={{
+                                  return <TableCell key={column.key} className="align-top py-3 text-center" style={{
                                     width: `${column.width}px`
                                   }}>
                                     <RecommendationScoreBar score={cs.rec_score} />
@@ -2576,7 +2576,7 @@ export default function Projects() {
                             );
                           case 'rec_score':
                             return (
-                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                              <TableCell key={col.key} className="py-3 text-center" style={{ width: col.width }}>
                                 <RecommendationScoreBar score={cs.rec_score} />
                               </TableCell>
                             );
