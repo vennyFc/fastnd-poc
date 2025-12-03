@@ -129,6 +129,7 @@ export default function Projects() {
   
   // Cross-sells full view state
   const [crossSellsFullViewOpen, setCrossSellsFullViewOpen] = useState(false);
+  const [crossSellsProject, setCrossSellsProject] = useState<any>(null);
   const [crossSellSearchQuery, setCrossSellSearchQuery] = useState('');
   const [crossSellsPage, setCrossSellsPage] = useState(1);
   const [crossSellsPerPage, setCrossSellsPerPage] = useState(25);
@@ -2086,7 +2087,9 @@ export default function Projects() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setSelectedProject(project);
+                            setCrossSellsProject(project);
+                            setCrossSellSearchQuery('');
+                            setCrossSellsPage(1);
                             setCrossSellsFullViewOpen(true);
                           }}
                         >
@@ -2930,13 +2933,16 @@ export default function Projects() {
         </div>}
 
       {/* Cross-Sells Full View Dialog */}
-      <Dialog open={crossSellsFullViewOpen} onOpenChange={setCrossSellsFullViewOpen}>
+      <Dialog open={crossSellsFullViewOpen} onOpenChange={(open) => {
+        setCrossSellsFullViewOpen(open);
+        if (!open) setCrossSellsProject(null);
+      }}>
         <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Projekte / {selectedProject?.project_name}
+                  Projekte / {crossSellsProject?.project_name}
                 </p>
                 <DialogTitle className="text-2xl font-medium font-clash">
                   Cross Sells
@@ -2974,9 +2980,9 @@ export default function Projects() {
           {/* Table with ScrollArea */}
           <ScrollArea className="flex-1 min-h-0">
             {(() => {
-              if (!selectedProject) return null;
+              if (!crossSellsProject) return null;
               
-              const allCrossSells = getCrossSells(selectedProject.products, selectedProject.customer, selectedProject.project_name);
+              const allCrossSells = getCrossSells(crossSellsProject.products, crossSellsProject.customer, crossSellsProject.project_name);
               
               // Filter by search
               const filteredCrossSells = allCrossSells.filter((cs: any) => {
@@ -3076,7 +3082,7 @@ export default function Projects() {
                                   size="sm" 
                                   variant="outline" 
                                   className="h-8 text-xs"
-                                  onClick={() => handleAddCrossSell(selectedProject, cs.cross_sell_product)}
+                                  onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
                                 >
                                   <Plus className="h-3.5 w-3.5 mr-1" />
                                   Hinzufügen
@@ -3088,19 +3094,19 @@ export default function Projects() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent side="left" align="end">
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: selectedProject, crossSellProduct: cs.cross_sell_product })}>
+                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
                                       Technischer Fit
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: selectedProject, crossSellProduct: cs.cross_sell_product })}>
+                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
                                       Commercial Fit
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: selectedProject, crossSellProduct: cs.cross_sell_product })}>
+                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
                                       Anderer Lieferant
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: selectedProject, crossSellProduct: cs.cross_sell_product })}>
+                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
                                       Kein Bedarf
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: selectedProject, crossSellProduct: cs.cross_sell_product })}>
+                                    <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
                                       Sonstige
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
