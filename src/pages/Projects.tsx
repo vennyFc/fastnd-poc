@@ -307,7 +307,7 @@ export default function Projects() {
     const filledBlocks = Math.round(score / 10);
     
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center justify-center gap-1">
         <span className="font-semibold text-2xs min-w-[28px]">{score}%</span>
         <div className="flex gap-px">
           {Array.from({ length: 10 }).map((_, i) => (
