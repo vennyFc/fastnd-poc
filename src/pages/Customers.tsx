@@ -200,10 +200,7 @@ export default function Customers() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-medium font-clash">Kunden</h1>
-          <p className="text-muted-foreground">Verwalten Sie Ihre Kundendaten</p>
-        </div>
+        <h1 className="text-3xl font-medium font-clash">Kunden</h1>
       </div>
 
       <Card>
