@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -34,6 +36,8 @@ export default function Applications() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [applicationQuickViewOpen, setApplicationQuickViewOpen] = useState(false);
   const [selectedApplicationForQuickView, setSelectedApplicationForQuickView] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'applications-columns',
@@ -71,7 +75,6 @@ export default function Applications() {
 
   const allApplications = tenantApplications || [];
 
-  // Fetch application insights
   const { data: appInsights = [] } = useQuery({
     queryKey: ['app_insights', activeTenant?.id],
     queryFn: async () => {
@@ -96,7 +99,11 @@ export default function Applications() {
     );
   });
 
-  const sortedApplications = filteredApplications?.sort((a: any, b: any) => {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const sortedApplications = [...(filteredApplications || [])].sort((a: any, b: any) => {
     if (!sortField || !sortDirection) return 0;
 
     let aValue = a[sortField];
@@ -111,6 +118,13 @@ export default function Applications() {
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Pagination
+  const totalItems = sortedApplications.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedApplications = sortedApplications.slice(startIndex, endIndex);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -132,9 +146,9 @@ export default function Applications() {
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-medium text-foreground font-clash">Applikationen</h1>
 
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4 mb-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -150,88 +164,170 @@ export default function Applications() {
               onReset={resetColumns}
             />
           </div>
-
+        </CardHeader>
+        <CardContent>
           {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
+            <div className="rounded-lg border">
+              <div className="space-y-3 p-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            </div>
+          ) : sortedApplications.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="text-lg font-semibold mb-2">Keine Applikationen gefunden</h3>
+              <p className="text-muted-foreground">
+                {searchQuery ? 'Versuchen Sie einen anderen Suchbegriff' : 'Beginnen Sie mit dem Hochladen von Applikationsdaten'}
+              </p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {visibleColumns.map((column, index) => (
-                      <ResizableTableHeader
-                        key={column.key}
-                        label={column.label}
-                        width={column.width}
-                        sortable={true}
-                        sortDirection={sortField === column.key ? sortDirection : null}
-                        onSort={() => handleSort(column.key as SortField)}
-                        onResize={(newWidth) => updateColumnWidth(column.key, newWidth)}
-                        draggable={true}
-                        onDragStart={() => setDraggedIndex(index)}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.dataTransfer.dropEffect = 'move';
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          if (draggedIndex !== null && draggedIndex !== index) {
-                            reorderColumns(draggedIndex, index);
-                          }
-                          setDraggedIndex(null);
-                        }}
-                        onDragEnd={() => setDraggedIndex(null)}
-                      />
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedApplications?.length === 0 ? (
+            <>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={visibleColumns.length} className="text-center py-8 text-muted-foreground">
-                        Keine Applikationen gefunden
-                      </TableCell>
+                      {visibleColumns.map((column, index) => (
+                        <ResizableTableHeader
+                          key={column.key}
+                          label={column.label}
+                          width={column.width}
+                          sortable={true}
+                          sortDirection={sortField === column.key ? sortDirection : null}
+                          onSort={() => handleSort(column.key as SortField)}
+                          onResize={(newWidth) => updateColumnWidth(column.key, newWidth)}
+                          draggable={true}
+                          onDragStart={() => setDraggedIndex(index)}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            if (draggedIndex !== null && draggedIndex !== index) {
+                              reorderColumns(draggedIndex, index);
+                            }
+                            setDraggedIndex(null);
+                          }}
+                          onDragEnd={() => setDraggedIndex(null)}
+                        />
+                      ))}
                     </TableRow>
-                  ) : (
-                    sortedApplications?.map((app: any) => (
-                      <TableRow key={app.id}>
-                        {visibleColumns.map((column) => {
-                          const rawValue = app[column.key];
-                          const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
-                          const isApplicationColumn = column.key === 'application';
-                          
-                          return (
-                            <TableCell 
-                              key={column.key}
-                              style={{ width: `${column.width}px` }}
-                              className={isApplicationColumn ? 'font-medium cursor-pointer text-foreground hover:underline' : ''}
-                              onClick={() => {
-                                if (isApplicationColumn && app.application) {
-                                  setSelectedApplicationForQuickView(app.application);
-                                  setApplicationQuickViewOpen(true);
-                                }
-                              }}
-                            >
-                              {value}
-                            </TableCell>
-                          );
-                        })}
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedApplications.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={visibleColumns.length} className="text-center py-8 text-muted-foreground">
+                          Keine Applikationen gefunden
+                        </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                    ) : (
+                      paginatedApplications.map((app: any) => (
+                        <TableRow key={app.id}>
+                          {visibleColumns.map((column) => {
+                            const rawValue = app[column.key];
+                            const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
+                            const isApplicationColumn = column.key === 'application';
+                            
+                            return (
+                              <TableCell 
+                                key={column.key}
+                                style={{ width: `${column.width}px` }}
+                                className={isApplicationColumn ? 'font-medium cursor-pointer text-foreground hover:underline' : ''}
+                                onClick={() => {
+                                  if (isApplicationColumn && app.application) {
+                                    setSelectedApplicationForQuickView(app.application);
+                                    setApplicationQuickViewOpen(true);
+                                  }
+                                }}
+                              >
+                                {value}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
 
-          {!isLoading && sortedApplications && sortedApplications.length > 0 && (
-            <div className="mt-4 text-sm text-muted-foreground">
-              {sortedApplications.length} {sortedApplications.length === 1 ? 'Applikation' : 'Applikationen'} gefunden
-            </div>
+              {/* Pagination Footer */}
+              <div className="border-t pt-4 mt-4 flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                    <Select 
+                      value={itemsPerPage.toString()} 
+                      onValueChange={(val) => {
+                        setItemsPerPage(Number(val));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-[70px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-3"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Zurück
+                    </Button>
+                    <div className="flex items-center gap-1 mx-2">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="h-8 px-3"
+                    >
+                      Weiter
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
