@@ -47,6 +47,7 @@ export default function Customers() {
   const [itemsPerPage, setItemsPerPage] = useState(25);
   
   // Filter states
+  const [filterCustomerName, setFilterCustomerName] = useState<string>('');
   const [filterIndustry, setFilterIndustry] = useState<string>('');
   const [filterCountry, setFilterCountry] = useState<string>('');
   const [filterCity, setFilterCity] = useState<string>('');
@@ -72,12 +73,14 @@ export default function Customers() {
 
   // Compute unique filter options
   const filterOptions = useMemo(() => {
+    const customerNames = new Set<string>();
     const industries = new Set<string>();
     const countries = new Set<string>();
     const cities = new Set<string>();
     const categories = new Set<string>();
     
     customers.forEach(customer => {
+      if (customer.customer_name) customerNames.add(customer.customer_name);
       if (customer.industry) industries.add(customer.industry);
       if (customer.country) countries.add(customer.country);
       if (customer.city) cities.add(customer.city);
@@ -85,6 +88,7 @@ export default function Customers() {
     });
     
     return {
+      customerNames: Array.from(customerNames).sort(),
       industries: Array.from(industries).sort(),
       countries: Array.from(countries).sort(),
       cities: Array.from(cities).sort(),
@@ -93,7 +97,7 @@ export default function Customers() {
   }, [customers]);
 
   // Count active filters
-  const activeFilterCount = [filterIndustry, filterCountry, filterCity, filterCategory].filter(Boolean).length;
+  const activeFilterCount = [filterCustomerName, filterIndustry, filterCountry, filterCity, filterCategory].filter(Boolean).length;
 
   useEffect(() => {
     loadCustomers();
@@ -113,6 +117,9 @@ export default function Customers() {
     }
     
     // Apply filters
+    if (filterCustomerName) {
+      filtered = filtered.filter(c => c.customer_name === filterCustomerName);
+    }
     if (filterIndustry) {
       filtered = filtered.filter(c => c.industry === filterIndustry);
     }
@@ -128,9 +135,10 @@ export default function Customers() {
     
     setFilteredCustomers(filtered);
     setCurrentPage(1);
-  }, [searchTerm, customers, filterIndustry, filterCountry, filterCity, filterCategory]);
+  }, [searchTerm, customers, filterCustomerName, filterIndustry, filterCountry, filterCity, filterCategory]);
 
   const clearAllFilters = () => {
+    setFilterCustomerName('');
     setFilterIndustry('');
     setFilterCountry('');
     setFilterCity('');
@@ -307,6 +315,21 @@ export default function Customers() {
                     </div>
                     
                     <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium mb-1.5 block">Kunde</label>
+                        <Select value={filterCustomerName || '__all__'} onValueChange={(val) => setFilterCustomerName(val === '__all__' ? '' : val)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Alle Kunden" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__all__">Alle Kunden</SelectItem>
+                            {filterOptions.customerNames.map(name => (
+                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
                       <div>
                         <label className="text-sm font-medium mb-1.5 block">Branche</label>
                         <Select value={filterIndustry || '__all__'} onValueChange={(val) => setFilterIndustry(val === '__all__' ? '' : val)}>
