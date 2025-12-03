@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import UpdatePassword from "./pages/UpdatePassword";
 import NotFound from "./pages/NotFound";
 import AccessLogs from "./pages/AccessLogs";
+import Settings from "./pages/Settings";
 
 const App = () => (
   <TooltipProvider>
@@ -143,6 +144,16 @@ const App = () => (
                 </SuperAdminRoute>
               }
             />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Settings />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
         </LanguageProvider>
