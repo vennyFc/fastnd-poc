@@ -401,7 +401,14 @@ export default function Dashboard() {
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-foreground">Cockpit</h1>
+        <h1 className="text-3xl font-bold text-foreground">Cockpit</h1>
+        <WidgetSettings
+          widgets={widgets}
+          onToggleWidget={toggleWidget}
+          onReset={resetWidgets}
+          onSetWidgetSize={setWidgetSize}
+          isAdmin={isAdmin}
+        />
       </div>
 
       {/* Tenant Information Banner */}
@@ -414,16 +421,6 @@ export default function Dashboard() {
           </AlertDescription>
         </Alert>
       )}
-
-      <div className="flex justify-end mb-4">
-        <WidgetSettings
-          widgets={widgets}
-          onToggleWidget={toggleWidget}
-          onReset={resetWidgets}
-          onSetWidgetSize={setWidgetSize}
-          isAdmin={isAdmin}
-        />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pl-8">
         {widgets
