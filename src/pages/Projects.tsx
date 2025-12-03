@@ -138,16 +138,14 @@ export default function Projects() {
 
   // Cross-sells VIEW columns configuration (like Products table) - separate from detail view columns
   const defaultCrossSellViewColumns = React.useMemo(() => [
-    { key: 'product', label: 'Bauteil', visible: true, width: 220, order: 0 },
-    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
-    { key: 'product_description', label: 'Beschreibung', visible: true, width: 250, order: 2 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 3 },
-    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
-    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 5 },
-    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 6 },
-    { key: 'rec_source', label: 'Grund', visible: true, width: 120, order: 7 },
-    { key: 'rec_score', label: 'Score', visible: true, width: 150, order: 8 },
-    { key: 'actions', label: 'Aktion', visible: true, width: 160, order: 9 },
+    { key: 'product', label: 'Bauteil', visible: true, width: 280, order: 0 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 1 },
+    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 2 },
+    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 3 },
+    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 4 },
+    { key: 'rec_source', label: 'Grund', visible: true, width: 120, order: 5 },
+    { key: 'rec_score', label: 'Score', visible: true, width: 150, order: 6 },
+    { key: 'actions', label: 'Aktion', visible: true, width: 160, order: 7 },
   ], []);
 
   const { 
@@ -2516,8 +2514,8 @@ export default function Projects() {
                         switch (col.key) {
                           case 'product':
                             return (
-                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
-                                <div className="flex flex-col">
+                              <TableCell key={col.key} className="py-3 pl-4" style={{ width: col.width }}>
+                                <div className="flex flex-col gap-0.5">
                                   <span 
                                     className="font-semibold text-foreground hover:underline cursor-pointer"
                                     onClick={() => {
@@ -2527,22 +2525,15 @@ export default function Projects() {
                                   >
                                     {cs.cross_sell_product}
                                   </span>
-                                  {details?.product_family && (
-                                    <span className="text-sm text-muted-foreground">{details.product_family}</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {[details?.manufacturer, details?.product_family].filter(Boolean).join(' • ') || '-'}
+                                  </span>
+                                  {details?.product_description && (
+                                    <span className="text-sm text-muted-foreground truncate max-w-[250px]">
+                                      {truncateText(details.product_description, 60)}
+                                    </span>
                                   )}
                                 </div>
-                              </TableCell>
-                            );
-                          case 'manufacturer':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-sm" style={{ width: col.width }}>
-                                {details?.manufacturer || '-'}
-                              </TableCell>
-                            );
-                          case 'product_description':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-sm text-muted-foreground" style={{ width: col.width }}>
-                                {truncateText(details?.product_description, 50) || '-'}
                               </TableCell>
                             );
                           case 'product_tags':
