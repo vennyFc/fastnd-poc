@@ -52,7 +52,7 @@ export default function Products() {
   const queryClient = useQueryClient();
 
   const defaultColumns = React.useMemo(() => [
-    { key: 'product', label: 'Bauteil', visible: true, width: 280, order: 0 },
+    { key: 'product', label: 'Bauteil', visible: true, width: 220, order: 0 },
     { key: 'product_family', label: 'Produktfamilie', visible: false, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
     { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
