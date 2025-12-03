@@ -995,14 +995,9 @@ export default function Products() {
                             } else if (column.key === 'product') {
                               value = (
                                 <div className="flex items-center gap-2 pl-6">
-                                  <Network className="h-4 w-4 text-primary" />
+                                  <Network className="h-4 w-4 text-purple-500" />
                                   <div className="flex flex-col">
-                                    <div className="flex items-center gap-2">
-                                      <span>{csProduct.product || '-'}</span>
-                                      <Badge variant="outline" className="text-xs bg-primary/10 border-primary/30 text-primary">
-                                        Cross-Sell
-                                      </Badge>
-                                    </div>
+                                    <span>{csProduct.product || '-'}</span>
                                     {csProduct.product_family && (
                                       <span className="text-sm text-muted-foreground">
                                         {csProduct.product_family}
@@ -1048,7 +1043,11 @@ export default function Products() {
                                 <div className="flex flex-col gap-0.5">{badges}</div>
                               ) : '-';
                             } else if (column.key === 'cross_sell_count') {
-                              value = '-';
+                              value = (
+                                <Badge variant="outline" className="text-xs bg-purple-500/10 border-purple-500/30 text-purple-600">
+                                  Cross-Sell
+                                </Badge>
+                              );
                             } else {
                               value = csProduct[column.key] || '-';
                             }
