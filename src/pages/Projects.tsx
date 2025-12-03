@@ -189,6 +189,12 @@ export default function Projects() {
     visible: true,
     width: 120,
     order: 5
+  }, {
+    key: 'updated_at',
+    label: 'Zuletzt geändert',
+    visible: true,
+    width: 140,
+    order: 6
   }], []);
   const {
     columns,
@@ -528,7 +534,28 @@ export default function Projects() {
       if (new Date(project.created_at) < new Date(existing.created_at)) {
         existing.created_at = project.created_at;
       }
+      // Track the latest updated_at from optimization records for this project
+      const projectNumbers = projects?.filter((p: any) => p.customer === project.customer && p.project_name === project.project_name).map((p: any) => p.project_number).filter(Boolean) || [];
+      const relatedOptRecords = optimizationRecords.filter((rec: any) => projectNumbers.includes(rec.project_number));
+      const latestOptUpdate = relatedOptRecords.length > 0 
+        ? relatedOptRecords.reduce((latest: string, rec: any) => {
+            return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
+          }, relatedOptRecords[0].updated_at)
+        : null;
+      // Update existing project's updated_at if this one is newer
+      if (latestOptUpdate && (!existing.updated_at || new Date(latestOptUpdate) > new Date(existing.updated_at))) {
+        existing.updated_at = latestOptUpdate;
+      }
     } else {
+      // Calculate updated_at for new entry
+      const projectNumbers = projects?.filter((p: any) => p.customer === project.customer && p.project_name === project.project_name).map((p: any) => p.project_number).filter(Boolean) || [];
+      const relatedOptRecords = optimizationRecords.filter((rec: any) => projectNumbers.includes(rec.project_number));
+      const latestOptUpdate = relatedOptRecords.length > 0 
+        ? relatedOptRecords.reduce((latest: string, rec: any) => {
+            return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
+          }, relatedOptRecords[0].updated_at)
+        : null;
+      
       acc.push({
         id: project.id,
         customer: project.customer,
@@ -536,7 +563,8 @@ export default function Projects() {
         applications: project.application ? [project.application] : [],
         products: includeProduct(project.product) ? [project.product] : [],
         sourceIds: [project.id],
-        created_at: project.created_at
+        created_at: project.created_at,
+        updated_at: latestOptUpdate || project.created_at
       });
     }
     return acc;
@@ -2371,6 +2399,8 @@ export default function Projects() {
                     value = null; // Will be handled separately
                   } else if (column.key === 'created_at') {
                     value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
+                  } else if (column.key === 'updated_at') {
+                    value = project.updated_at ? format(new Date(project.updated_at), 'dd.MM.yyyy HH:mm') : '-';
                   } else {
                     value = project[column.key];
                   }
