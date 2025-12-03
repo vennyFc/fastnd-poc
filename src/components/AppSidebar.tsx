@@ -131,10 +131,10 @@ export function AppSidebar() {
           </SidebarGroup>}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex justify-end px-2 py-1">
+            <div className="flex justify-start px-2 py-1">
               <button 
                 onClick={toggleSidebar}
                 className="h-8 w-8 flex items-center justify-center hover:bg-muted rounded-lg transition-colors"
@@ -143,13 +143,17 @@ export function AppSidebar() {
               </button>
             </div>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={signOut}>
-              <LogOut className="h-4 w-4" />
-              <span>{t('nav.logout')}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
+        <div className="border-t border-sidebar-border mt-2 pt-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={signOut}>
+                <LogOut className="h-4 w-4" />
+                <span>{t('nav.logout')}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div>
       </SidebarFooter>
     </Sidebar>;
 }
