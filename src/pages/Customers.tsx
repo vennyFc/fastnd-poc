@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { Search, Filter, Building2, MapPin, Briefcase, Tag, Eye } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Building2, MapPin, Briefcase, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -41,6 +42,8 @@ export default function Customers() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -74,9 +77,10 @@ export default function Customers() {
       );
       setFilteredCustomers(filtered);
     }
+    setCurrentPage(1);
   }, [searchTerm, customers]);
 
-  const sortedCustomers = filteredCustomers.sort((a, b) => {
+  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
     if (!sortField || !sortDirection) return 0;
 
     let aValue = a[sortField];
@@ -94,6 +98,13 @@ export default function Customers() {
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+
+  // Pagination
+  const totalItems = sortedCustomers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCustomers = sortedCustomers.slice(startIndex, endIndex);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -128,7 +139,6 @@ export default function Customers() {
     try {
       setIsLoading(true);
       
-      // Load customers
       if (!activeTenant) {
         setCustomers([]);
         setFilteredCustomers([]);
@@ -143,7 +153,6 @@ export default function Customers() {
 
       if (customersError) throw customersError;
 
-      // Load projects to calculate counts and last activity
       const { data: projectsData, error: projectsError } = await supabase
         .from('customer_projects')
         .select('customer, project_name, created_at')
@@ -151,7 +160,6 @@ export default function Customers() {
 
       if (projectsError) throw projectsError;
 
-      // Aggregate project data per customer (count unique project names)
       const projectStats = (projectsData || []).reduce((acc, project) => {
         const customerName = project.customer;
         if (!acc[customerName]) {
@@ -167,7 +175,6 @@ export default function Customers() {
         return acc;
       }, {} as Record<string, { projectNames: Set<string>; lastActivity: string }>);
 
-      // Combine customer data with project stats
       const enrichedCustomers = (customersData || []).map(customer => ({
         ...customer,
         project_count: projectStats[customer.customer_name]?.projectNames.size || 0,
@@ -197,6 +204,8 @@ export default function Customers() {
     navigate(`/projects?customer=${encodeURIComponent(customer.customer_name)}`);
   };
 
+  const visibleColumns = columns.filter(col => col.visible);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -206,7 +215,7 @@ export default function Customers() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Kunde suchen..."
@@ -224,28 +233,30 @@ export default function Customers() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {columns.filter(col => col.visible).map((column) => (
-                    <TableCell key={column.key}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <TableRow key={i}>
-                    {columns.filter(col => col.visible).map((column) => (
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {visibleColumns.map((column) => (
                       <TableCell key={column.key}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
                     ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <TableRow key={i}>
+                      {visibleColumns.map((column) => (
+                        <TableCell key={column.key}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : sortedCustomers.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -255,13 +266,12 @@ export default function Customers() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {columns
-                      .filter(col => col.visible)
-                      .map((column, index) => (
+            <>
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      {visibleColumns.map((column, index) => (
                         <ResizableTableHeader
                           key={column.key}
                           label={column.label}
@@ -276,45 +286,122 @@ export default function Customers() {
                           onDragEnd={handleDragEnd}
                         />
                       ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedCustomers.map((customer) => (
-                    <TableRow
-                      key={customer.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => handleCustomerClick(customer)}
-                    >
-                      {columns.filter(col => col.visible).map((column) => (
-                        <TableCell key={column.key} style={{ width: column.width }}>
-                          {column.key === 'customer_name' && (
-                            <div className="flex items-center gap-2">
-                              <Building2 className="h-4 w-4 text-primary" />
-                              <span className="font-medium">{customer.customer_name}</span>
-                            </div>
-                          )}
-                          {column.key === 'industry' && customer.industry}
-                          {column.key === 'country' && customer.country}
-                          {column.key === 'city' && customer.city}
-                          {column.key === 'customer_category' && customer.customer_category && (
-                            <Badge variant="outline">{customer.customer_category}</Badge>
-                          )}
-                          {column.key === 'project_count' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => handleProjectsClick(e, customer)}
-                            >
-                              {customer.project_count || 0}
-                            </Button>
-                          )}
-                        </TableCell>
-                      ))}
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedCustomers.map((customer) => (
+                      <TableRow
+                        key={customer.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleCustomerClick(customer)}
+                      >
+                        {visibleColumns.map((column) => (
+                          <TableCell key={column.key} style={{ width: column.width }}>
+                            {column.key === 'customer_name' && (
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-primary" />
+                                <span className="font-medium">{customer.customer_name}</span>
+                              </div>
+                            )}
+                            {column.key === 'industry' && customer.industry}
+                            {column.key === 'country' && customer.country}
+                            {column.key === 'city' && customer.city}
+                            {column.key === 'customer_category' && customer.customer_category && (
+                              <Badge variant="outline">{customer.customer_category}</Badge>
+                            )}
+                            {column.key === 'project_count' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => handleProjectsClick(e, customer)}
+                              >
+                                {customer.project_count || 0}
+                              </Button>
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination Footer */}
+              <div className="border-t pt-4 mt-4 flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                    <Select 
+                      value={itemsPerPage.toString()} 
+                      onValueChange={(val) => {
+                        setItemsPerPage(Number(val));
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-[70px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="h-8 px-3"
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Zurück
+                    </Button>
+                    <div className="flex items-center gap-1 mx-2">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="h-8 px-3"
+                    >
+                      Weiter
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
