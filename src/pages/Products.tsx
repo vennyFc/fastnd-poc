@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price' | 'product_lead_time' | 'product_inventory' | 'product_description' | 'product_lifecycle' | 'product_new' | 'product_top';
 type SortDirection = 'asc' | 'desc' | null;
@@ -54,9 +55,9 @@ export default function Products() {
     { key: 'product_family', label: 'Produktfamilie', visible: true, width: 180, order: 1 },
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
     { key: 'product_tags', label: 'Tags', visible: true, width: 150, order: 3 },
-    { key: 'product_price', label: (<>Preis<br /><span className="text-xs font-normal">(in €/pcs)</span></>), visible: true, width: 120, order: 4 },
-    { key: 'product_lead_time', label: (<>Lieferzeit<br /><span className="text-xs font-normal">(in Wochen)</span></>), visible: true, width: 140, order: 5 },
-    { key: 'product_inventory', label: (<>Lagerbestand<br /><span className="text-xs font-normal">(in pcs)</span></>), visible: true, width: 130, order: 6 },
+    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
+    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 5 },
+    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 6 },
     { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 7 },
     { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 8 },
   ], []);
@@ -659,6 +660,7 @@ export default function Products() {
             </div>
           ) : paginatedProducts && paginatedProducts.length > 0 ? (
             <>
+            <TooltipProvider>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -666,6 +668,7 @@ export default function Products() {
                     <ResizableTableHeader
                       key={column.key}
                       label={column.label}
+                      labelTooltip={(column as any).labelTooltip}
                       width={column.width}
                       onResize={(width) => updateColumnWidth(column.key, width)}
                       sortable={column.key !== 'manufacturer_link'}
@@ -902,6 +905,7 @@ export default function Products() {
                 })}
               </TableBody>
             </Table>
+            </TooltipProvider>
             
             {/* Pagination Footer */}
             <div className="border-t pt-4 mt-4 flex items-center justify-between">

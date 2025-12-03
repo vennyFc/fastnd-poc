@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { TableHead } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ResizableTableHeaderProps {
   label: string | React.ReactNode;
+  labelTooltip?: string;
   width: number;
   onResize: (width: number) => void;
   sortable?: boolean;
@@ -20,6 +22,7 @@ interface ResizableTableHeaderProps {
 
 export function ResizableTableHeader({
   label,
+  labelTooltip,
   width,
   onResize,
   sortable = false,
@@ -106,11 +109,29 @@ export function ResizableTableHeader({
             onClick={onSort}
             className="h-auto p-0 font-semibold hover:bg-transparent flex-1 justify-start text-left whitespace-normal leading-tight"
           >
-            <span className="block">{label}</span>
+            {labelTooltip ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="block cursor-help underline decoration-dotted decoration-muted-foreground">{label}</span>
+                </TooltipTrigger>
+                <TooltipContent>{labelTooltip}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <span className="block">{label}</span>
+            )}
             {getSortIcon()}
           </Button>
         ) : (
-          <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left">{label}</span>
+          labelTooltip ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left cursor-help underline decoration-dotted decoration-muted-foreground">{label}</span>
+              </TooltipTrigger>
+              <TooltipContent>{labelTooltip}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left">{label}</span>
+          )
         )}
         <div
           onMouseDown={handleMouseDown}
