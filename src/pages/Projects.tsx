@@ -1396,17 +1396,6 @@ export default function Projects() {
               {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
             </p>
           </div>
-          <MultiColumnVisibilityToggle groups={[{
-          label: 'Produkte',
-          columns: productColumns,
-          onToggle: toggleProductColumn,
-          onReset: resetProductColumns
-        }, {
-          label: 'Cross-Sells',
-          columns: crossSellColumns,
-          onToggle: toggleCrossSellColumn,
-          onReset: resetCrossSellColumns
-        }]} />
         </div>
 
         <div className="space-y-6">
@@ -1607,9 +1596,16 @@ export default function Projects() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Products Table */}
                   <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Package className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Produkte im Projekt</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Produkte im Projekt</h3>
+                      </div>
+                      <ColumnVisibilityToggle 
+                        columns={productColumns} 
+                        onToggle={toggleProductColumn} 
+                        onReset={resetProductColumns}
+                      />
                     </div>
                     <Separator className="mb-4" />
                     {project.products.length > 0 ? <div className="rounded-lg border">
@@ -1842,9 +1838,16 @@ export default function Projects() {
 
                   {/* Cross-Sells Section */}
                   <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      <h3 className="text-lg font-semibold">Cross-Sell Opportunities</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Cross-Sell Opportunities</h3>
+                      </div>
+                      <ColumnVisibilityToggle 
+                        columns={crossSellColumns} 
+                        onToggle={toggleCrossSellColumn} 
+                        onReset={resetCrossSellColumns}
+                      />
                     </div>
                     <Separator className="mb-4" />
                     {(() => {
