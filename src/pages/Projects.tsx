@@ -132,6 +132,31 @@ export default function Projects() {
   const [crossSellSearchQuery, setCrossSellSearchQuery] = useState('');
   const [crossSellsPage, setCrossSellsPage] = useState(1);
   const [crossSellsPerPage, setCrossSellsPerPage] = useState(25);
+  const [crossSellViewSortField, setCrossSellViewSortField] = useState<string | null>(null);
+  const [crossSellViewSortDirection, setCrossSellViewSortDirection] = useState<'asc' | 'desc' | null>(null);
+  const [crossSellViewDraggedIndex, setCrossSellViewDraggedIndex] = useState<number | null>(null);
+
+  // Cross-sells VIEW columns configuration (like Products table) - separate from detail view columns
+  const defaultCrossSellViewColumns = React.useMemo(() => [
+    { key: 'product', label: 'Bauteil', visible: true, width: 220, order: 0 },
+    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 1 },
+    { key: 'product_description', label: 'Beschreibung', visible: true, width: 250, order: 2 },
+    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 3 },
+    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 4 },
+    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 5 },
+    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 6 },
+    { key: 'rec_source', label: 'Grund', visible: true, width: 120, order: 7 },
+    { key: 'rec_score', label: 'Score', visible: true, width: 150, order: 8 },
+    { key: 'actions', label: 'Aktion', visible: true, width: 160, order: 9 },
+  ], []);
+
+  const { 
+    columns: crossSellViewColumns, 
+    toggleColumn: toggleCrossSellViewColumn, 
+    updateColumnWidth: updateCrossSellViewColumnWidth, 
+    reorderColumns: reorderCrossSellViewColumns, 
+    resetColumns: resetCrossSellViewColumns 
+  } = useTableColumns('cross-sells-view-columns', defaultCrossSellViewColumns);
   
   const {
     isFavorite,
@@ -2405,6 +2430,9 @@ export default function Projects() {
     const crossSellEndIndex = crossSellStartIndex + crossSellsPerPage;
     const paginatedCrossSells = filteredCrossSells.slice(crossSellStartIndex, crossSellEndIndex);
 
+    // Visible columns for cross-sells view
+    const visibleCrossSellViewColumns = crossSellViewColumns.filter((col: any) => col.visible).sort((a: any, b: any) => a.order - b.order);
+
     return (
       <div className="p-6 space-y-6">
         {/* Header */}
@@ -2444,122 +2472,172 @@ export default function Projects() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
-                </Button>
+                <ColumnVisibilityToggle
+                  columns={crossSellViewColumns}
+                  onToggle={toggleCrossSellViewColumn}
+                  onReset={resetCrossSellViewColumns}
+                />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead style={{ width: '220px' }}>Bauteil</TableHead>
-                    <TableHead style={{ width: '120px' }}>Hersteller</TableHead>
-                    <TableHead style={{ width: '200px' }}>Parameter</TableHead>
-                    <TableHead style={{ width: '90px' }} className="text-right">Lieferzeit</TableHead>
-                    <TableHead style={{ width: '100px' }} className="text-right">Preis/100</TableHead>
-                    <TableHead style={{ width: '120px' }}>Grund</TableHead>
-                    <TableHead style={{ width: '150px' }}>Score</TableHead>
-                    <TableHead style={{ width: '160px' }}>Aktion</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedCrossSells.map((cs: any, idx: number) => {
-                    const details = getProductDetails(cs.cross_sell_product);
-                    return (
-                      <TableRow key={`crosssellsview-cs-${cs.cross_sell_product}-${idx}`}>
-                        {/* Bauteil */}
-                        <TableCell className="py-3">
-                          <div className="flex flex-col">
-                            <span 
-                              className="font-semibold text-foreground hover:underline cursor-pointer"
-                              onClick={() => {
-                                setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                setProductQuickViewOpen(true);
-                              }}
-                            >
-                              {cs.cross_sell_product}
-                            </span>
-                            {details?.product_family && (
-                              <span className="text-sm text-muted-foreground">{details.product_family}</span>
-                            )}
-                          </div>
-                        </TableCell>
-                        {/* Hersteller */}
-                        <TableCell className="py-3 text-sm">
-                          {details?.manufacturer || '-'}
-                        </TableCell>
-                        {/* Parameter */}
-                        <TableCell className="py-3 text-sm text-muted-foreground">
-                          {truncateText(details?.product_description, 50) || '-'}
-                        </TableCell>
-                        {/* Lieferzeit */}
-                        <TableCell className="py-3 text-sm text-right">
-                          {details?.product_lead_time ? `${Math.ceil(details.product_lead_time / 7)} w` : '-'}
-                        </TableCell>
-                        {/* Preis */}
-                        <TableCell className="py-3 text-sm text-right">
-                          {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
-                        </TableCell>
-                        {/* Grund */}
-                        <TableCell className="py-3">
-                          {cs.rec_source ? (
-                            <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
-                              {cs.rec_source}
-                            </Badge>
-                          ) : '-'}
-                        </TableCell>
-                        {/* Score */}
-                        <TableCell className="py-3">
-                          <RecommendationScoreBar score={cs.rec_score} />
-                        </TableCell>
-                        {/* Aktion */}
-                        <TableCell className="py-3">
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="h-8 text-xs"
-                              onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" />
-                              Hinzufügen
-                            </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                  <ThumbsDown className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent side="left" align="end">
-                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                  Technischer Fit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                  Commercial Fit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                  Anderer Lieferant
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                  Kein Bedarf
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
-                                  Sonstige
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {visibleCrossSellViewColumns.map((col: any, colIdx: number) => (
+                    <ResizableTableHeader
+                      key={col.key}
+                      label={col.label}
+                      labelTooltip={col.labelTooltip}
+                      width={col.width}
+                      onResize={(w) => updateCrossSellViewColumnWidth(col.key, w)}
+                      draggable={true}
+                      onDragStart={() => setCrossSellViewDraggedIndex(colIdx)}
+                      onDragEnd={() => {
+                        setCrossSellViewDraggedIndex(null);
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (crossSellViewDraggedIndex !== null && crossSellViewDraggedIndex !== colIdx) {
+                          reorderCrossSellViewColumns(crossSellViewDraggedIndex, colIdx);
+                          setCrossSellViewDraggedIndex(colIdx);
+                        }
+                      }}
+                    />
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedCrossSells.map((cs: any, idx: number) => {
+                  const details = getProductDetails(cs.cross_sell_product);
+                  return (
+                    <TableRow key={`crosssellsview-cs-${cs.cross_sell_product}-${idx}`}>
+                      {visibleCrossSellViewColumns.map((col: any) => {
+                        switch (col.key) {
+                          case 'product':
+                            return (
+                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                                <div className="flex flex-col">
+                                  <span 
+                                    className="font-semibold text-foreground hover:underline cursor-pointer"
+                                    onClick={() => {
+                                      setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
+                                      setProductQuickViewOpen(true);
+                                    }}
+                                  >
+                                    {cs.cross_sell_product}
+                                  </span>
+                                  {details?.product_family && (
+                                    <span className="text-sm text-muted-foreground">{details.product_family}</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                            );
+                          case 'manufacturer':
+                            return (
+                              <TableCell key={col.key} className="py-3 text-sm" style={{ width: col.width }}>
+                                {details?.manufacturer || '-'}
+                              </TableCell>
+                            );
+                          case 'product_description':
+                            return (
+                              <TableCell key={col.key} className="py-3 text-sm text-muted-foreground" style={{ width: col.width }}>
+                                {truncateText(details?.product_description, 50) || '-'}
+                              </TableCell>
+                            );
+                          case 'product_tags':
+                            return (
+                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                                <div className="flex flex-wrap gap-1">
+                                  {details?.product_lifecycle && renderLifecycleBadge(details.product_lifecycle)}
+                                  {details?.product_new === 'Y' && renderNeuBadge()}
+                                  {details?.product_top === 'Y' && renderTopBadge()}
+                                </div>
+                              </TableCell>
+                            );
+                          case 'product_price':
+                            return (
+                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                                {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
+                              </TableCell>
+                            );
+                          case 'product_lead_time':
+                            return (
+                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                                {details?.product_lead_time ? `${details.product_lead_time}` : '-'}
+                              </TableCell>
+                            );
+                          case 'product_inventory':
+                            return (
+                              <TableCell key={col.key} className="py-3 text-sm text-right" style={{ width: col.width }}>
+                                {details?.product_inventory ?? '-'}
+                              </TableCell>
+                            );
+                          case 'rec_source':
+                            return (
+                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                                {cs.rec_source ? (
+                                  <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
+                                    {cs.rec_source}
+                                  </Badge>
+                                ) : '-'}
+                              </TableCell>
+                            );
+                          case 'rec_score':
+                            return (
+                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                                <RecommendationScoreBar score={cs.rec_score} />
+                              </TableCell>
+                            );
+                          case 'actions':
+                            return (
+                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="h-8 text-xs"
+                                    onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
+                                  >
+                                    <Plus className="h-3.5 w-3.5 mr-1" />
+                                    Hinzufügen
+                                  </Button>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                        <ThumbsDown className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent side="left" align="end">
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                        Technischer Fit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                        Commercial Fit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                        Anderer Lieferant
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                        Kein Bedarf
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                        Sonstige
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </TableCell>
+                            );
+                          default:
+                            return <TableCell key={col.key} style={{ width: col.width }}>-</TableCell>;
+                        }
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
 
             {/* Pagination Footer */}
             <div className="flex items-center justify-between py-4 mt-4 border-t">
