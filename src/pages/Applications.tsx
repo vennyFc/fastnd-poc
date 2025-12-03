@@ -133,18 +133,7 @@ export default function Applications() {
       <h1 className="text-3xl font-medium text-foreground font-clash">Applikationen</h1>
 
       <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex items-center justify-end">
-            <div className="flex gap-2">
-              <ColumnVisibilityToggle
-                columns={columns}
-                onToggle={toggleColumn}
-                onReset={resetColumns}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -155,6 +144,11 @@ export default function Applications() {
                 className="pl-10"
               />
             </div>
+            <ColumnVisibilityToggle
+              columns={columns}
+              onToggle={toggleColumn}
+              onReset={resetColumns}
+            />
           </div>
 
           {isLoading ? (
