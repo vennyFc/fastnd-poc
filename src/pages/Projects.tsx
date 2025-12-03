@@ -2400,7 +2400,7 @@ export default function Projects() {
                   } else if (column.key === 'created_at') {
                     value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
                   } else if (column.key === 'updated_at') {
-                    value = project.updated_at ? format(new Date(project.updated_at), 'dd.MM.yyyy HH:mm') : '-';
+                    value = project.updated_at ? format(new Date(project.updated_at), 'dd.MM.yyyy') : '-';
                   } else {
                     value = project[column.key];
                   }
