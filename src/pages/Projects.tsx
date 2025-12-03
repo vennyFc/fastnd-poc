@@ -1883,7 +1883,7 @@ export default function Projects() {
                               } else if (column.key === 'status') {
                                 const isRegistered = productStatus === 'Registriert';
                                 value = productStatus ? <Select value={productStatus} disabled={isRegistered} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, productName, newStatus, 'cross_sell')}>
-                                               <SelectTrigger className="w-[140px]" onClick={e => e.stopPropagation()}>
+                                               <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                  <SelectValue />
                                                </SelectTrigger>
                                                 <SelectContent>
@@ -1976,7 +1976,7 @@ export default function Projects() {
                                     width: `${column.width}px`
                                   }}>
                                                   {altStatus ? <Select value={altStatus} disabled={isRegistered} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, alt.alternative_product, newStatus, 'alternative')}>
-                                                      <SelectTrigger className="w-[140px]" onClick={e => e.stopPropagation()}>
+                                                      <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                         <SelectValue />
                                                       </SelectTrigger>
                                                        <SelectContent>
@@ -2237,7 +2237,7 @@ export default function Projects() {
                                       width: `${column.width}px`
                                     }}>
                                                    {isAlreadyInProject && altStatus ? <Select value={altStatus} disabled={altStatus === 'Registriert'} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, alt.alternative_product, newStatus, 'alternative')}>
-                                                       <SelectTrigger className="w-[140px]" onClick={e => e.stopPropagation()}>
+                                                       <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                          <SelectValue />
                                                        </SelectTrigger>
                                                         <SelectContent>
