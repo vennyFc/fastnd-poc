@@ -1812,7 +1812,7 @@ export default function Projects() {
                       <ColumnVisibilityToggle columns={productColumns} onToggle={toggleProductColumn} onReset={resetProductColumns} />
                     </div>
                     <Separator className="mb-4" />
-                    {project.products.length > 0 ? <div className="rounded-lg">
+                    {project.products.length > 0 ? <div className="rounded-lg border">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -2048,7 +2048,7 @@ export default function Projects() {
                     <Separator className="mb-4" />
                     {(() => {
                   const projectCrossSells = getCrossSells(project.products, project.customer, project.project_name);
-                  return projectCrossSells.length > 0 ? <div className="rounded-lg">
+                  return projectCrossSells.length > 0 ? <div className="rounded-lg border">
                           <Table>
                               <TableHeader>
                                 <TableRow>
