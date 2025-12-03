@@ -47,6 +47,7 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
     if (dbSettings?.settings) {
       const saved = (dbSettings.settings as any[]) || [];
       // Merge defaults with saved settings by key so new columns appear automatically
+      // ONLY keep columns that exist in defaults - discard any deprecated/removed columns
       const savedMap = new Map(saved.map((c) => [c.key, c]));
       const merged: ColumnConfig[] = currentDefaults.map((def, idx) => {
         const s = savedMap.get(def.key);
@@ -58,14 +59,9 @@ export function useTableColumns(storageKey: string, defaultColumns: ColumnConfig
           order: s?.order !== undefined ? s.order : def.order ?? idx,
         } as ColumnConfig;
       });
-      // Keep any saved columns that are no longer in defaults (append at end)
-      const extras = saved.filter((c) => !currentDefaults.some((d) => d.key === c.key));
-      const mergedWithExtras = [...merged, ...extras.map((c, i) => ({
-        ...c,
-        order: (merged.length + i),
-      }))];
-      console.log('📊 Merged columns for', storageKey, ':', mergedWithExtras);
-      setColumns(mergedWithExtras);
+      // Do NOT keep extra columns from saved settings that are no longer in defaults
+      console.log('📊 Merged columns for', storageKey, ':', merged);
+      setColumns(merged);
     } else {
       // No saved settings: ensure defaults are set
       console.log('📊 Using default columns for', storageKey, ':', currentDefaults);
