@@ -1599,7 +1599,7 @@ export default function Projects() {
                           e.stopPropagation();
                           setSelectedCustomerForQuickView(project.customer);
                           setCustomerQuickViewOpen(true);
-                        }} className="font-medium cursor-pointer hover:underline transition-colors text-black">
+                        }} className="font-medium cursor-pointer hover:underline transition-colors text-foreground">
                               {project.customer}
                             </span>
                           </div>
@@ -1609,7 +1609,7 @@ export default function Projects() {
                             <span className="text-sm text-muted-foreground block">Applikation</span>
                             <span className="font-medium">
                               {[...new Set(project.applications.map((app: string) => typeof app === 'string' ? app : (app as any)?.application || ''))].map((appName: string, idx: number, arr: string[]) => <span key={idx}>
-                                  <span className="cursor-pointer hover:underline hover:text-primary transition-colors" onClick={e => {
+                                  <span className="cursor-pointer hover:underline transition-colors text-foreground" onClick={e => {
                               e.stopPropagation();
                               setSelectedApplicationForQuickView(appName);
                               setApplicationQuickViewOpen(true);
