@@ -57,10 +57,11 @@ export default function Products() {
     { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
     { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
     { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 4 },
-    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 5 },
-    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 6 },
-    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 7 },
-    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 8 },
+    { key: 'cross_sell_count', label: 'Cross-Sells', visible: true, width: 100, order: 5 },
+    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 6 },
+    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 7 },
+    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 8 },
+    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 9 },
   ], []);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -160,6 +161,39 @@ export default function Products() {
       return data || [];
     },
   });
+
+  // Fetch cross-sells for count column
+  const { data: crossSells = [] } = useQuery({
+    queryKey: ['cross_sells', activeTenant?.id],
+    queryFn: async () => {
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
+        .from('cross_sells')
+        .select('base_product, application, cross_sell_product')
+        .eq('tenant_id', activeTenant.id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!activeTenant,
+  });
+
+  // Function to get cross-sell count for a product
+  const getCrossSellCount = (productName: string) => {
+    const relevantCrossSells = crossSells.filter((cs: any) => {
+      if (cs.base_product !== productName) return false;
+      
+      if (selectedApplication === 'all') {
+        // When no specific app selected, count only GENERIC cross-sells
+        return cs.application === 'GENERIC';
+      } else {
+        // When specific app selected, count only matching cross-sells
+        return cs.application === selectedApplication;
+      }
+    });
+    return relevantCrossSells.length;
+  };
 
   // Create a Set of products that have alternatives
   const productsWithAlternatives = new Set(
@@ -765,6 +799,13 @@ export default function Products() {
                             }
                             value = badges.length > 0 ? (
                               <div className="flex flex-col gap-0.5">{badges}</div>
+                            ) : '-';
+                          } else if (column.key === 'cross_sell_count') {
+                            const count = getCrossSellCount(product.product);
+                            value = count > 0 ? (
+                              <Badge variant="secondary" className="text-xs">
+                                {count}
+                              </Badge>
                             ) : '-';
                           } else {
                             value = product[column.key] || '-';
