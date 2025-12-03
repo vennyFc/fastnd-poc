@@ -847,7 +847,7 @@ export default function Products() {
                                   {count}
                                 </Badge>
                                 <Network 
-                                  className={`h-4 w-4 text-primary cursor-pointer transition-transform ${isCrossExpanded ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                                  className={`h-4 w-4 cursor-pointer transition-transform ${isCrossExpanded ? 'text-purple-600' : 'text-purple-400 hover:text-purple-600'}`}
                                   onClick={(e) => toggleCrossSellsExpanded(product.product, e)}
                                 />
                               </div>
