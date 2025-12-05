@@ -369,6 +369,14 @@ const translations: Record<Language, Record<string, string>> = {
     'collections.productRemoved': 'Produkt entfernt',
     'collections.saveError': 'Fehler beim Speichern',
     'collections.selectProducts': 'Produkte auswählen',
+    'collections.productsCount': 'Produkte',
+    'collections.creator': 'Ersteller',
+    'collections.createdAt': 'Erstellt',
+    'collections.modifiedAt': 'Geändert',
+    'collections.emptyCollection': 'Diese Sammlung enthält noch keine Produkte.',
+    'collections.addProductsHint': 'Fügen Sie Produkte über die Produkte-Ansicht hinzu.',
+    'collections.selectToView': 'Wählen Sie eine Sammlung aus, um Details zu sehen',
+    'collections.addedAt': 'Hinzugefügt',
     
     // Applications
     'applications.title': 'Applikationen',
@@ -1185,6 +1193,14 @@ const translations: Record<Language, Record<string, string>> = {
     'collections.productRemoved': 'Product removed',
     'collections.saveError': 'Error saving',
     'collections.selectProducts': 'Select products',
+    'collections.productsCount': 'Products',
+    'collections.creator': 'Creator',
+    'collections.createdAt': 'Created',
+    'collections.modifiedAt': 'Modified',
+    'collections.emptyCollection': 'This collection contains no products yet.',
+    'collections.addProductsHint': 'Add products via the Products view.',
+    'collections.selectToView': 'Select a collection to see details',
+    'collections.addedAt': 'Added',
     
     // Applications
     'applications.title': 'Applications',
