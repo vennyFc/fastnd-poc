@@ -30,62 +30,58 @@ export default function DataHub() {
   const { isSuperAdmin, activeTenant } = useAuth();
   const { t } = useLanguage();
 
-// Pure tenant-specific data types - ALL uploads are now tenant-specific
-const dataTypes = [
-  {
-    id: 'customer_projects',
-    titleKey: 'dataType.customer_projects',
-    descKey: 'dataType.customer_projects_desc',
-    fields: ['customer', 'project_name', 'application', 'product', 'opportunity_creation_date'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'customers',
-    titleKey: 'dataType.customers',
-    descKey: 'dataType.customers_desc',
-    fields: ['customer_name', 'industry', 'country', 'city', 'customer_category'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'app_insights',
-    titleKey: 'dataType.app_insights',
-    descKey: 'dataType.app_insights_desc',
-    fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'applications',
-    titleKey: 'dataType.applications',
-    descKey: 'dataType.applications_desc',
-    fields: ['application', 'related_product'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'products',
-    titleKey: 'dataType.products',
-    descKey: 'dataType.products_desc',
-    fields: ['product', 'product_family', 'product_description', 'manufacturer', 'product_price', 'product_inventory', 'product_lead_time', 'product_lifecycle', 'product_new', 'product_top', 'manufacturer_link'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'cross_sells',
-    titleKey: 'dataType.cross_sells',
-    descKey: 'dataType.cross_sells_desc',
-    fields: ['application', 'base_product', 'cross_sell_product', 'rec_source', 'rec_score'],
-    icon: FileSpreadsheet,
-  },
-  {
-    id: 'product_alternatives',
-    titleKey: 'dataType.product_alternatives',
-    descKey: 'dataType.product_alternatives_desc',
-    fields: ['base_product', 'alternative_product', 'similarity'],
-    icon: FileSpreadsheet,
-  },
-];
-
-export default function DataHub() {
-  const { isSuperAdmin, activeTenant } = useAuth();
-  const { t } = useLanguage();
+  // Pure tenant-specific data types - ALL uploads are now tenant-specific
+  const dataTypes = [
+    {
+      id: 'customer_projects',
+      titleKey: 'dataType.customer_projects',
+      descKey: 'dataType.customer_projects_desc',
+      fields: ['customer', 'project_name', 'application', 'product', 'opportunity_creation_date'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'customers',
+      titleKey: 'dataType.customers',
+      descKey: 'dataType.customers_desc',
+      fields: ['customer_name', 'industry', 'country', 'city', 'customer_category'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'app_insights',
+      titleKey: 'dataType.app_insights',
+      descKey: 'dataType.app_insights_desc',
+      fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'applications',
+      titleKey: 'dataType.applications',
+      descKey: 'dataType.applications_desc',
+      fields: ['application', 'related_product'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'products',
+      titleKey: 'dataType.products',
+      descKey: 'dataType.products_desc',
+      fields: ['product', 'product_family', 'product_description', 'manufacturer', 'product_price', 'product_inventory', 'product_lead_time', 'product_lifecycle', 'product_new', 'product_top', 'manufacturer_link'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'cross_sells',
+      titleKey: 'dataType.cross_sells',
+      descKey: 'dataType.cross_sells_desc',
+      fields: ['application', 'base_product', 'cross_sell_product', 'rec_source', 'rec_score'],
+      icon: FileSpreadsheet,
+    },
+    {
+      id: 'product_alternatives',
+      titleKey: 'dataType.product_alternatives',
+      descKey: 'dataType.product_alternatives_desc',
+      fields: ['base_product', 'alternative_product', 'similarity'],
+      icon: FileSpreadsheet,
+    },
+  ];
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDataType, setSelectedDataType] = useState<any>(null);
@@ -293,7 +289,8 @@ export default function DataHub() {
         console.error('Error deleting upload history:', historyError);
         toast.warning('Tabelle geleert, aber Upload-Historie konnte nicht aktualisiert werden');
       } else {
-        toast.success(`Alle Einträge und Upload-Historie aus "${dataTypes.find(dt => dt.id === tableToDelete)?.title}" wurden gelöscht`);
+        const deletedType = dataTypes.find(dt => dt.id === tableToDelete);
+        toast.success(`Alle Einträge und Upload-Historie aus "${deletedType ? t(deletedType.titleKey) : tableToDelete}" wurden gelöscht`);
       }
 
       loadUploadHistory();
