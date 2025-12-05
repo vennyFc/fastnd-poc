@@ -1776,44 +1776,54 @@ export default function Projects() {
                     </Collapsible>
                     
                     {/* Optimization Status Progress Bar */}
-                    <div className="mt-4 flex items-center gap-4">
+                    <div className="mt-4 flex items-center gap-3">
                       {(() => {
                     const currentStatus = calculateProjectStatus(project, true);
                     const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
+                    const steps = ['NEU', 'OFFEN', 'PRÜFUNG', 'VALIDIERUNG', 'ABGESCHLOSSEN'];
+                    
                     return <>
-                            <div className="flex-1 grid grid-cols-5 gap-0">
-                              {/* Step: Neu */}
-                              <div className={`flex items-center justify-center px-2 py-1.5 rounded-l-lg border border-r-0 text-xs font-medium ${statusIndex >= 0 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                {statusIndex >= 0 && '✓ '}NEU
-                              </div>
-                              
-                              {/* Step: Offen */}
-                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${statusIndex >= 1 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                {statusIndex >= 1 && '✓ '}OFFEN
-                              </div>
-                              
-                              {/* Step: Prüfung */}
-                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${statusIndex >= 2 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                {statusIndex >= 2 && '✓ '}PRÜFUNG
-                              </div>
-                              
-                              {/* Step: Validierung */}
-                              <div className={`flex items-center justify-center px-2 py-1.5 border border-r-0 text-xs font-medium ${statusIndex >= 3 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                {statusIndex >= 3 && '✓ '}VALIDIERUNG
-                              </div>
-                              
-                              {/* Step: Abgeschlossen */}
-                              <div className={`flex items-center justify-center px-2 py-1.5 rounded-r-lg border text-xs font-medium ${statusIndex >= 4 ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>
-                                {statusIndex >= 4 && '✓ '}ABGESCHLOSSEN
-                              </div>
+                            <div className="flex-1 flex items-stretch h-9 border border-border rounded-lg overflow-hidden">
+                              {steps.map((step, index) => {
+                                const isCompleted = statusIndex > index;
+                                const isCurrent = statusIndex === index;
+                                const isActive = statusIndex >= index;
+                                const isFirst = index === 0;
+                                const isLast = index === steps.length - 1;
+                                
+                                return (
+                                  <div 
+                                    key={step}
+                                    className={cn(
+                                      "flex-1 flex items-center justify-center text-xs font-medium relative",
+                                      isActive 
+                                        ? 'bg-primary/10 text-primary' 
+                                        : 'bg-muted/50 text-muted-foreground',
+                                      !isLast && "border-r border-border"
+                                    )}
+                                  >
+                                    {/* Chevron shape for inactive steps after active ones */}
+                                    {!isFirst && !isActive && statusIndex === index - 1 && (
+                                      <div className="absolute left-0 top-0 bottom-0 w-3 overflow-hidden">
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[18px] border-b-[18px] border-l-[12px] border-t-transparent border-b-transparent border-l-primary/10" />
+                                      </div>
+                                    )}
+                                    <span className="flex items-center gap-1">
+                                      {isCompleted && <span className="text-primary">✓</span>}
+                                      {isCurrent && <span className="text-primary">✓</span>}
+                                      {step}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
                             
-                            {/* Status Dropdown */}
+                            {/* Status Dropdown - Compact */}
                             <Select value={currentStatus.toLowerCase()} onValueChange={value => {
                         console.log('📋 Select onValueChange triggered:', value);
                         handleProjectStatusChange(project, value);
                       }}>
-                              <SelectTrigger className="w-[180px] bg-background">
+                              <SelectTrigger className="w-auto min-w-[100px] h-9 bg-primary text-primary-foreground border-primary hover:bg-primary/90">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
