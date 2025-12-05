@@ -2583,20 +2583,20 @@ export default function Projects() {
                           case 'actions':
                             return (
                               <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
                                   <Button 
                                     size="sm" 
                                     variant="outline" 
-                                    className="h-8 text-xs"
+                                    className="h-7 w-7 p-0"
                                     onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
+                                    title="Hinzufügen"
                                   >
-                                    <Plus className="h-3.5 w-3.5 mr-1" />
-                                    Hinzufügen
+                                    <Plus className="h-3.5 w-3.5" />
                                   </Button>
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                                        <ThumbsDown className="h-4 w-4 text-destructive" />
+                                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Ablehnen">
+                                        <ThumbsDown className="h-3.5 w-3.5 text-destructive" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent side="left" align="end">
