@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
+import { format } from 'date-fns';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('alle');
   const {
@@ -234,15 +235,28 @@ export function ProjectsWidget() {
         </div>;
     }
 
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'Neu': return 'bg-blue-500/10 text-blue-600 border-blue-500/30';
+        case 'Offen': return 'bg-orange-500/10 text-orange-600 border-orange-500/30';
+        case 'Prüfung': return 'bg-teal-500/10 text-teal-600 border-teal-500/30';
+        case 'Validierung': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30';
+        case 'Abgeschlossen': return 'bg-green-500/10 text-green-600 border-green-500/30';
+        default: return 'bg-muted text-muted-foreground';
+      }
+    };
+
     return <div className="space-y-3">
-        {projects.slice(0, 5).map((project: any) => (
+        {projects.slice(0, 5).map((project: any) => {
+          const status = getOptimizationStatus(project);
+          return (
           <Link 
             key={project.id} 
             to={`/projects?detail=${encodeURIComponent(project.project_name)}`}
             onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}
             className="block p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all group"
           >
-            {/* Project Name with Favorite Star */}
+            {/* Project Name with Favorite Star and Status Badge */}
             <div className="flex items-center gap-2 mb-2">
               <Button 
                 variant="ghost" 
@@ -258,6 +272,9 @@ export function ProjectsWidget() {
                 <Star className={`h-3.5 w-3.5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
               </Button>
               <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
+              <Badge variant="outline" className={`text-2xs shrink-0 ${getStatusColor(status)}`}>
+                {status}
+              </Badge>
             </div>
             
             {/* Metadata Row */}
@@ -274,9 +291,15 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
+              <div className="shrink-0 text-right">
+                <div className="text-2xs text-muted-foreground mb-0.5">Hinzugefügt</div>
+                <div className="text-xs font-medium">
+                  {project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-'}
+                </div>
+              </div>
             </div>
           </Link>
-        ))}
+        )})}
         {projects.length > 5 && (
           <Link to="/projects" className="block text-center py-2 text-xs text-primary hover:underline">
             Alle {projects.length} Projekte anzeigen
