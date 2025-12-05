@@ -1775,12 +1775,13 @@ export default function Projects() {
                       </CollapsibleContent>
                     </Collapsible>
                     
-                    {/* Optimization Status Progress Bar */}
-                    <div className="mt-4 flex items-center gap-3">
+                    {/* Optimization Status Progress Bar - Responsive */}
+                    <div className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                       {(() => {
                     const currentStatus = calculateProjectStatus(project, true);
                     const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
                     const steps = ['NEU', 'OFFEN', 'PRÜFUNG', 'VALIDIERUNG', 'ABGESCHLOSSEN'];
+                    const shortSteps = ['N', 'O', 'P', 'V', 'A'];
                     
                     return <>
                             <div className="flex-1 flex items-stretch h-9 border border-border rounded-full overflow-hidden">
@@ -1803,7 +1804,9 @@ export default function Projects() {
                                   >
                                     <span className="flex items-center gap-1">
                                       {(isCompleted || isCurrent) && <span className="text-emerald-600 dark:text-emerald-400">✓</span>}
-                                      {step}
+                                      {/* Show full text on md+, short on smaller */}
+                                      <span className="hidden md:inline">{step}</span>
+                                      <span className="md:hidden">{shortSteps[index]}</span>
                                     </span>
                                   </div>
                                 );
@@ -1815,7 +1818,7 @@ export default function Projects() {
                         console.log('📋 Select onValueChange triggered:', value);
                         handleProjectStatusChange(project, value);
                       }}>
-                              <SelectTrigger className="w-auto min-w-[100px] h-9 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90">
+                              <SelectTrigger className="w-full sm:w-auto sm:min-w-[100px] h-9 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
