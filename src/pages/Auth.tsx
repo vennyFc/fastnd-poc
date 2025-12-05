@@ -198,7 +198,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+    <main className="min-h-screen flex items-center justify-center bg-muted p-4">
       {isSetPassword ? (
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1">
@@ -386,6 +386,6 @@ export default function Auth() {
         </CardContent>
       </Card>
       )}
-    </div>
+    </main>
   );
 }
