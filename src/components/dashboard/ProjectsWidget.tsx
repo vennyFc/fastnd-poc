@@ -315,9 +315,10 @@ export function ProjectsWidget() {
               </div>
               <div className="shrink-0 w-[100px]">
                 <div className="text-xs text-muted-foreground mb-0.5">Status</div>
-                <Badge variant="outline" className="text-xs bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30">
-                  {status}
-                </Badge>
+                <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                  <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
+                  <span className="text-xs">{status}</span>
+                </div>
               </div>
             </div>
           </Link>
