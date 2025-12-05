@@ -63,6 +63,7 @@ const translations: Record<Language, Record<string, string>> = {
     'search.searchCustomers': 'Kunde suchen...',
     'search.searchApplications': 'Applikationen suchen...',
     'search.searchCrossSells': 'Cross-Sells suchen...',
+    'search.searchCollections': 'Sammlungen suchen...',
     
     // User Preferences
     'userPrefs.title': 'Benutzereinstellungen',
@@ -878,6 +879,7 @@ const translations: Record<Language, Record<string, string>> = {
     'search.searchCustomers': 'Search customers...',
     'search.searchApplications': 'Search applications...',
     'search.searchCrossSells': 'Search cross-sells...',
+    'search.searchCollections': 'Search collections...',
     
     // User Preferences
     'userPrefs.title': 'User Preferences',
