@@ -17,10 +17,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SuperAdminManagement } from '@/components/SuperAdminManagement';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [newTenantName, setNewTenantName] = useState('');
   const [newSuperAdminEmail, setNewSuperAdminEmail] = useState('');
   const [inviteDialog, setInviteDialog] = useState<{
@@ -447,14 +449,14 @@ export default function SuperAdmin() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3">
         <Shield className="h-8 w-8 text-primary" />
-        <h1 className="text-3xl font-medium font-clash">Super Admin</h1>
+        <h1 className="text-3xl font-medium font-clash">{t('superAdmin.title')}</h1>
       </div>
 
       <Tabs defaultValue="admins" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="admins">Super-Admins</TabsTrigger>
-          <TabsTrigger value="tenants">Mandanten</TabsTrigger>
-          <TabsTrigger value="settings">Einstellungen</TabsTrigger>
+          <TabsTrigger value="admins">{t('superAdmin.tabs.admins')}</TabsTrigger>
+          <TabsTrigger value="tenants">{t('superAdmin.tabs.tenants')}</TabsTrigger>
+          <TabsTrigger value="settings">{t('superAdmin.tabs.settings')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="admins" className="space-y-6">
@@ -465,7 +467,7 @@ export default function SuperAdmin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
-                Neuen Super-Admin einladen
+                {t('superAdmin.inviteNewAdmin')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -481,7 +483,7 @@ export default function SuperAdmin() {
                   type="submit" 
                   disabled={inviteSuperAdminMutation.isPending}
                 >
-                  {inviteSuperAdminMutation.isPending ? 'Lädt ein...' : 'Super-Admin einladen'}
+                  {inviteSuperAdminMutation.isPending ? t('superAdmin.inviting') : t('superAdmin.invite')}
                 </Button>
               </form>
             </CardContent>
@@ -494,13 +496,13 @@ export default function SuperAdmin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
-                Neuen Mandanten erstellen
+                {t('superAdmin.createTenant')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateTenant} className="flex gap-4">
                 <Input
-                  placeholder="Mandantenname"
+                  placeholder={t('superAdmin.tenantName')}
                   value={newTenantName}
                   onChange={(e) => setNewTenantName(e.target.value)}
                   className="max-w-md"
@@ -509,7 +511,7 @@ export default function SuperAdmin() {
                   type="submit" 
                   disabled={createTenantMutation.isPending}
                 >
-                  {createTenantMutation.isPending ? 'Erstelle...' : 'Erstellen'}
+                  {createTenantMutation.isPending ? t('superAdmin.creating') : t('superAdmin.create')}
                 </Button>
               </form>
             </CardContent>
@@ -518,7 +520,7 @@ export default function SuperAdmin() {
       {/* Tenants List */}
       <Card>
         <CardHeader>
-          <CardTitle>Alle Mandanten</CardTitle>
+          <CardTitle>{t('superAdmin.allTenants')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -529,17 +531,17 @@ export default function SuperAdmin() {
             </div>
           ) : error ? (
             <div className="text-destructive">
-              Fehler beim Laden der Mandanten: {error.message}
+              {t('superAdmin.loadError')}: {error.message}
             </div>
           ) : tenants && tenants.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Erstellt am</TableHead>
-                  <TableHead>Verwaltung</TableHead>
-                  <TableHead className="text-right">Aktionen</TableHead>
+                  <TableHead>{t('superAdmin.id')}</TableHead>
+                  <TableHead>{t('superAdmin.name')}</TableHead>
+                  <TableHead>{t('superAdmin.createdAt')}</TableHead>
+                  <TableHead>{t('superAdmin.management2')}</TableHead>
+                  <TableHead className="text-right">{t('superAdmin.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -574,7 +576,7 @@ export default function SuperAdmin() {
                           }}
                         >
                           <Info className="mr-2 h-4 w-4" />
-                          Details
+                          {t('superAdmin.details')}
                         </Button>
                         <Button
                           variant="outline"
@@ -582,7 +584,7 @@ export default function SuperAdmin() {
                           onClick={() => navigate(`/admin/${tenant.id}`)}
                         >
                           <Users className="mr-2 h-4 w-4" />
-                          Benutzer verwalten
+                          {t('superAdmin.manageUsers')}
                         </Button>
                         <Button
                           variant="outline"
@@ -594,7 +596,7 @@ export default function SuperAdmin() {
                           })}
                         >
                           <UserPlus className="mr-2 h-4 w-4" />
-                          Admin einladen
+                          {t('superAdmin.inviteAdmin')}
                         </Button>
                       </div>
                     </TableCell>
@@ -635,7 +637,7 @@ export default function SuperAdmin() {
             </Table>
           ) : (
             <p className="text-muted-foreground text-center py-8">
-              Noch keine Mandanten vorhanden
+              {t('superAdmin.noTenants')}
             </p>
           )}
         </CardContent>
@@ -648,20 +650,19 @@ export default function SuperAdmin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
                 <Trash className="h-5 w-5" />
-                Globale Daten bereinigen
+                {t('superAdmin.cleanupData')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">
-                Entfernt alle verwaisten Daten ohne Mandantenzuordnung (tenant_id = NULL) aus der Datenbank. 
-                Diese Aktion kann nicht rückgängig gemacht werden.
+                {t('superAdmin.cleanupDesc')}
               </p>
               <Button 
                 variant="destructive"
                 onClick={() => cleanupMutation.mutate()}
                 disabled={cleanupMutation.isPending}
               >
-                {cleanupMutation.isPending ? 'Bereinige...' : 'Globale Daten löschen'}
+                {cleanupMutation.isPending ? t('superAdmin.cleaning') : t('superAdmin.cleanupButton')}
               </Button>
             </CardContent>
           </Card>
@@ -680,15 +681,14 @@ export default function SuperAdmin() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Tenant-Admin einladen</DialogTitle>
+            <DialogTitle>{t('superAdmin.inviteTenantAdmin')}</DialogTitle>
             <DialogDescription>
-              Laden Sie einen Administrator für den Mandanten "{inviteDialog?.tenantName}" ein.
-              Der eingeladene Benutzer erhält Admin-Rechte für diesen Mandanten.
+              {t('superAdmin.inviteTenantAdminDesc').replace('{tenant}', inviteDialog?.tenantName || '')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleInviteAdmin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="invite-email">E-Mail-Adresse</Label>
+              <Label htmlFor="invite-email">{t('superAdmin.emailAddress')}</Label>
               <Input
                 id="invite-email"
                 type="email"
@@ -707,13 +707,13 @@ export default function SuperAdmin() {
                   setInviteEmail('');
                 }}
               >
-                Abbrechen
+                {t('superAdmin.cancel')}
               </Button>
               <Button 
                 type="submit"
                 disabled={inviteUserMutation.isPending}
               >
-                {inviteUserMutation.isPending ? 'Lädt ein...' : 'Einladung senden'}
+                {inviteUserMutation.isPending ? t('superAdmin.inviting') : t('superAdmin.sendInvite')}
               </Button>
             </DialogFooter>
           </form>
@@ -732,20 +732,20 @@ export default function SuperAdmin() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mandant bearbeiten</DialogTitle>
+            <DialogTitle>{t('superAdmin.editTenant')}</DialogTitle>
             <DialogDescription>
-              Ändern Sie den Namen des Mandanten "{editDialog?.tenantName}".
+              {t('superAdmin.editTenantDesc').replace('{tenant}', editDialog?.tenantName || '')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateTenant} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-tenant-name">Mandantenname</Label>
+              <Label htmlFor="edit-tenant-name">{t('superAdmin.tenantName')}</Label>
               <Input
                 id="edit-tenant-name"
                 type="text"
                 value={editTenantName}
                 onChange={(e) => setEditTenantName(e.target.value)}
-                placeholder="Firmenname"
+                placeholder={t('superAdmin.companyName')}
                 required
               />
             </div>
@@ -758,13 +758,13 @@ export default function SuperAdmin() {
                   setEditTenantName('');
                 }}
               >
-                Abbrechen
+                {t('superAdmin.cancel')}
               </Button>
               <Button 
                 type="submit"
                 disabled={updateTenantMutation.isPending}
               >
-                {updateTenantMutation.isPending ? 'Speichert...' : 'Speichern'}
+                {updateTenantMutation.isPending ? t('superAdmin.saving') : t('superAdmin.save')}
               </Button>
             </DialogFooter>
           </form>
@@ -782,20 +782,19 @@ export default function SuperAdmin() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Mandant wirklich löschen?</AlertDialogTitle>
+            <AlertDialogTitle>{t('superAdmin.deleteTenant')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Möchten Sie den Mandanten "{deleteDialog?.tenantName}" wirklich löschen? 
-              Diese Aktion kann nicht rückgängig gemacht werden und alle zugehörigen Daten werden ebenfalls gelöscht.
+              {t('superAdmin.deleteTenantDesc').replace('{tenant}', deleteDialog?.tenantName || '')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel>{t('superAdmin.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteTenant}
               disabled={deleteTenantMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteTenantMutation.isPending ? 'Löscht...' : 'Löschen'}
+              {deleteTenantMutation.isPending ? t('superAdmin.deleting') : t('superAdmin.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -814,13 +813,13 @@ export default function SuperAdmin() {
           <SheetHeader>
             <SheetTitle>{detailSheet?.tenantName}</SheetTitle>
             <SheetDescription>
-              Benutzer und deren Rollen in diesem Mandanten
+              {t('superAdmin.usersAndRoles')}
             </SheetDescription>
           </SheetHeader>
           
           {/* Add User Section */}
           <div className="mt-6 p-4 border rounded-lg bg-muted/30">
-            <h3 className="text-sm font-semibold mb-3">Benutzer hinzufügen</h3>
+            <h3 className="text-sm font-semibold mb-3">{t('superAdmin.addUser')}</h3>
             <form onSubmit={handleAddUserToTenant} className="flex gap-2">
               <Input
                 type="email"
@@ -833,11 +832,11 @@ export default function SuperAdmin() {
                 type="submit"
                 disabled={addUserToTenantMutation.isPending}
               >
-                {addUserToTenantMutation.isPending ? 'Lädt...' : 'Hinzufügen'}
+                {addUserToTenantMutation.isPending ? t('superAdmin.adding') : t('superAdmin.add')}
               </Button>
             </form>
             <p className="text-xs text-muted-foreground mt-2">
-              Geben Sie die E-Mail-Adresse eines existierenden Benutzers ein, um ihn diesem Mandanten zuzuweisen.
+              {t('superAdmin.addUserHint')}
             </p>
           </div>
           
@@ -852,9 +851,9 @@ export default function SuperAdmin() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>E-Mail</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Rolle</TableHead>
+                    <TableHead>{t('superAdmin.email')}</TableHead>
+                    <TableHead>{t('superAdmin.name')}</TableHead>
+                    <TableHead>{t('superAdmin.role')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -881,8 +880,8 @@ export default function SuperAdmin() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="tenant_admin">Tenant Admin</SelectItem>
+                            <SelectItem value="user">{t('superAdmin.roleUser')}</SelectItem>
+                            <SelectItem value="tenant_admin">{t('superAdmin.roleTenantAdmin')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -892,7 +891,7 @@ export default function SuperAdmin() {
               </Table>
             ) : (
               <p className="text-muted-foreground text-center py-8">
-                Keine Benutzer in diesem Mandanten
+                {t('superAdmin.noUsers')}
               </p>
             )}
           </div>

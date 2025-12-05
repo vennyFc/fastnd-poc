@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Table,
   TableBody,
@@ -23,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 import { LogIn, LogOut, Eye, Activity, Download, ArrowUpDown, Filter, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
@@ -47,6 +48,8 @@ type SortDirection = 'asc' | 'desc';
 
 export default function AccessLogs() {
   const { isSuperAdmin } = useAuth();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'de' ? de : enUS;
   const [logs, setLogs] = useState<AccessLog[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<AccessLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,7 +278,7 @@ export default function AccessLogs() {
   if (!isSuperAdmin) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-muted-foreground">Keine Berechtigung</p>
+        <p className="text-muted-foreground">{t('accessLogs.noPermission')}</p>
       </div>
     );
   }
@@ -328,36 +331,36 @@ export default function AccessLogs() {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard 
-          title="Gesamt Events" 
+          title={t('accessLogs.totalEvents')} 
           value={statistics.total} 
           icon={Activity}
         />
         <StatCard 
-          title="Logins" 
+          title={t('accessLogs.logins')} 
           value={statistics.login} 
           icon={LogIn}
           variant="login"
         />
         <StatCard 
-          title="Logouts" 
+          title={t('accessLogs.logouts')} 
           value={statistics.logout} 
           icon={LogOut}
           variant="logout"
         />
         <StatCard 
-          title="Seitenaufrufe" 
+          title={t('accessLogs.pageViews')} 
           value={statistics.page_view} 
           icon={Eye}
           variant="view"
         />
         <StatCard 
-          title="Aktionen" 
+          title={t('accessLogs.actions')} 
           value={statistics.action} 
           icon={Activity}
           variant="action"
         />
         <StatCard 
-          title="Unique Users" 
+          title={t('accessLogs.uniqueUsers')} 
           value={statistics.uniqueUsers} 
           icon={Activity}
         />
@@ -367,7 +370,7 @@ export default function AccessLogs() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>User Access Tracking</CardTitle>
+            <CardTitle>{t('accessLogs.userAccessTracking')}</CardTitle>
             <div className="flex gap-2">
               <Button
                 variant={showFilters ? "default" : "outline"}
@@ -375,7 +378,7 @@ export default function AccessLogs() {
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Filter {hasActiveFilters && `(${[eventTypeFilter !== 'all', userFilter, dateFromFilter, dateToFilter].filter(Boolean).length})`}
+                {t('accessLogs.filter')} {hasActiveFilters && `(${[eventTypeFilter !== 'all', userFilter, dateFromFilter, dateToFilter].filter(Boolean).length})`}
               </Button>
               <Button
                 variant="outline"
@@ -384,7 +387,7 @@ export default function AccessLogs() {
                 disabled={filteredLogs.length === 0}
               >
                 <Download className="h-4 w-4 mr-2" />
-                Excel Export
+                {t('accessLogs.excelExport')}
               </Button>
             </div>
           </div>
