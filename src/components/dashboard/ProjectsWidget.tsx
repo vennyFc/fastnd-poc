@@ -246,9 +246,31 @@ export function ProjectsWidget() {
       }
     };
 
+    // Helper to get last modified date from optimization records
+    const getLastModifiedDate = (project: any) => {
+      const projectNumbers = allProjectsRaw
+        .filter((p: any) => p.customer === project.customer && p.project_name === project.project_name)
+        .map((p: any) => p.project_number)
+        .filter(Boolean);
+      
+      const projectOptRecords = optimizationRecords.filter((rec: any) => 
+        projectNumbers.includes(rec.project_number)
+      );
+      
+      if (projectOptRecords.length > 0) {
+        const latestDate = projectOptRecords.reduce((latest: Date, rec: any) => {
+          const recDate = new Date(rec.updated_at);
+          return recDate > latest ? recDate : latest;
+        }, new Date(0));
+        return latestDate.getTime() > 0 ? latestDate : null;
+      }
+      return project.created_at ? new Date(project.created_at) : null;
+    };
+
     return <div className="space-y-3">
         {projects.slice(0, 5).map((project: any) => {
           const status = getOptimizationStatus(project);
+          const lastModified = getLastModifiedDate(project);
           return (
           <Link 
             key={project.id} 
@@ -292,9 +314,9 @@ export function ProjectsWidget() {
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <div className="text-2xs text-muted-foreground mb-0.5">Hinzugefügt</div>
+                <div className="text-2xs text-muted-foreground mb-0.5">Zuletzt geändert</div>
                 <div className="text-xs font-medium">
-                  {project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-'}
+                  {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                 </div>
               </div>
             </div>
