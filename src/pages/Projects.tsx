@@ -1830,9 +1830,9 @@ export default function Projects() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-9 gap-6">
                   {/* Products Table */}
-                  <div className="lg:col-span-2">
+                  <div className="lg:col-span-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-primary" />
@@ -2066,7 +2066,7 @@ export default function Projects() {
                   </div>
 
                   {/* Cross-Sells Section */}
-                  <div className="lg:col-span-3">
+                  <div className="lg:col-span-5">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
