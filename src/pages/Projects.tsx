@@ -2888,11 +2888,11 @@ export default function Projects() {
                           {column.key === 'customer' ? <span className="text-foreground hover:underline cursor-pointer">
                               {value}
                             </span> : column.key === 'applications' ? <div className="flex flex-wrap gap-1">
-                              {project.applications.length > 0 ? project.applications.map((appName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
+                              {project.applications.length > 0 ? project.applications.map((appName: string, idx: number) => <span key={idx} onClick={e => {
                           e.stopPropagation();
                           setSelectedApplicationForQuickView(appName);
                           setApplicationQuickViewOpen(true);
-                        }}>
+                        }} className="text-foreground hover:underline cursor-pointer text-xs">
                                     {appName}
                                     {idx < project.applications.length - 1 && ', '}
                                   </span>) : '-'}
