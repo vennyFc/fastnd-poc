@@ -469,7 +469,7 @@ export function OptimizationStatusWidget() {
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold">{item.anzahl}</p>
-                      <p className="text-xs text-muted-foreground">Projekte</p>
+                      <p className="text-xs text-muted-foreground">{t('optimizationStatus.projects')}</p>
                       <p className="text-sm font-semibold mt-1 text-foreground">
                         {percentage}%
                       </p>
