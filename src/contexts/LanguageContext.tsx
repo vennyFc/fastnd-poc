@@ -202,6 +202,10 @@ const translations: Record<Language, Record<string, string>> = {
     'widget.accessStats': 'Zugriffs-Statistiken',
     'widget.search': 'Suche',
     
+    // NPI Products Widget
+    'npiProducts.title': 'NPI Produkte',
+    'npiProducts.noProducts': 'Keine NPI-Produkte vorhanden',
+    
     // Project Detail
     'project.metadata': 'Projektdetails',
     'project.createdAt': 'Erstellt',
@@ -763,6 +767,10 @@ const translations: Record<Language, Record<string, string>> = {
     'widget.loginActivity': 'Login Activity',
     'widget.accessStats': 'Access Statistics',
     'widget.search': 'Search',
+    
+    // NPI Products Widget
+    'npiProducts.title': 'NPI Products',
+    'npiProducts.noProducts': 'No NPI products available',
     
     // Project Detail
     'project.metadata': 'Project Details',
