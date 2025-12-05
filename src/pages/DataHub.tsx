@@ -332,12 +332,7 @@ export default function DataHub() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-medium text-foreground mb-2 font-clash">{t('dataHub.title')}</h1>
-          <p className="text-muted-foreground">
-            {t('dataHub.description')}
-          </p>
-        </div>
+        <h1 className="text-3xl font-medium text-foreground font-clash">{t('dataHub.title')}</h1>
         <Button
           onClick={handleRemoveDuplicates}
           disabled={isRemovingDuplicates}
