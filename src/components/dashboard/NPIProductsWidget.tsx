@@ -7,10 +7,12 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import AutoScroll from 'embla-carousel-auto-scroll';
 import { useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function NPIProductsWidget() {
   const navigate = useNavigate();
   const { activeTenant } = useAuth();
+  const { t } = useLanguage();
   const autoScrollPlugin = useRef(
     AutoScroll({ 
       speed: 1,
@@ -52,12 +54,12 @@ export function NPIProductsWidget() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>NPI Produkte</CardTitle>
+            <CardTitle>{t('npiProducts.title')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="h-[200px] flex items-center justify-center">
-            <div className="animate-pulse text-muted-foreground">Laden...</div>
+            <div className="animate-pulse text-muted-foreground">{t('common.loading')}</div>
           </div>
         </CardContent>
       </Card>
@@ -70,12 +72,12 @@ export function NPIProductsWidget() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <CardTitle>NPI Produkte (0)</CardTitle>
+            <CardTitle>{t('npiProducts.title')} (0)</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-            Keine NPI-Produkte vorhanden
+            {t('npiProducts.noProducts')}
           </div>
         </CardContent>
       </Card>
@@ -87,7 +89,7 @@ export function NPIProductsWidget() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          <CardTitle>NPI Produkte ({npiProducts.length})</CardTitle>
+          <CardTitle>{t('npiProducts.title')} ({npiProducts.length})</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
