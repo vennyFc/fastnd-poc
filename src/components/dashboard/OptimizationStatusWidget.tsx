@@ -432,7 +432,7 @@ export function OptimizationStatusWidget() {
                   name={t('optimizationStatus.projectCount')}
                   radius={[8, 8, 0, 0]}
                 >
-                  {chartData.map((entry, index) => {
+                {chartData.map((entry, index) => {
                     const gradientMap: Record<string, string> = {
                       'Neu': 'url(#gradientNeu)',
                       'Offen': 'url(#gradientOffen)',
@@ -440,7 +440,7 @@ export function OptimizationStatusWidget() {
                       'Validierung': 'url(#gradientValidierung)',
                       'Abgeschlossen': 'url(#gradientAbgeschlossen)',
                     };
-                    return <Cell key={`cell-${index}`} fill={gradientMap[entry.status] || 'url(#gradientNeu)'} />;
+                    return <Cell key={`cell-${index}`} fill={gradientMap[entry.statusKey] || 'url(#gradientNeu)'} />;
                   })}
                 </Bar>
               </BarChart>
