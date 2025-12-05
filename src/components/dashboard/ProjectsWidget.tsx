@@ -285,13 +285,15 @@ export function ProjectsWidget() {
               <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
             </div>
             
-            {/* Metadata Row - all items aligned */}
-            <div className="flex items-start gap-4 pl-7">
-              <div className="min-w-0 w-[160px]">
+            {/* Metadata Row - responsive layout */}
+            <div className="flex flex-wrap items-start gap-x-4 gap-y-2 pl-7">
+              {/* Kunde - always visible */}
+              <div className="min-w-0 w-[140px] sm:w-[160px]">
                 <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
                 <div className="text-sm font-medium truncate">{project.customer}</div>
               </div>
-              <div className="min-w-0 flex-1">
+              {/* Applikation - hidden on very small screens */}
+              <div className="min-w-0 flex-1 hidden sm:block">
                 <div className="text-xs text-muted-foreground mb-0.5">Applikation</div>
                 <div className="text-sm font-medium truncate">
                   {project.applications && project.applications.length > 0 
@@ -299,7 +301,16 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[72px]">
+              {/* Status - moved before dates, fixed width for "Abgeschlossen" */}
+              <div className="shrink-0 w-[110px]">
+                <div className="text-xs text-muted-foreground mb-0.5">Status</div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                  <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
+                  <span className="text-xs whitespace-nowrap">{status}</span>
+                </div>
+              </div>
+              {/* Erstellt - hidden on mobile */}
+              <div className="shrink-0 w-[72px] hidden md:block">
                 <div className="text-xs text-muted-foreground mb-0.5">Erstellt</div>
                 <div className="text-sm font-medium">
                   {project.opportunity_creation_date 
@@ -307,17 +318,11 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[72px]">
+              {/* Geändert - hidden on mobile */}
+              <div className="shrink-0 w-[72px] hidden md:block">
                 <div className="text-xs text-muted-foreground mb-0.5">Geändert</div>
                 <div className="text-sm font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
-                </div>
-              </div>
-              <div className="shrink-0">
-                <div className="text-xs text-muted-foreground mb-0.5">Status</div>
-                <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
-                  <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
-                  <span className="text-xs">{status}</span>
                 </div>
               </div>
             </div>
