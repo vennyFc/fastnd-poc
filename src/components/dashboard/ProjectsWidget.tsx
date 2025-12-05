@@ -299,8 +299,16 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[90px]">
-                <div className="text-2xs text-muted-foreground mb-0.5">Zuletzt geändert</div>
+              <div className="shrink-0 w-[80px]">
+                <div className="text-2xs text-muted-foreground mb-0.5">Erstellt</div>
+                <div className="text-xs font-medium">
+                  {project.opportunity_creation_date 
+                    ? format(new Date(project.opportunity_creation_date), 'dd.MM.yyyy') 
+                    : '-'}
+                </div>
+              </div>
+              <div className="shrink-0 w-[80px]">
+                <div className="text-2xs text-muted-foreground mb-0.5">Geändert</div>
                 <div className="text-xs font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                 </div>
