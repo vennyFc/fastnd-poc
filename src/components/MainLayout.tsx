@@ -1,7 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle, LogOut, Settings, User } from 'lucide-react';
+import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle, LogOut, Settings, User, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -425,33 +425,39 @@ export function MainLayout({ children }: MainLayoutProps) {
               
               {/* Tenant Selector for Super Admin */}
               {isSuperAdmin && (
-                <div className="w-[200px]">
-                  <Select
-                    value={activeTenant?.id || ""}
-                    onValueChange={(value) => {
-                      if (value === 'global') {
-                        setActiveTenant({ id: 'global', name: 'Global' });
-                      } else {
-                        const tenant = allTenants?.find(t => t.id === value);
-                        if (tenant) setActiveTenant(tenant);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className={!activeTenant ? "border-destructive" : ""}>
-                      <SelectValue placeholder="Mandant auswählen..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="global">
-                        <span className="font-semibold">🌐 Global (Alle Mandanten)</span>
+                <Select
+                  value={activeTenant?.id || ""}
+                  onValueChange={(value) => {
+                    if (value === 'global') {
+                      setActiveTenant({ id: 'global', name: 'Global' });
+                    } else {
+                      const tenant = allTenants?.find(t => t.id === value);
+                      if (tenant) setActiveTenant(tenant);
+                    }
+                  }}
+                >
+                  <SelectTrigger className={`h-9 w-auto min-w-[180px] gap-2 rounded-full border-0 bg-muted/50 px-3 text-sm font-medium hover:bg-muted transition-colors ${!activeTenant ? "ring-2 ring-destructive" : ""}`}>
+                    <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Mandant wählen" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="global" className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-primary" />
+                        <span>Alle Mandanten</span>
+                      </div>
+                    </SelectItem>
+                    <div className="my-1 h-px bg-border" />
+                    {allTenants?.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span>{tenant.name}</span>
+                        </div>
                       </SelectItem>
-                      {allTenants?.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id}>
-                          {tenant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
             
