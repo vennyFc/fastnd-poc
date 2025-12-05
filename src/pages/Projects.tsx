@@ -1783,26 +1783,44 @@ export default function Projects() {
                     const steps = ['NEU', 'OFFEN', 'PRÜFUNG', 'VALIDIERUNG', 'ABGESCHLOSSEN'];
                     
                     return <>
-                            <div className="flex-1 flex items-stretch h-9 border border-border rounded-full overflow-hidden">
+                            <div className="flex-1 flex items-stretch h-10 border border-emerald-200 dark:border-emerald-800 rounded-full overflow-hidden bg-background">
                               {steps.map((step, index) => {
                                 const isCompleted = statusIndex > index;
                                 const isCurrent = statusIndex === index;
                                 const isActive = statusIndex >= index;
+                                const isFirst = index === 0;
                                 const isLast = index === steps.length - 1;
+                                const isLastActive = statusIndex === index;
                                 
                                 return (
                                   <div 
                                     key={step}
                                     className={cn(
-                                      "flex-1 flex items-center justify-center text-xs font-medium",
+                                      "flex-1 flex items-center justify-center text-xs font-medium relative",
                                       isActive 
-                                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' 
-                                        : 'bg-muted/50 text-muted-foreground',
-                                      !isLast && "border-r border-border"
+                                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-l-2 border-l-emerald-500' 
+                                        : 'bg-background text-muted-foreground',
+                                      isFirst && 'border-l-0'
                                     )}
                                   >
-                                    <span className="flex items-center gap-1">
-                                      {(isCompleted || isCurrent) && <span className="text-emerald-600 dark:text-emerald-400">✓</span>}
+                                    {/* Chevron separator */}
+                                    {!isFirst && (
+                                      <div className="absolute left-0 top-0 bottom-0 flex items-center">
+                                        <svg 
+                                          className={cn(
+                                            "h-full w-3 -ml-px",
+                                            isActive ? "text-emerald-200 dark:text-emerald-800" : "text-border"
+                                          )} 
+                                          viewBox="0 0 12 40" 
+                                          fill="none" 
+                                          preserveAspectRatio="none"
+                                        >
+                                          <path d="M0 0L12 20L0 40" stroke="currentColor" strokeWidth="1" fill="none" />
+                                        </svg>
+                                      </div>
+                                    )}
+                                    <span className="flex items-center gap-1.5 pl-2">
+                                      {(isCompleted || isCurrent) && <span className="text-emerald-600 dark:text-emerald-400 text-sm">✓</span>}
                                       {step}
                                     </span>
                                   </div>
@@ -1815,7 +1833,7 @@ export default function Projects() {
                         console.log('📋 Select onValueChange triggered:', value);
                         handleProjectStatusChange(project, value);
                       }}>
-                              <SelectTrigger className="w-auto min-w-[100px] h-9 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90">
+                              <SelectTrigger className="w-auto min-w-[110px] h-10 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90 font-medium">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
