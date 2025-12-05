@@ -237,11 +237,11 @@ export function ProjectsWidget() {
 
     const getStatusColor = (status: string) => {
       switch (status) {
-        case 'Neu': return 'bg-blue-500/10 text-blue-600 border-blue-500/30';
-        case 'Offen': return 'bg-orange-500/10 text-orange-600 border-orange-500/30';
-        case 'Prüfung': return 'bg-teal-500/10 text-teal-600 border-teal-500/30';
-        case 'Validierung': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30';
-        case 'Abgeschlossen': return 'bg-green-500/10 text-green-600 border-green-500/30';
+        case 'Neu': return 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/30';
+        case 'Offen': return 'bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/30';
+        case 'Prüfung': return 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-[#8b5cf6]/30';
+        case 'Validierung': return 'bg-[#06b6d4]/10 text-[#06b6d4] border-[#06b6d4]/30';
+        case 'Abgeschlossen': return 'bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30';
         default: return 'bg-muted text-muted-foreground';
       }
     };
