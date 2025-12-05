@@ -291,12 +291,7 @@ export default function Admin() {
       )}
       
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-medium tracking-tight font-clash">{t('admin.title')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('admin.description')}
-          </p>
-        </div>
+        <h1 className="text-3xl font-medium tracking-tight font-clash">{t('admin.title')}</h1>
       </div>
 
       <Tabs defaultValue="users" className="w-full">
