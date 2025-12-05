@@ -46,14 +46,16 @@ const getStatusConfig = (status: string) => {
 
 // StatusBadge Component with Pulsing Dot
 const StatusBadge = ({
-  status
+  status,
+  translatedStatus
 }: {
   status: string;
+  translatedStatus?: string;
 }) => {
   const config = getStatusConfig(status);
   return <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold", config.bgColor, config.textColor, config.borderColor)}>
       <div className={cn("h-2 w-2 rounded-full animate-pulse", config.dotColor)} />
-      <span className="text-xs">{status}</span>
+      <span className="text-xs">{translatedStatus || status}</span>
     </div>;
 };
 export default function Projects() {
@@ -99,6 +101,23 @@ export default function Projects() {
   const [crossSellViewSortField, setCrossSellViewSortField] = useState<string | null>(null);
   const [crossSellViewSortDirection, setCrossSellViewSortDirection] = useState<'asc' | 'desc' | null>(null);
   const [crossSellViewDraggedIndex, setCrossSellViewDraggedIndex] = useState<number | null>(null);
+
+  // Status translation helper
+  const getTranslatedStatus = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'Neu': t('status.new'),
+      'Offen': t('status.open'),
+      'Prüfung': t('status.review'),
+      'Validierung': t('status.validation'),
+      'Abgeschlossen': t('status.completed'),
+      'Identifiziert': t('status.identified'),
+      'Vorgeschlagen': t('status.suggested'),
+      'Akzeptiert': t('status.accepted'),
+      'Registriert': t('status.registered'),
+      'Abgelehnt': t('status.rejected'),
+    };
+    return statusMap[status] || status;
+  };
 
   // Cross-sells VIEW columns configuration (like Products table) - separate from detail view columns
   const defaultCrossSellViewColumns = React.useMemo(() => [{
@@ -2921,7 +2940,7 @@ export default function Projects() {
                                     {productName}
                                     {idx < project.products.length - 1 && ', '}
                                   </span>) : '-'}
-                            </div> : column.key === 'optimization_status' ? <StatusBadge status={calculateProjectStatus(project, false)} /> : value}
+                            </div> : column.key === 'optimization_status' ? <StatusBadge status={calculateProjectStatus(project, false)} translatedStatus={getTranslatedStatus(calculateProjectStatus(project, false))} /> : value}
                         </TableCell>;
                   })}
                   </TableRow>;
