@@ -491,22 +491,22 @@ export default function Collections() {
                       <span>{getVisibilityLabel(collection.visibility)}</span>
                     </div>
                     <Badge variant="secondary">
-                      {collection.collection_products?.[0]?.count || 0} Produkte
+                      {collection.collection_products?.[0]?.count || 0} {t('collections.productsCount')}
                     </Badge>
                   </div>
                   {(collection as any).profile && (
                     <div className="text-xs text-muted-foreground mt-2">
-                      Ersteller: {(collection as any).profile.full_name || (collection as any).profile.email}
+                      {t('collections.creator')}: {(collection as any).profile.full_name || (collection as any).profile.email}
                     </div>
                   )}
                   {collection.created_at && (
                     <div className="text-xs text-muted-foreground mt-2">
-                      Erstellt: {format(new Date(collection.created_at), 'dd.MM.yyyy', { locale: de })}
+                      {t('collections.createdAt')}: {format(new Date(collection.created_at), 'dd.MM.yyyy', { locale: dateLocale })}
                     </div>
                   )}
                   {collection.updated_at && collection.updated_at !== collection.created_at && (
                     <div className="text-xs text-muted-foreground">
-                      Geändert: {format(new Date(collection.updated_at), 'dd.MM.yyyy', { locale: de })}
+                      {t('collections.modifiedAt')}: {format(new Date(collection.updated_at), 'dd.MM.yyyy', { locale: dateLocale })}
                     </div>
                   )}
                 </CardContent>
@@ -542,10 +542,10 @@ export default function Collections() {
                 {collectionProducts.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-muted-foreground">
-                      Diese Sammlung enthält noch keine Produkte.
+                      {t('collections.emptyCollection')}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Fügen Sie Produkte über die Produkte-Ansicht hinzu.
+                      {t('collections.addProductsHint')}
                     </p>
                   </div>
                 ) : (
@@ -573,7 +573,7 @@ export default function Collections() {
                           )}
                           {item.added_at && (
                             <p className="text-xs text-muted-foreground mt-2">
-                              Hinzugefügt: {format(new Date(item.added_at), 'dd.MM.yyyy HH:mm', { locale: de })}
+                              {t('collections.addedAt')}: {format(new Date(item.added_at), 'dd.MM.yyyy HH:mm', { locale: dateLocale })}
                             </p>
                           )}
                         </div>
@@ -599,7 +599,7 @@ export default function Collections() {
             <Card>
               <CardContent className="p-12 text-center">
                 <p className="text-muted-foreground">
-                  Wählen Sie eine Sammlung aus, um Details zu sehen
+                  {t('collections.selectToView')}
                 </p>
               </CardContent>
             </Card>
