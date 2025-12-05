@@ -456,17 +456,17 @@ export default function Admin() {
                 <p className="text-3xl font-bold text-primary">
                   {users?.filter((u: any) => u.roles.some((r: any) => r.role === 'tenant_admin' || r.role === 'super_admin')).length || 0}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">Mit Admin-Rechten</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('admin.adminsCount')}</p>
               </CardContent>
             </Card>
 
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle className="text-lg">Aktive Benutzer</CardTitle>
+                <CardTitle className="text-lg">{t('admin.activeUsers')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
-                <p className="text-sm text-muted-foreground mt-1">Letzte 30 Tage</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('admin.last30Days')}</p>
               </CardContent>
             </Card>
           </div>
@@ -476,15 +476,15 @@ export default function Admin() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Alle Benutzer</CardTitle>
+                  <CardTitle>{t('admin.allUsers')}</CardTitle>
                   <CardDescription>
-                    Verwalten Sie Benutzer und deren Berechtigungen
+                    {t('admin.manageUsersPermissions')}
                   </CardDescription>
                 </div>
                 <div className="relative w-64">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Nach E-Mail oder Name suchen..."
+                    placeholder={t('admin.searchByEmailOrName')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8"
@@ -503,11 +503,11 @@ export default function Admin() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>E-Mail</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Rolle</TableHead>
-                      <TableHead>Registriert</TableHead>
-                      <TableHead className="w-[450px]">Aktionen</TableHead>
+                      <TableHead>{t('admin.email')}</TableHead>
+                      <TableHead>{t('admin.name')}</TableHead>
+                      <TableHead>{t('admin.roleLabel')}</TableHead>
+                      <TableHead>{t('admin.registered')}</TableHead>
+                      <TableHead className="w-[450px]">{t('admin.actionsColumn')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -521,12 +521,12 @@ export default function Admin() {
                             {isUserAdmin ? (
                               <Badge variant="default" className="gap-1">
                                 <Shield className="h-3 w-3" />
-                                Admin
+                                {t('admin.roleAdmin')}
                               </Badge>
                             ) : (
                               <Badge variant="secondary" className="gap-1">
                                 <User className="h-3 w-3" />
-                                Benutzer
+                                {t('admin.roleUser')}
                               </Badge>
                             )}
                           </TableCell>
@@ -543,7 +543,7 @@ export default function Admin() {
                                 className="whitespace-nowrap"
                               >
                                 <Mail className="h-4 w-4 mr-1" />
-                                Einladung
+                                {t('admin.resendInviteShort')}
                               </Button>
                               <Button
                                 variant="outline"
@@ -553,14 +553,14 @@ export default function Admin() {
                                 className="whitespace-nowrap min-w-[160px]"
                               >
                                 <Shield className="h-4 w-4 mr-1" />
-                                {isUserAdmin ? 'Admin entfernen' : 'Admin setzen'}
+                                {isUserAdmin ? t('admin.removeAdmin') : t('admin.makeAdmin')}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => handleDeleteClick(user.id, user.email)}
                                 disabled={deleteUserMutation.isPending}
-                                title="Benutzer löschen"
+                                title={t('admin.deleteUser')}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -573,11 +573,11 @@ export default function Admin() {
                 </Table>
               ) : searchQuery ? (
                 <div className="p-8 text-center text-muted-foreground">
-                  Keine Benutzer gefunden für "{searchQuery}"
+                  {t('admin.noUsersFoundFor')} "{searchQuery}"
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
-                  Keine Benutzer vorhanden
+                  {t('admin.noUsersAvailable')}
                 </div>
               )}
             </CardContent>
@@ -593,22 +593,22 @@ export default function Admin() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Benutzer löschen?</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.deleteUserTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Sind Sie sicher, dass Sie den Benutzer <strong>{userToDelete?.email}</strong> löschen möchten?
+              {t('admin.deleteUserConfirm')} <strong>{userToDelete?.email}</strong>?
               <br /><br />
-              Diese Aktion kann nicht rückgängig gemacht werden. Alle Daten des Benutzers werden dauerhaft gelöscht.
+              {t('admin.deleteUserWarning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setUserToDelete(null)}>
-              Abbrechen
+              {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Löschen
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
