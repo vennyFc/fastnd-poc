@@ -103,56 +103,56 @@ export default function Projects() {
   // Cross-sells VIEW columns configuration (like Products table) - separate from detail view columns
   const defaultCrossSellViewColumns = React.useMemo(() => [{
     key: 'product',
-    label: 'Bauteil',
+    label: t('table.component'),
     visible: true,
     width: 280,
     order: 0
   }, {
     key: 'product_tags',
-    label: 'Tags',
+    label: t('table.tags'),
     visible: true,
     width: 100,
     order: 1
   }, {
     key: 'product_price',
-    label: 'Preis',
-    labelTooltip: 'in €/pcs',
+    label: t('table.price'),
+    labelTooltip: t('table.priceTooltip'),
     visible: true,
     width: 80,
     order: 2
   }, {
     key: 'product_lead_time',
-    label: 'Lieferzeit',
-    labelTooltip: 'in Wochen',
+    label: t('table.leadTime'),
+    labelTooltip: t('table.leadTimeTooltip'),
     visible: true,
     width: 90,
     order: 3
   }, {
     key: 'product_inventory',
-    label: 'Lagerbestand',
-    labelTooltip: 'in pcs',
+    label: t('table.inventory'),
+    labelTooltip: t('table.inventoryTooltip'),
     visible: true,
     width: 100,
     order: 4
   }, {
     key: 'rec_source',
-    label: 'Grund',
+    label: t('table.reason'),
     visible: true,
     width: 120,
     order: 5
   }, {
     key: 'rec_score',
-    label: 'Score',
+    label: t('table.score'),
     visible: true,
     width: 150,
     order: 6
   }, {
     key: 'actions',
-    label: 'Aktion',
+    label: t('table.action'),
     visible: true,
     width: 160,
     order: 7
-  }], []);
+  }], [t]);
   const {
     columns: crossSellViewColumns,
     toggleColumn: toggleCrossSellViewColumn,
@@ -196,47 +196,47 @@ export default function Projects() {
   };
   const defaultProjectColumns = React.useMemo(() => [{
     key: 'project_name',
-    label: 'Projektname',
+    label: t('table.projectName'),
     visible: true,
     width: 200,
     order: 0
   }, {
     key: 'customer',
-    label: 'Kunde',
+    label: t('table.customer'),
     visible: true,
     width: 180,
     order: 1
   }, {
     key: 'applications',
-    label: 'Applikation',
+    label: t('table.application'),
     visible: true,
     width: 200,
     order: 2
   }, {
     key: 'products',
-    label: 'Produkt',
+    label: t('table.product'),
     visible: false,
     width: 200,
     order: 3
   }, {
     key: 'optimization_status',
-    label: 'Optimierungsstatus',
+    label: t('table.optimizationStatus'),
     visible: true,
     width: 160,
     order: 4
   }, {
     key: 'created_at',
-    label: 'Erstellt',
+    label: t('table.created'),
     visible: true,
     width: 120,
     order: 5
   }, {
     key: 'updated_at',
-    label: 'Zuletzt geändert',
+    label: t('table.lastModified'),
     visible: true,
     width: 140,
     order: 6
-  }], []);
+  }], [t]);
   const {
     columns,
     toggleColumn,
@@ -252,40 +252,40 @@ export default function Projects() {
   };
   const defaultProductColumns = React.useMemo(() => [{
     key: 'product_info',
-    label: 'Produkt',
+    label: t('table.product'),
     visible: true,
     width: 320,
     order: 0
   }, {
     key: 'product_price',
-    label: 'Preis',
-    labelTooltip: 'in €/pcs',
+    label: t('table.price'),
+    labelTooltip: t('table.priceTooltip'),
     visible: false,
     width: 80,
     order: 1
   }, {
     key: 'product_lead_time',
-    label: 'Lieferzeit',
-    labelTooltip: 'in Wochen',
+    label: t('table.leadTime'),
+    labelTooltip: t('table.leadTimeTooltip'),
     visible: false,
     width: 90,
     order: 2
   }, {
     key: 'product_inventory',
-    label: 'Lagerbestand',
-    labelTooltip: 'in pcs',
+    label: t('table.inventory'),
+    labelTooltip: t('table.inventoryTooltip'),
     visible: false,
     width: 100,
     order: 3
   }, {
     key: 'product_tags',
-    label: 'Tags',
+    label: t('table.tags'),
     visible: false,
     width: 140,
     order: 4
   }, {
     key: 'status',
-    label: 'Status',
+    label: t('table.status'),
     visible: true,
     width: 150,
     order: 5
@@ -295,7 +295,7 @@ export default function Projects() {
     visible: true,
     width: 50,
     order: 6
-  }], []);
+  }], [t]);
   const {
     columns: productColumns,
     toggleColumn: toggleProductColumn,
@@ -325,46 +325,46 @@ export default function Projects() {
   // Cross-sell columns for detail view
   const defaultCrossSellColumns = React.useMemo(() => [{
     key: 'product_info',
-    label: 'Produkt',
+    label: t('table.product'),
     visible: true,
     width: 320,
     order: 0
   }, {
     key: 'rec_score',
-    label: 'Empfehlung',
+    label: t('table.recommendation'),
     visible: true,
     width: 150,
     order: 1
   }, {
     key: 'product_price',
-    label: 'Preis',
-    labelTooltip: 'in €/pcs',
+    label: t('table.price'),
+    labelTooltip: t('table.priceTooltip'),
     visible: false,
     width: 80,
     order: 2
   }, {
     key: 'product_lead_time',
-    label: 'Lieferzeit',
-    labelTooltip: 'in Wochen',
+    label: t('table.leadTime'),
+    labelTooltip: t('table.leadTimeTooltip'),
     visible: false,
     width: 90,
     order: 3
   }, {
     key: 'product_inventory',
-    label: 'Lagerbestand',
-    labelTooltip: 'in pcs',
+    label: t('table.inventory'),
+    labelTooltip: t('table.inventoryTooltip'),
     visible: false,
     width: 100,
     order: 4
   }, {
     key: 'product_tags',
-    label: 'Tags',
+    label: t('table.tags'),
     visible: false,
     width: 140,
     order: 5
   }, {
     key: 'action',
-    label: 'Aktion',
+    label: t('table.action'),
     visible: true,
     width: 150,
     order: 6
@@ -374,7 +374,7 @@ export default function Projects() {
     visible: true,
     width: 50,
     order: 7
-  }], []);
+  }], [t]);
   const {
     columns: crossSellColumns,
     toggleColumn: toggleCrossSellColumn,
@@ -1004,10 +1004,10 @@ export default function Projects() {
       }), queryClient.invalidateQueries({
         queryKey: ['customer_projects']
       })]);
-      toast.success('Status aktualisiert');
+      toast.success(t('toast.updated'));
     } catch (error) {
       console.error('Error updating status:', error);
-      toast.error('Fehler beim Aktualisieren des Status');
+      toast.error(t('projects.errorUpdatingStatus'));
     }
   };
   const handleAddCrossSell = async (project: any, crossSellProduct: string) => {
@@ -1018,7 +1018,7 @@ export default function Projects() {
         }
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Nicht authentifiziert');
+        toast.error(t('projects.errorNotAuthenticated'));
         return;
       }
 
@@ -1038,7 +1038,7 @@ export default function Projects() {
         throw projectError;
       }
       if (!projectData) {
-        toast.error('Projekt nicht gefunden');
+        toast.error(t('projects.errorProjectNotFound'));
         return;
       }
       console.log('Adding product to project:', {
@@ -1096,10 +1096,10 @@ export default function Projects() {
 
       // Wait a moment for React Query to update the cache
       await new Promise(resolve => setTimeout(resolve, 100));
-      toast.success(`${crossSellProduct} zum Projekt hinzugefügt`);
+      toast.success(`${crossSellProduct} ${t('toast.added')}`);
     } catch (error: any) {
       console.error('Error adding cross-sell:', error);
-      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+      toast.error(`${t('toast.error')}: ${error.message || 'Unknown error'}`);
     }
   };
   const handleRemoveCrossSell = (project: any, crossSellProduct: string, application: string) => {
@@ -1126,13 +1126,13 @@ export default function Projects() {
         }
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Nicht authentifiziert');
+        toast.error(t('projects.errorNotAuthenticated'));
         return;
       }
       const project = ctx?.project ?? selectedCrossSellForRemoval?.project;
       const crossSellProduct = ctx?.crossSellProduct ?? selectedCrossSellForRemoval?.crossSellProduct;
       if (!project || !crossSellProduct) {
-        toast.error('Kontext fehlt für das Entfernen');
+        toast.error(t('toast.error'));
         return;
       }
 
@@ -1141,7 +1141,7 @@ export default function Projects() {
         data: projectData
       } = await supabase.from('customer_projects').select('project_number, application').eq('customer', project.customer).eq('project_name', project.project_name).limit(1).maybeSingle();
       if (!projectData) {
-        toast.error('Projekt nicht gefunden');
+        toast.error(t('projects.errorProjectNotFound'));
         return;
       }
 
@@ -1164,9 +1164,9 @@ export default function Projects() {
       setLastRemovedProduct(crossSellProduct);
 
       // Sofort Toast mit Undo-Action anzeigen (Fallback zum Modal)
-      toast.success(`"${crossSellProduct}" entfernt`, {
+      toast.success(`"${crossSellProduct}" ${t('toast.removed')}`, {
         action: {
-          label: 'Rückgängig',
+          label: t('projects.undoRemoval'),
           onClick: () => handleUndoRemovalById(inserted.id)
         },
         duration: 4000
@@ -1209,13 +1209,13 @@ export default function Projects() {
       await queryClient.invalidateQueries({
         queryKey: ['removed_cross_sells']
       });
-      toast.success('Entfernung rückgängig gemacht');
+      toast.success(t('projects.undoRemoval'));
       setUndoModalOpen(false);
       setLastRemovedId(null);
       setLastRemovedProduct(null);
     } catch (error) {
       console.error('Error undoing removal:', error);
-      toast.error('Fehler beim Rückgängigmachen');
+      toast.error(t('toast.error'));
     }
   }
   const handleUndoRemoval = async () => {
@@ -1230,12 +1230,12 @@ export default function Projects() {
         }
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Nicht authentifiziert');
+        toast.error(t('projects.errorNotAuthenticated'));
         return;
       }
       const groupNumbers = getProjectNumbersForGroup(customer, projectName);
       if (groupNumbers.length === 0) {
-        toast.error('Projektnummer nicht gefunden');
+        toast.error(t('projects.errorProjectNotFound'));
         return;
       }
 
@@ -1282,10 +1282,10 @@ export default function Projects() {
 
       // STEP 5: Wait a moment for React Query to update the cache
       await new Promise(resolve => setTimeout(resolve, 100));
-      toast.success(`${productName} entfernt`);
+      toast.success(`${productName} ${t('toast.removed')}`);
     } catch (error: any) {
       console.error('Error removing product:', error);
-      toast.error('Fehler beim Entfernen des Produkts');
+      toast.error(t('toast.deleteError'));
     }
   };
   const handleAddAlternative = async (project: any, alternativeProduct: string) => {
@@ -1296,7 +1296,7 @@ export default function Projects() {
         }
       } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('Nicht authentifiziert');
+        toast.error(t('projects.errorNotAuthenticated'));
         return;
       }
 
@@ -1316,7 +1316,7 @@ export default function Projects() {
         throw projectError;
       }
       if (!projectData) {
-        toast.error('Projekt nicht gefunden');
+        toast.error(t('projects.errorProjectNotFound'));
         return;
       }
 
@@ -1366,10 +1366,10 @@ export default function Projects() {
 
       // Wait a moment for React Query to update the cache
       await new Promise(resolve => setTimeout(resolve, 100));
-      toast.success(`${alternativeProduct} als Alternative zum Projekt hinzugefügt`);
+      toast.success(`${alternativeProduct} ${t('toast.added')}`);
     } catch (error: any) {
       console.error('Error adding alternative:', error);
-      toast.error(`Fehler: ${error.message || 'Unbekannter Fehler'}`);
+      toast.error(`${t('toast.error')}: ${error.message || 'Unknown error'}`);
     }
   };
   const handleProjectStatusChange = async (project: any, newStatus: string) => {
@@ -1385,7 +1385,7 @@ export default function Projects() {
       } = await supabase.auth.getUser();
       if (!user) {
         console.error('❌ User not authenticated');
-        toast.error('Nicht authentifiziert');
+        toast.error(t('projects.errorNotAuthenticated'));
         return;
       }
       console.log('👤 User authenticated:', user.id);
@@ -1546,10 +1546,10 @@ export default function Projects() {
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" onClick={handleBackToList}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Zurück
+              {t('common.back')}
             </Button>
             <p className="text-muted-foreground">
-              {detailProjects.length} {detailProjects.length === 1 ? 'Projekt' : 'Projekte'}
+              {detailProjects.length} {detailProjects.length === 1 ? t('projects.project') : t('projects.projects')}
             </p>
           </div>
         </div>
@@ -1565,10 +1565,10 @@ export default function Projects() {
                 <Breadcrumb className="mb-4">
                   <BreadcrumbList>
                     <BreadcrumbItem>
-                      <BreadcrumbLink className="cursor-pointer" onClick={() => {
+                    <BreadcrumbLink className="cursor-pointer" onClick={() => {
                       setApplicationQuickViewOpen(false);
                     }}>
-                        Projekte
+                        {t('page.projects')}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
@@ -1578,7 +1578,7 @@ export default function Projects() {
                   </BreadcrumbList>
                 </Breadcrumb>
                 <SheetTitle className="text-2xl">{selectedApplicationForQuickView}</SheetTitle>
-                <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
+                <SheetDescription>{t('projects.applicationDetails')}</SheetDescription>
               </SheetHeader>
               {appInsightsLoading ? <div className="mt-6 space-y-6">
                   <Skeleton className="h-20 w-full" />
@@ -1591,17 +1591,17 @@ export default function Projects() {
               console.log('✅ Found app data:', appData);
               return appData ? <div className="mt-6 space-y-6">
                     {appData.industry && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Industrie</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('projects.industry')}</h3>
                         <Badge variant="secondary">{appData.industry}</Badge>
                       </div>}
                     {appData.application_description && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('table.description')}</h3>
                         <p className="text-base leading-relaxed">
                           {appData.application_description}
                         </p>
                       </div>}
                     {appData.application_trends && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Trends</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.trends')}</h3>
                         <p className="text-base leading-relaxed">
                           {appData.application_trends}
                         </p>
@@ -1617,12 +1617,12 @@ export default function Projects() {
                         </div>
                       </div>}
                     {appData.application_block_diagram && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.blockDiagram')}</h3>
                         <BlockDiagramViewer content={appData.application_block_diagram} />
                       </div>}
                   </div> : <div className="mt-6 space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Keine detaillierten Informationen für diese Applikation verfügbar.
+                      {t('projects.noDetailedInfo')}
                     </p>
                     <div className="bg-muted/50 p-4 rounded-lg">
                       <p className="text-xs text-muted-foreground">
@@ -1635,7 +1635,7 @@ export default function Projects() {
                   </div>;
             })() : <div className="mt-6">
                   <p className="text-sm text-muted-foreground">
-                    Keine Applikation ausgewählt.
+                    {t('common.noData')}
                   </p>
                 </div>}
             </SheetContent>
@@ -1648,10 +1648,10 @@ export default function Projects() {
                 <Breadcrumb className="mb-4">
                   <BreadcrumbList>
                     <BreadcrumbItem>
-                      <BreadcrumbLink className="cursor-pointer" onClick={() => {
+                    <BreadcrumbLink className="cursor-pointer" onClick={() => {
                       setCustomerQuickViewOpen(false);
                     }}>
-                        Projekte
+                        {t('page.projects')}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />
@@ -1661,7 +1661,7 @@ export default function Projects() {
                   </BreadcrumbList>
                 </Breadcrumb>
                 <SheetTitle className="text-2xl">{selectedCustomerForQuickView}</SheetTitle>
-                <SheetDescription>Kundendetails und Informationen</SheetDescription>
+                <SheetDescription>{t('projects.customerDetails')}</SheetDescription>
               </SheetHeader>
               {customersLoading ? <div className="mt-6 space-y-6">
                   <Skeleton className="h-20 w-full" />
@@ -1670,15 +1670,15 @@ export default function Projects() {
               const customerData = customersData.find((c: any) => c.customer_name === selectedCustomerForQuickView || c.customer_name?.toLowerCase() === selectedCustomerForQuickView?.toLowerCase());
               return customerData ? <div className="mt-6 space-y-6">
                     {customerData.industry && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Branche</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('table.industry')}</h3>
                         <Badge variant="secondary">{customerData.industry}</Badge>
                       </div>}
                     {customerData.customer_category && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Kategorie</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('projects.category')}</h3>
                         <Badge variant="outline">{customerData.customer_category}</Badge>
                       </div>}
                     {(customerData.country || customerData.city) && <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Standort</h3>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('projects.location')}</h3>
                         <p className="text-base">
                           {[customerData.city, customerData.country].filter(Boolean).join(', ') || '-'}
                         </p>
@@ -1689,12 +1689,12 @@ export default function Projects() {
                     setSelectedCustomer(selectedCustomerForQuickView);
                     setSelectedProject(null);
                   }}>
-                        Alle Projekte dieses Kunden anzeigen
+                        {t('projects.showAllCustomerProjects')}
                       </Button>
                     </div>
                   </div> : <div className="mt-6 space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Keine detaillierten Informationen für diesen Kunden verfügbar.
+                      {t('projects.noDetailedInfo')}
                     </p>
                     <div className="pt-4 border-t">
                       <Button variant="outline" className="w-full" onClick={() => {
@@ -1702,13 +1702,13 @@ export default function Projects() {
                     setSelectedCustomer(selectedCustomerForQuickView);
                     setSelectedProject(null);
                   }}>
-                        Alle Projekte dieses Kunden anzeigen
+                        {t('projects.showAllCustomerProjects')}
                       </Button>
                     </div>
                   </div>;
             })() : <div className="mt-6">
                   <p className="text-sm text-muted-foreground">
-                    Kein Kunde ausgewählt.
+                    {t('common.noData')}
                   </p>
                 </div>}
             </SheetContent>
@@ -1738,7 +1738,7 @@ export default function Projects() {
                         <div className="flex flex-row flex-wrap gap-12 mt-4">
                           {/* Kunde */}
                           <div>
-                            <span className="text-sm text-muted-foreground block">Kunde</span>
+                            <span className="text-sm text-muted-foreground block">{t('table.customer')}</span>
                             <span onClick={e => {
                           e.stopPropagation();
                           setSelectedCustomerForQuickView(project.customer);
@@ -1750,7 +1750,7 @@ export default function Projects() {
                           
                           {/* Applikation */}
                           <div>
-                            <span className="text-sm text-muted-foreground block">Applikation</span>
+                            <span className="text-sm text-muted-foreground block">{t('table.application')}</span>
                             <span className="font-medium">
                               {[...new Set(project.applications.map((app: string) => typeof app === 'string' ? app : (app as any)?.application || ''))].map((appName: string, idx: number, arr: string[]) => <span key={idx}>
                                   <span className="cursor-pointer hover:underline transition-colors text-foreground" onClick={e => {
@@ -1768,7 +1768,7 @@ export default function Projects() {
                           
                           {/* Erstellt */}
                           <div>
-                            <span className="text-sm text-muted-foreground block">Erstellt</span>
+                            <span className="text-sm text-muted-foreground block">{t('table.created')}</span>
                             <span className="font-medium">
                               {project.created_at ? new Date(project.created_at).toLocaleDateString('de-DE') : '-'}
                             </span>
@@ -1782,7 +1782,7 @@ export default function Projects() {
                       {(() => {
                     const currentStatus = calculateProjectStatus(project, true);
                     const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
-                    const steps = ['NEU', 'OFFEN', 'PRÜFUNG', 'VALIDIERUNG', 'ABGESCHLOSSEN'];
+                    const steps = [t('status.new').toUpperCase(), t('status.open').toUpperCase(), t('status.review').toUpperCase(), t('status.validation').toUpperCase(), t('status.completed').toUpperCase()];
                     const shortSteps = ['N', 'O', 'P', 'V', 'A'];
                     
                     return <>
@@ -1824,10 +1824,10 @@ export default function Projects() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
-                                <SelectItem value="offen">Offen</SelectItem>
-                                <SelectItem value="prüfung">Prüfung</SelectItem>
-                                <SelectItem value="validierung">Validierung</SelectItem>
-                                <SelectItem value="abgeschlossen">Abgeschlossen</SelectItem>
+                                <SelectItem value="offen">{t('status.open')}</SelectItem>
+                                <SelectItem value="prüfung">{t('status.review')}</SelectItem>
+                                <SelectItem value="validierung">{t('status.validation')}</SelectItem>
+                                <SelectItem value="abgeschlossen">{t('status.completed')}</SelectItem>
                               </SelectContent>
                             </Select>
                           </>;
@@ -1843,7 +1843,7 @@ export default function Projects() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-primary" />
-                        <h3 className="font-semibold text-base">Enthaltene Produkte</h3>
+                        <h3 className="font-semibold text-base">{t('projects.productsInProject')}</h3>
                       </div>
                       <ColumnVisibilityToggle columns={productColumns} onToggle={toggleProductColumn} onReset={resetProductColumns} />
                     </div>
@@ -2069,7 +2069,7 @@ export default function Projects() {
                       })}
                           </TableBody>
                         </Table>
-                      </div> : <p className="text-sm text-muted-foreground">Keine Produkte vorhanden</p>}
+                      </div> : <p className="text-sm text-muted-foreground">{t('projects.noProductsInProject')}</p>}
                   </div>
 
                   {/* Cross-Sells Section */}
@@ -2077,7 +2077,7 @@ export default function Projects() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <h3 className="font-semibold text-base">Cross-Sell Opportunities</h3>
+                        <h3 className="font-semibold text-base">{t('projects.crossSellOpportunities')}</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={e => {
@@ -2088,7 +2088,7 @@ export default function Projects() {
                       setViewMode('crossSellsView');
                     }}>
                           <Maximize2 className="h-4 w-4 mr-2" />
-                          Alles anzeigen
+                          {t('common.showAll')}
                         </Button>
                         <ColumnVisibilityToggle columns={crossSellColumns} onToggle={toggleCrossSellColumn} onReset={resetCrossSellColumns} />
                       </div>
@@ -2761,7 +2761,7 @@ export default function Projects() {
   return <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-medium text-foreground font-clash">Projekte</h1>
+          <h1 className="text-3xl font-medium text-foreground font-clash">{t('page.projects')}</h1>
         </div>
       </div>
 
@@ -2771,14 +2771,14 @@ export default function Projects() {
           <div className="flex items-center justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Projektname, Kunde, Applikation oder Produkt suchen..." className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+              <Input placeholder={t('projects.searchProjects')} className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <div className="flex items-center gap-2">
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Filter className="mr-2 h-4 w-4" />
-                    Filter
+                    {t('common.filter')}
                     {(quickFilter !== 'all' || statusFilter) && <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                         {(quickFilter !== 'all' ? 1 : 0) + (statusFilter ? 1 : 0)}
                       </Badge>}
@@ -2787,37 +2787,43 @@ export default function Projects() {
                 <PopoverContent className="w-64" align="end">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Filter</h4>
-                      <p className="text-sm text-muted-foreground">Projekte nach Kriterien filtern</p>
+                      <h4 className="font-medium text-sm">{t('common.filter')}</h4>
+                      <p className="text-sm text-muted-foreground">{t('filter.all')}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Ansicht</Label>
+                      <Label className="text-sm font-medium">{t('common.show')}</Label>
                       <div className="flex flex-wrap gap-2">
                         <Badge variant={quickFilter === 'favorites' ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
                         setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites');
                         setStatusFilter(null);
                       }}>
                           <Star className={`mr-1 h-3 w-3 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
-                          Favoriten
+                          {t('filter.favorites')}
                         </Badge>
                         <Badge variant={quickFilter === 'recent' ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
                         setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent');
                         setStatusFilter(null);
                       }}>
-                          Zuletzt angesehen
+                          {t('filter.recent')}
                         </Badge>
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Status</Label>
+                      <Label className="text-sm font-medium">{t('filter.status')}</Label>
                       <div className="flex flex-wrap gap-2">
-                        {['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].map(status => <Badge key={status} variant={statusFilter === status ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
-                        setStatusFilter(statusFilter === status ? null : status);
+                        {[
+                          { key: 'Neu', label: t('status.new') },
+                          { key: 'Offen', label: t('status.open') },
+                          { key: 'Prüfung', label: t('status.review') },
+                          { key: 'Validierung', label: t('status.validation') },
+                          { key: 'Abgeschlossen', label: t('status.completed') }
+                        ].map(status => <Badge key={status.key} variant={statusFilter === status.key ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
+                        setStatusFilter(statusFilter === status.key ? null : status.key);
                         setQuickFilter('all');
                       }}>
-                            {status}
+                            {status.label}
                           </Badge>)}
                       </div>
                     </div>
@@ -2826,7 +2832,7 @@ export default function Projects() {
                     setQuickFilter('all');
                     setStatusFilter(null);
                   }}>
-                        Alle Filter zurücksetzen
+                        {t('reports.resetFilters')}
                       </Button>}
                   </div>
                 </PopoverContent>
@@ -2925,11 +2931,11 @@ export default function Projects() {
             {/* Pagination Footer */}
             <div className="border-t pt-4 mt-4 flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                {totalProjectItems > 0 ? `${projectStartIndex + 1}-${Math.min(projectEndIndex, totalProjectItems)} von ${totalProjectItems} Ergebnissen` : '0 Ergebnisse'}
+                {totalProjectItems > 0 ? `${projectStartIndex + 1}-${Math.min(projectEndIndex, totalProjectItems)} ${t('pagination.of')} ${totalProjectItems} ${t('pagination.results')}` : `0 ${t('pagination.results')}`}
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                  <span className="text-sm text-muted-foreground">{t('pagination.resultsPerPage')}:</span>
                   <Select value={itemsPerPage.toString()} onValueChange={val => {
                   setItemsPerPage(Number(val));
                   setCurrentPage(1);
@@ -2948,7 +2954,7 @@ export default function Projects() {
                 <div className="flex items-center gap-1">
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3">
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Zurück
+                    {t('pagination.previous')}
                   </Button>
                   <div className="flex items-center gap-1 mx-2">
                     {Array.from({
@@ -2977,7 +2983,7 @@ export default function Projects() {
               </div>
             </div>
             </> : <div className="p-8 text-center text-muted-foreground">
-              {searchQuery.length >= 2 ? 'Keine Projekte gefunden.' : 'Keine Projekte vorhanden. Laden Sie Projektdaten im Datenhub hoch.'}
+              {searchQuery.length >= 2 ? t('projects.noProjectsFound') : t('projects.uploadDataHint')}
             </div>}
         </CardContent>
       </Card>
