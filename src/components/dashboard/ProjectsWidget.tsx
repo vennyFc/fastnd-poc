@@ -9,8 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
-import { format, formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 export function ProjectsWidget() {
   const [activeTab, setActiveTab] = useState('alle');
@@ -229,83 +227,61 @@ export function ProjectsWidget() {
 
   // Get projects to review (with status "Prüfung")
   const projectsToReview = allProjects.filter((p: any) => getOptimizationStatus(p) === 'Prüfung');
-  const renderProjectList = (projects: any[], showViewedTime: boolean = false) => {
+  const renderProjectList = (projects: any[]) => {
     if (projects.length === 0) {
       return <div className="text-center py-8 text-muted-foreground text-sm">
           Keine Projekte gefunden
         </div>;
     }
 
-    // Helper function to get the most recent viewed_at time for a project
-    const getViewedTime = (project: any) => {
-      if (!showViewedTime || !recentHistory.length) return null;
-      const relevantHistories = recentHistory.filter(rh => project.sourceIds ? project.sourceIds.includes(rh.project_id) : rh.project_id === project.id);
-      if (relevantHistories.length === 0) return null;
-      const mostRecent = relevantHistories.reduce((latest, current) => new Date(current.viewed_at) > new Date(latest.viewed_at) ? current : latest);
-      return mostRecent.viewed_at;
-    };
-    return <div className="space-y-1">
-        {/* Column Headers */}
-        <div className="flex items-center gap-2 px-2 py-1.5 text-2xs font-medium text-muted-foreground border-b">
-          <div className="h-6 w-6" /> {/* Spacer for favorite button */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">Projekt / Kunde</div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="w-20 text-right">Status</span>
-                <span className="w-24 text-right">
-                  {showViewedTime ? 'Zuletzt angesehen' : 'Erstellt am'}
-                </span>
+    return <div className="space-y-3">
+        {projects.slice(0, 5).map((project: any) => (
+          <Link 
+            key={project.id} 
+            to={`/projects?detail=${encodeURIComponent(project.project_name)}`}
+            onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}
+            className="block p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all group"
+          >
+            {/* Project Name with Favorite Star */}
+            <div className="flex items-center gap-2 mb-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-5 w-5 p-0 opacity-60 group-hover:opacity-100 transition-opacity" 
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const targetId = project.sourceIds?.[0] || project.id;
+                  toggleFavorite(targetId);
+                }}
+              >
+                <Star className={`h-3.5 w-3.5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+              </Button>
+              <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
+            </div>
+            
+            {/* Metadata Row */}
+            <div className="flex items-start gap-6 pl-7">
+              <div className="min-w-0">
+                <div className="text-2xs text-muted-foreground mb-0.5">Kunde</div>
+                <div className="text-xs font-medium truncate">{project.customer}</div>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-2xs text-muted-foreground mb-0.5">Applikation</div>
+                <div className="text-xs font-medium truncate">
+                  {project.applications && project.applications.length > 0 
+                    ? project.applications.join(', ') 
+                    : '-'}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        {projects.slice(0, 5).map((project: any) => <div key={project.id} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors group">
-            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => {
-          e.stopPropagation();
-          const targetId = project.sourceIds?.[0] || project.id;
-          toggleFavorite(targetId);
-        }}>
-              <Star className={`h-3 w-3 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
-            </Button>
-            <Link to={`/projects?detail=${encodeURIComponent(project.project_name)}`} className="flex-1 min-w-0" onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <div className="font-medium text-sm truncate">{project.project_name}</div>
-                  <div className="flex items-center gap-2 flex-wrap text-xs">
-                    <Link to={`/projects?customer=${encodeURIComponent(project.customer)}`} onClick={e => e.stopPropagation()} className="hover:underline text-black">
-                      {project.customer}
-                    </Link>
-                    {project.applications && project.applications.length > 0 && <span className="text-muted-foreground">•</span>}
-                    {project.applications && project.applications.length > 0 && <div className="flex flex-wrap gap-1">
-                        {project.applications.map((appName: string, idx: number) => <span key={idx}>
-                            <span className="hover:underline cursor-pointer text-black">
-                              {appName}
-                            </span>
-                            {idx < project.applications.length - 1 && ', '}
-                          </span>)}
-                      </div>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={getOptimizationStatus(project) === 'Abgeschlossen' ? 'default' : getOptimizationStatus(project) === 'Validierung' ? 'secondary' : 'outline'} className="whitespace-nowrap">
-                    {getOptimizationStatus(project)}
-                  </Badge>
-                  {showViewedTime && getViewedTime(project) ? <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDistanceToNow(new Date(getViewedTime(project)!), {
-                  addSuffix: true,
-                  locale: de
-                })}
-                    </span> : project.created_at && !showViewedTime ? <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {format(new Date(project.created_at), 'dd.MM.yyyy')}
-                    </span> : null}
-                </div>
-              </div>
-            </Link>
-          </div>)}
-        {projects.length > 5 && <Link to="/projects" className="block text-center py-2 text-xs text-primary hover:underline">
+          </Link>
+        ))}
+        {projects.length > 5 && (
+          <Link to="/projects" className="block text-center py-2 text-xs text-primary hover:underline">
             Alle {projects.length} Projekte anzeigen
-          </Link>}
+          </Link>
+        )}
       </div>;
   };
   return <Card className="shadow-card">
@@ -357,7 +333,7 @@ export function ProjectsWidget() {
           </TabsContent>
 
           <TabsContent value="recent" className="mt-4">
-            {renderProjectList(recentProjects, true)}
+            {renderProjectList(recentProjects)}
           </TabsContent>
 
           <TabsContent value="favorites" className="mt-4">
