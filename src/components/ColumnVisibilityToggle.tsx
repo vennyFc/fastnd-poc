@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Columns3 } from 'lucide-react';
 import { ColumnConfig } from '@/hooks/useTableColumns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ColumnVisibilityToggleProps {
   columns: ColumnConfig[];
@@ -32,12 +33,14 @@ export function ColumnVisibilityToggle({
   onToggle,
   onReset,
 }: ColumnVisibilityToggleProps) {
+  const { t } = useLanguage();
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <Columns3 className="mr-2 h-4 w-4" />
-          Spalten
+          {t('columns.title')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -52,7 +55,7 @@ export function ColumnVisibilityToggle({
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem onSelect={onReset}>
-          Zurücksetzen
+          {t('columns.reset')}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -62,12 +65,14 @@ export function ColumnVisibilityToggle({
 export function MultiColumnVisibilityToggle({
   groups,
 }: MultiColumnVisibilityToggleProps) {
+  const { t } = useLanguage();
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <Columns3 className="mr-2 h-4 w-4" />
-          Spalten
+          {t('columns.title')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 max-h-96 overflow-y-auto">
@@ -96,7 +101,7 @@ export function MultiColumnVisibilityToggle({
             className="w-full justify-start text-xs"
             onClick={() => groups.forEach(g => g.onReset())}
           >
-            Alle zurücksetzen
+            {t('columns.resetAll')}
           </Button>
         </div>
       </DropdownMenuContent>

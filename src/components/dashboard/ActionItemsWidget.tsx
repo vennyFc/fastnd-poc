@@ -10,12 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function ActionItemsWidget() {
   const { activeTenant } = useAuth();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'de' ? de : enUS;
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [assignmentType, setAssignmentType] = useState<'project' | 'customer'>('project');
@@ -181,10 +184,10 @@ export function ActionItemsWidget() {
       queryClient.invalidateQueries({ queryKey: ['action_items'] });
       setOpen(false);
       resetForm();
-      toast.success(editingItem ? 'Action Item aktualisiert' : 'Action Item erstellt');
+      toast.success(editingItem ? t('actionItems.updated') : t('actionItems.created'));
     },
     onError: (error) => {
-      toast.error('Fehler beim Speichern: ' + error.message);
+      toast.error(t('actionItems.saveError') + ': ' + error.message);
     },
   });
 
@@ -199,7 +202,7 @@ export function ActionItemsWidget() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['action_items'] });
-      toast.success('Action Item gelöscht');
+      toast.success(t('actionItems.deleted'));
     },
   });
 
@@ -293,16 +296,16 @@ export function ActionItemsWidget() {
   return (
     <Card className="shadow-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle>Action Items</CardTitle>
+        <CardTitle>{t('actionItems.title')}</CardTitle>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={(value: 'priority' | 'due_date' | 'created') => setSortBy(value)}>
             <SelectTrigger className="w-[160px] h-8">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="created">Nach Erstellung</SelectItem>
-              <SelectItem value="priority">Nach Priorität</SelectItem>
-              <SelectItem value="due_date">Nach Fälligkeit</SelectItem>
+              <SelectItem value="created">{t('actionItems.sortByCreation')}</SelectItem>
+              <SelectItem value="priority">{t('actionItems.sortByPriority')}</SelectItem>
+              <SelectItem value="due_date">{t('actionItems.sortByDueDate')}</SelectItem>
             </SelectContent>
           </Select>
           <Dialog open={open} onOpenChange={(isOpen) => {
@@ -312,35 +315,35 @@ export function ActionItemsWidget() {
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Neu
+                {t('actionItems.new')}
               </Button>
             </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingItem ? 'Action Item bearbeiten' : 'Neues Action Item'}</DialogTitle>
+              <DialogTitle>{editingItem ? t('actionItems.edit') : t('actionItems.create')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Titel</label>
+                <label className="text-sm font-medium">{t('actionItems.titleLabel')}</label>
                 <Input
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Titel des Action Items"
+                  placeholder={t('actionItems.titlePlaceholder')}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Beschreibung</label>
+                <label className="text-sm font-medium">{t('actionItems.descriptionLabel')}</label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Optionale Beschreibung"
+                  placeholder={t('actionItems.descriptionPlaceholder')}
                   rows={3}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">Priorität</label>
+                  <label className="text-sm font-medium">{t('actionItems.priority')}</label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) => setFormData({ ...formData, priority: value })}
@@ -349,14 +352,14 @@ export function ActionItemsWidget() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="low">Niedrig</SelectItem>
-                      <SelectItem value="medium">Mittel</SelectItem>
-                      <SelectItem value="high">Hoch</SelectItem>
+                      <SelectItem value="low">{t('actionItems.priorityLow')}</SelectItem>
+                      <SelectItem value="medium">{t('actionItems.priorityMedium')}</SelectItem>
+                      <SelectItem value="high">{t('actionItems.priorityHigh')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Status</label>
+                  <label className="text-sm font-medium">{t('table.status')}</label>
                   <Select
                     value={formData.status}
                     onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -365,21 +368,21 @@ export function ActionItemsWidget() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="open">Offen</SelectItem>
-                      <SelectItem value="in_progress">In Bearbeitung</SelectItem>
-                      <SelectItem value="completed">Abgeschlossen</SelectItem>
+                      <SelectItem value="open">{t('actionItems.statusOpen')}</SelectItem>
+                      <SelectItem value="in_progress">{t('actionItems.statusInProgress')}</SelectItem>
+                      <SelectItem value="completed">{t('actionItems.statusCompleted')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Zugewiesen an</label>
+                <label className="text-sm font-medium">{t('actionItems.assignedTo')}</label>
                 <Select
                   value={formData.assigned_to || undefined}
                   onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Mich selbst" />
+                    <SelectValue placeholder={t('actionItems.assignMyself')} />
                   </SelectTrigger>
                   <SelectContent>
                     {users.map((user) => (
@@ -392,7 +395,7 @@ export function ActionItemsWidget() {
               </div>
               
               <div>
-                <label className="text-sm font-medium">Zuordnung (optional)</label>
+                <label className="text-sm font-medium">{t('actionItems.assignment')}</label>
                 <div className="space-y-2">
                   <Select
                     value={assignmentType}
@@ -405,8 +408,8 @@ export function ActionItemsWidget() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="project">Projekt</SelectItem>
-                      <SelectItem value="customer">Kunde</SelectItem>
+                      <SelectItem value="project">{t('actionItems.project')}</SelectItem>
+                      <SelectItem value="customer">{t('actionItems.customer')}</SelectItem>
                     </SelectContent>
                   </Select>
                   
@@ -416,7 +419,7 @@ export function ActionItemsWidget() {
                       onValueChange={(value) => setFormData({ ...formData, project_id: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Projekt auswählen..." />
+                        <SelectValue placeholder={t('actionItems.selectProject')} />
                       </SelectTrigger>
                       <SelectContent>
                         {projects.map((project) => (
@@ -432,7 +435,7 @@ export function ActionItemsWidget() {
                       onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Kunde auswählen..." />
+                        <SelectValue placeholder={t('actionItems.selectCustomer')} />
                       </SelectTrigger>
                       <SelectContent>
                         {customers.map((customer) => (
@@ -446,7 +449,7 @@ export function ActionItemsWidget() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium">Fälligkeitsdatum (optional)</label>
+                <label className="text-sm font-medium">{t('actionItems.dueDate')}</label>
                 <Input
                   type="date"
                   value={formData.due_date}
@@ -455,10 +458,10 @@ export function ActionItemsWidget() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                  Abbrechen
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? 'Speichert...' : 'Speichern'}
+                  {saveMutation.isPending ? t('common.loading') : t('common.save')}
                 </Button>
               </div>
             </form>
@@ -468,10 +471,10 @@ export function ActionItemsWidget() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Lädt...</div>
+          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
         ) : actionItems.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-8">
-            Noch keine Action Items. Erstellen Sie Ihr erstes!
+            {t('actionItems.noItems')}
           </div>
         ) : (
           <div className="space-y-6">

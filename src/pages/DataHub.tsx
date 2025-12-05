@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   AlertDialog,
@@ -25,54 +26,58 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+export default function DataHub() {
+  const { isSuperAdmin, activeTenant } = useAuth();
+  const { t } = useLanguage();
+
 // Pure tenant-specific data types - ALL uploads are now tenant-specific
 const dataTypes = [
   {
     id: 'customer_projects',
-    title: 'Kundenprojekte',
-    description: 'Kunde, Projektname, Applikation, Produkt, Opportunity Creation Date',
+    titleKey: 'dataType.customer_projects',
+    descKey: 'dataType.customer_projects_desc',
     fields: ['customer', 'project_name', 'application', 'product', 'opportunity_creation_date'],
     icon: FileSpreadsheet,
   },
   {
     id: 'customers',
-    title: 'Kunden',
-    description: 'Kundenname, Branche, Land, Stadt, Kundenkategorie',
+    titleKey: 'dataType.customers',
+    descKey: 'dataType.customers_desc',
     fields: ['customer_name', 'industry', 'country', 'city', 'customer_category'],
     icon: FileSpreadsheet,
   },
   {
     id: 'app_insights',
-    title: 'App Insights',
-    description: 'Application, Application_Description, Application_BlockDiagram, Application_Trends, Industry, Product_Family_1-5',
+    titleKey: 'dataType.app_insights',
+    descKey: 'dataType.app_insights_desc',
     fields: ['application', 'application_description', 'application_block_diagram', 'application_trends', 'industry', 'product_family_1', 'product_family_2', 'product_family_3', 'product_family_4', 'product_family_5'],
     icon: FileSpreadsheet,
   },
   {
     id: 'applications',
-    title: 'Applikationen',
-    description: 'Applikation, zugehöriges_Produkt',
+    titleKey: 'dataType.applications',
+    descKey: 'dataType.applications_desc',
     fields: ['application', 'related_product'],
     icon: FileSpreadsheet,
   },
   {
     id: 'products',
-    title: 'Produkte',
-    description: 'Produkt, Produktfamilie, Produktbeschreibung, Hersteller, Preis, Inventory, Lead_Time, Lifecycle, NPI, Top_Seller, Link_Herstellerseite',
+    titleKey: 'dataType.products',
+    descKey: 'dataType.products_desc',
     fields: ['product', 'product_family', 'product_description', 'manufacturer', 'product_price', 'product_inventory', 'product_lead_time', 'product_lifecycle', 'product_new', 'product_top', 'manufacturer_link'],
     icon: FileSpreadsheet,
   },
   {
     id: 'cross_sells',
-    title: 'Cross-Sells',
-    description: 'Applikation, Basis_Produkt, Cross_Sell_Produkt, Rec_Source, Rec_Score',
+    titleKey: 'dataType.cross_sells',
+    descKey: 'dataType.cross_sells_desc',
     fields: ['application', 'base_product', 'cross_sell_product', 'rec_source', 'rec_score'],
     icon: FileSpreadsheet,
   },
   {
     id: 'product_alternatives',
-    title: 'Produktalternativen',
-    description: 'Basis_Produkt, Alternatives_Produkt, Similarity',
+    titleKey: 'dataType.product_alternatives',
+    descKey: 'dataType.product_alternatives_desc',
     fields: ['base_product', 'alternative_product', 'similarity'],
     icon: FileSpreadsheet,
   },
@@ -80,6 +85,7 @@ const dataTypes = [
 
 export default function DataHub() {
   const { isSuperAdmin, activeTenant } = useAuth();
+  const { t } = useLanguage();
   const [uploadHistory, setUploadHistory] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDataType, setSelectedDataType] = useState<any>(null);
@@ -330,9 +336,9 @@ export default function DataHub() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-medium text-foreground mb-2 font-clash">Datenhub</h1>
+          <h1 className="text-3xl font-medium text-foreground mb-2 font-clash">{t('dataHub.title')}</h1>
           <p className="text-muted-foreground">
-            Laden Sie Ihre Daten hoch und verwalten Sie Ihre Uploads
+            {t('dataHub.description')}
           </p>
         </div>
         <Button
@@ -342,7 +348,7 @@ export default function DataHub() {
           className="gap-2"
         >
           <Database className="h-4 w-4" />
-          {isRemovingDuplicates ? 'Wird verarbeitet...' : 'Duplikate entfernen'}
+          {isRemovingDuplicates ? t('dataHub.processing') : t('dataHub.removeDuplicates')}
         </Button>
       </div>
 
@@ -360,10 +366,10 @@ export default function DataHub() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <dataType.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <CardTitle className="text-lg">{dataType.title}</CardTitle>
+                  <CardTitle className="text-lg">{t(dataType.titleKey)}</CardTitle>
                 </div>
                 <CardDescription className="text-sm">
-                  {dataType.description}
+                  {t(dataType.descKey)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 mt-auto">
@@ -374,7 +380,7 @@ export default function DataHub() {
                   disabled={!canUpload}
                 >
                   <Upload className="mr-2 h-4 w-4" />
-                  XLS/CSV hochladen
+                  {t('dataHub.uploadXlsCsv')}
                 </Button>
                 <Button
                   onClick={() => openDeleteTableDialog(dataType.id)}
@@ -382,7 +388,7 @@ export default function DataHub() {
                   variant="outline"
                 >
                   <Database className="mr-2 h-4 w-4" />
-                  Tabelle leeren
+                  {t('dataHub.clearTable')}
                 </Button>
               </CardContent>
             </Card>
@@ -395,9 +401,9 @@ export default function DataHub() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Upload-Historie</CardTitle>
+              <CardTitle>{t('dataHub.uploadHistory')}</CardTitle>
               <CardDescription>
-                Übersicht Ihrer hochgeladenen Datensätze
+                {t('dataHub.uploadHistoryDesc')}
               </CardDescription>
             </div>
             {selectedUploads.size > 0 && (
@@ -407,7 +413,7 @@ export default function DataHub() {
                 onClick={handleDeleteSelected}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Ausgewählte löschen ({selectedUploads.size})
+                {t('dataHub.deleteSelected')} ({selectedUploads.size})
               </Button>
             )}
           </div>
@@ -423,19 +429,19 @@ export default function DataHub() {
                       onCheckedChange={toggleSelectAll}
                     />
                   </th>
-                  <th className="text-left p-3 text-sm font-semibold">Dateiname</th>
-                  <th className="text-left p-3 text-sm font-semibold">Datentyp</th>
-                  <th className="text-left p-3 text-sm font-semibold">Upload-Datum</th>
-                  <th className="text-left p-3 text-sm font-semibold">Anzahl Zeilen</th>
-                  <th className="text-left p-3 text-sm font-semibold">Status</th>
-                  <th className="text-left p-3 text-sm font-semibold">Aktion</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('dataHub.filename')}</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('dataHub.dataType')}</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('dataHub.uploadDate')}</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('dataHub.rowCount')}</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('dataHub.statusLabel')}</th>
+                  <th className="text-left p-3 text-sm font-semibold">{t('table.action')}</th>
                 </tr>
               </thead>
               <tbody>
                 {uploadHistory.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                      Keine Uploads vorhanden. Laden Sie Dateien hoch, um zu beginnen.
+                      {t('dataHub.noUploads')}
                     </td>
                   </tr>
                 ) : (
@@ -461,7 +467,7 @@ export default function DataHub() {
                               : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {upload.status === 'success' ? 'Erfolgreich' : 'Fehlgeschlagen'}
+                          {upload.status === 'success' ? t('dataHub.statusSuccess') : t('dataHub.statusFailed')}
                         </span>
                       </td>
                       <td className="p-3 text-sm">
