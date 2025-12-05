@@ -9,9 +9,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useProjectHistory } from '@/hooks/useProjectHistory';
 import { format } from 'date-fns';
 export function ProjectsWidget() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('alle');
   const {
     user,
@@ -231,7 +233,7 @@ export function ProjectsWidget() {
   const renderProjectList = (projects: any[]) => {
     if (projects.length === 0) {
       return <div className="text-center py-8 text-muted-foreground text-sm">
-          Keine Projekte gefunden
+          {t('projectsWidget.noProjects')}
         </div>;
     }
 
@@ -290,11 +292,11 @@ export function ProjectsWidget() {
               {/* Desktop: single row */}
               <div className="hidden xl:flex items-start gap-6">
                 <div className="min-w-0 w-[180px] shrink-0">
-                  <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.customer')}</div>
                   <div className="text-sm font-medium truncate">{project.customer}</div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs text-muted-foreground mb-0.5">Applikation</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.application')}</div>
                   <div className="text-sm font-medium truncate">
                     {project.applications && project.applications.length > 0 
                       ? project.applications.join(', ') 
@@ -302,7 +304,7 @@ export function ProjectsWidget() {
                   </div>
                 </div>
                 <div className="shrink-0 w-[80px]">
-                  <div className="text-xs text-muted-foreground mb-0.5">Erstellt</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.created')}</div>
                   <div className="text-sm font-medium">
                     {project.opportunity_creation_date 
                       ? format(new Date(project.opportunity_creation_date), 'dd.MM.yyyy') 
@@ -310,13 +312,13 @@ export function ProjectsWidget() {
                   </div>
                 </div>
                 <div className="shrink-0 w-[80px]">
-                  <div className="text-xs text-muted-foreground mb-0.5">Geändert</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.modified')}</div>
                   <div className="text-sm font-medium">
                     {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                   </div>
                 </div>
                 <div className="shrink-0 w-[120px]">
-                  <div className="text-xs text-muted-foreground mb-0.5">Status</div>
+                  <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.status')}</div>
                   <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                     <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
                     <span className="text-xs whitespace-nowrap">{status}</span>
@@ -328,11 +330,11 @@ export function ProjectsWidget() {
               <div className="xl:hidden space-y-2">
                 <div className="flex items-start gap-4">
                   <div className="min-w-0 w-[160px] shrink-0">
-                    <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
+                    <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.customer')}</div>
                     <div className="text-sm font-medium truncate">{project.customer}</div>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs text-muted-foreground mb-0.5">Applikation</div>
+                    <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.application')}</div>
                     <div className="text-sm font-medium truncate">
                       {project.applications && project.applications.length > 0 
                         ? project.applications.join(', ') 
@@ -340,7 +342,7 @@ export function ProjectsWidget() {
                     </div>
                   </div>
                   <div className="shrink-0 w-[120px]">
-                    <div className="text-xs text-muted-foreground mb-0.5">Status</div>
+                    <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.status')}</div>
                     <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                       <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
                       <span className="text-xs whitespace-nowrap">{status}</span>
@@ -349,7 +351,7 @@ export function ProjectsWidget() {
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="shrink-0 w-[80px]">
-                    <div className="text-xs text-muted-foreground mb-0.5">Erstellt</div>
+                    <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.created')}</div>
                     <div className="text-sm font-medium">
                       {project.opportunity_creation_date 
                         ? format(new Date(project.opportunity_creation_date), 'dd.MM.yyyy') 
@@ -357,7 +359,7 @@ export function ProjectsWidget() {
                     </div>
                   </div>
                   <div className="shrink-0 w-[80px]">
-                    <div className="text-xs text-muted-foreground mb-0.5">Geändert</div>
+                    <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.modified')}</div>
                     <div className="text-sm font-medium">
                       {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                     </div>
@@ -369,49 +371,49 @@ export function ProjectsWidget() {
         )})}
         {projects.length > 5 && (
           <Link to="/projects" className="block text-center py-2 text-xs text-primary hover:underline">
-            Alle {projects.length} Projekte anzeigen
+            {t('projectsWidget.showAll').replace('{count}', String(projects.length))}
           </Link>
         )}
       </div>;
   };
   return <Card className="shadow-card">
       <CardHeader>
-        <CardTitle>Projekte</CardTitle>
+        <CardTitle>{t('widget.projects')}</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="alle" className="gap-2">
               <List className="h-4 w-4" />
-              <span className="hidden sm:inline">Alle</span>
+              <span className="hidden sm:inline">{t('quickFilter.all')}</span>
               <Badge variant="secondary" className="ml-1">
                 {allProjects.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="recent" className="gap-2">
               <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">Zuletzt</span>
+              <span className="hidden sm:inline">{t('quickFilter.recent')}</span>
               <Badge variant="secondary" className="ml-1">
                 {recentProjects.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="favorites" className="gap-2">
               <Star className="h-4 w-4" />
-              <span className="hidden sm:inline">Favoriten</span>
+              <span className="hidden sm:inline">{t('quickFilter.favorites')}</span>
               <Badge variant="secondary" className="ml-1">
                 {favoriteProjects.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="new" className="gap-2">
               <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Neu</span>
+              <span className="hidden sm:inline">{t('quickFilter.new')}</span>
               <Badge variant="secondary" className="ml-1">
                 {newProjects.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="review" className="gap-2">
               <AlertCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Prüfen</span>
+              <span className="hidden sm:inline">{t('quickFilter.review')}</span>
               <Badge variant="secondary" className="ml-1">
                 {projectsToReview.length}
               </Badge>

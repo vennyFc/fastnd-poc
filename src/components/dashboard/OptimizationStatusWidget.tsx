@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, Globe } from 'lucide-react';
 import { subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 
 // Custom Tooltip Component
@@ -35,34 +36,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 type TimeRange = '1' | '3' | '6' | '12';
 
-const timeRangeLabels: Record<TimeRange, string> = {
-  '1': '1 Monat',
-  '3': '3 Monate',
-  '6': '6 Monate',
-  '12': '12 Monate',
-};
-
-const statusColors: Record<string, string> = {
-  'Neu': '#3b82f6',
-  'Offen': '#f59e0b',
-  'Prüfung': '#8b5cf6',
-  'Validierung': '#06b6d4',
-  'Abgeschlossen': '#10b981',
-};
-
-const statusLabels: Record<string, string> = {
-  'Neu': 'Neu',
-  'Offen': 'Offen',
-  'Prüfung': 'Prüfung',
-  'Validierung': 'Validierung',
-  'Abgeschlossen': 'Abgeschlossen',
-};
-
 export function OptimizationStatusWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
   const { user, activeTenant, isSuperAdmin } = useAuth();
+  const { t } = useLanguage();
   
   const isGlobalView = activeTenant?.id === 'global';
+  
+  const timeRangeLabels: Record<TimeRange, string> = {
+    '1': t('optimizationStatus.1month'),
+    '3': t('optimizationStatus.3months'),
+    '6': t('optimizationStatus.6months'),
+    '12': t('optimizationStatus.12months'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    'Neu': t('status.new'),
+    'Offen': t('status.open'),
+    'Prüfung': t('status.review'),
+    'Validierung': t('status.validation'),
+    'Abgeschlossen': t('status.completed'),
+  };
 
   // Fetch all projects
   const { data: allProjectsRaw = [], isLoading: isLoadingProjects } = useQuery({
@@ -303,9 +297,18 @@ export function OptimizationStatusWidget() {
     // Convert to chart format
     return Object.entries(statusCounts).map(([status, count]) => ({
       status: statusLabels[status] || status,
+      statusKey: status,
       anzahl: count,
       fill: statusColors[status] || '#94a3b8',
     }));
+  };
+
+  const statusColors: Record<string, string> = {
+    'Neu': '#3b82f6',
+    'Offen': '#f59e0b',
+    'Prüfung': '#8b5cf6',
+    'Validierung': '#06b6d4',
+    'Abgeschlossen': '#10b981',
   };
 
   const chartData = getChartData();
@@ -319,18 +322,18 @@ export function OptimizationStatusWidget() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Projekte nach Optimierungsstatus
+              {t('optimizationStatus.title')}
               {isGlobalView && (
                 <Badge variant="outline" className="ml-2 gap-1">
                   <Globe className="h-2.5 w-2.5" />
-                  Alle Mandanten
+                  {t('optimizationStatus.allTenants')}
                 </Badge>
               )}
             </CardTitle>
             <CardDescription className="mt-1">
               {isGlobalView 
-                ? 'Aggregierte Verteilung aller Projekte aus allen Mandanten nach Status'
-                : 'Verteilung der Projekte nach Status im ausgewählten Zeitraum'
+                ? t('optimizationStatus.aggregatedDistribution')
+                : t('optimizationStatus.distribution')
               }
             </CardDescription>
           </div>
@@ -363,14 +366,14 @@ export function OptimizationStatusWidget() {
             )}
             <p className="text-sm font-medium">
               {isGlobalView 
-                ? 'Keine Projekte in den Mandanten gefunden'
-                : 'Keine Projekte im ausgewählten Zeitraum'
+                ? t('optimizationStatus.noProjectsInTenants')
+                : t('optimizationStatus.noProjectsInTimeframe')
               }
             </p>
             <p className="text-xs mt-1">
               {isGlobalView
-                ? 'Stellen Sie sicher, dass Mandanten Projektdaten hochgeladen haben'
-                : 'Versuchen Sie einen längeren Zeitraum oder laden Sie Projektdaten hoch'
+                ? t('optimizationStatus.ensureTenantsHaveData')
+                : t('optimizationStatus.tryLongerTimeframe')
               }
             </p>
           </div>
@@ -379,11 +382,11 @@ export function OptimizationStatusWidget() {
             <div className="mb-3 flex items-center justify-center min-h-[72px]">
               <div className="text-center">
                 <p className="text-xs text-muted-foreground mb-0.5">
-                  {isGlobalView ? 'Gesamt (Alle Mandanten)' : 'Gesamt'}
+                  {isGlobalView ? t('optimizationStatus.totalAllTenants') : t('optimizationStatus.total')}
                 </p>
                 <p className="text-2xl font-bold text-foreground">{totalProjects}</p>
                 <p className="text-2xs text-muted-foreground mt-0.5">
-                  {isGlobalView ? 'Projekte mandantenübergreifend' : 'Projekte'}
+                  {isGlobalView ? t('optimizationStatus.projectsCrossTenants') : t('optimizationStatus.projects')}
                 </p>
               </div>
             </div>
@@ -426,7 +429,7 @@ export function OptimizationStatusWidget() {
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="anzahl" 
-                  name="Anzahl Projekte"
+                  name={t('optimizationStatus.projectCount')}
                   radius={[8, 8, 0, 0]}
                 >
                   {chartData.map((entry, index) => {
@@ -444,7 +447,7 @@ export function OptimizationStatusWidget() {
             </ResponsiveContainer>
 
             <div className="mt-4">
-              <p className="text-xs font-medium mb-2">Verteilung nach Status:</p>
+              <p className="text-xs font-medium mb-2">{t('optimizationStatus.distributionByStatus')}:</p>
               <div className="grid grid-cols-5 gap-2">
               {chartData.map((item) => {
                 const percentage = totalProjects > 0 

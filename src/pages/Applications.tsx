@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,7 @@ type SortDirection = 'asc' | 'desc' | null;
 
 export default function Applications() {
   const { user, isSuperAdmin, activeTenant } = useAuth();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -42,8 +44,8 @@ export default function Applications() {
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'applications-columns',
     [
-      { key: 'application', label: 'Applikation', visible: true, width: 300, order: 0 },
-      { key: 'related_product', label: 'Zugehöriges Produkt', visible: true, width: 300, order: 1 },
+      { key: 'application', label: t('table.application'), visible: true, width: 300, order: 0 },
+      { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 300, order: 1 },
     ]
   );
 
@@ -142,9 +144,15 @@ export default function Applications() {
 
   const visibleColumns = columns.filter(col => col.visible);
 
+  const getColumnLabel = (key: string) => {
+    if (key === 'application') return t('table.application');
+    if (key === 'related_product') return t('applications.relatedProduct');
+    return key;
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-medium text-foreground font-clash">Applikationen</h1>
+      <h1 className="text-3xl font-medium text-foreground font-clash">{t('page.applications')}</h1>
 
       <Card>
         <CardHeader>
@@ -152,7 +160,7 @@ export default function Applications() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Applikationen durchsuchen..."
+                placeholder={t('search.searchApplications')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -174,9 +182,9 @@ export default function Applications() {
             </div>
           ) : sortedApplications.length === 0 ? (
             <div className="text-center py-12">
-              <h3 className="text-lg font-semibold mb-2">Keine Applikationen gefunden</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('applications.noApplications')}</h3>
               <p className="text-muted-foreground">
-                {searchQuery ? 'Versuchen Sie einen anderen Suchbegriff' : 'Beginnen Sie mit dem Hochladen von Applikationsdaten'}
+                {searchQuery ? t('applications.tryDifferentSearch') : t('applications.startUpload')}
               </p>
             </div>
           ) : (
@@ -187,7 +195,7 @@ export default function Applications() {
                       {visibleColumns.map((column, index) => (
                         <ResizableTableHeader
                           key={column.key}
-                          label={column.label}
+                          label={getColumnLabel(column.key)}
                           width={column.width}
                           sortable={true}
                           sortDirection={sortField === column.key ? sortDirection : null}
@@ -215,7 +223,7 @@ export default function Applications() {
                     {paginatedApplications.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={visibleColumns.length} className="text-center py-8 text-muted-foreground">
-                          Keine Applikationen gefunden
+                          {t('applications.noApplications')}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -251,11 +259,11 @@ export default function Applications() {
               {/* Pagination Footer */}
               <div className="border-t pt-4 mt-4 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} ${t('pagination.of')} ${totalItems} ${t('pagination.results')}` : `0 ${t('pagination.results')}`}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                    <span className="text-sm text-muted-foreground">{t('pagination.resultsPerPage')}:</span>
                     <Select 
                       value={itemsPerPage.toString()} 
                       onValueChange={(val) => {
@@ -283,7 +291,7 @@ export default function Applications() {
                       className="h-8 px-3"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
-                      Zurück
+                      {t('pagination.previous')}
                     </Button>
                     <div className="flex items-center gap-1 mx-2">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -317,7 +325,7 @@ export default function Applications() {
                       disabled={currentPage === totalPages || totalPages === 0}
                       className="h-8 px-3"
                     >
-                      Weiter
+                      {t('pagination.next')}
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
@@ -339,7 +347,7 @@ export default function Applications() {
                     className="cursor-pointer"
                     onClick={() => setApplicationQuickViewOpen(false)}
                   >
-                    Applikationen
+                    {t('page.applications')}
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
@@ -349,7 +357,7 @@ export default function Applications() {
               </BreadcrumbList>
             </Breadcrumb>
             <SheetTitle>{selectedApplicationForQuickView}</SheetTitle>
-            <SheetDescription>Applikationsdetails und Informationen</SheetDescription>
+            <SheetDescription>{t('applications.details')}</SheetDescription>
           </SheetHeader>
           {selectedApplicationForQuickView && (() => {
             const appData = appInsights.find(
@@ -360,14 +368,14 @@ export default function Applications() {
               <div className="mt-6 space-y-6">
                 {appData.industry && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Industrie</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.industry')}</h3>
                     <Badge variant="secondary">{appData.industry}</Badge>
                   </div>
                 )}
 
                 {appData.application_description && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Beschreibung</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('table.description')}</h3>
                     <p className="text-base leading-relaxed">
                       {appData.application_description}
                     </p>
@@ -376,7 +384,7 @@ export default function Applications() {
 
                 {appData.application_trends && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Trends</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.trends')}</h3>
                     <p className="text-base leading-relaxed">
                       {appData.application_trends}
                     </p>
@@ -386,7 +394,7 @@ export default function Applications() {
                 {(appData.product_family_1 || appData.product_family_2 || appData.product_family_3 || 
                   appData.product_family_4 || appData.product_family_5) && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Product Families</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.productFamilies')}</h3>
                     <div className="flex flex-wrap gap-2">
                       {appData.product_family_1 && <Badge variant="outline">#{1} {appData.product_family_1}</Badge>}
                       {appData.product_family_2 && <Badge variant="outline">#{2} {appData.product_family_2}</Badge>}
@@ -399,7 +407,7 @@ export default function Applications() {
 
                 {appData.application_block_diagram && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-2">Blockdiagramm</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('applications.blockDiagram')}</h3>
                     <BlockDiagramViewer content={appData.application_block_diagram} />
                   </div>
                 )}
@@ -407,7 +415,7 @@ export default function Applications() {
             ) : (
               <div className="mt-6">
                 <p className="text-sm text-muted-foreground">
-                  Keine detaillierten Informationen für diese Applikation verfügbar.
+                  {t('applications.noDetails')}
                 </p>
               </div>
             );

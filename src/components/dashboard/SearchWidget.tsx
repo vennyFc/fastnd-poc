@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, ArrowRight, ExternalLink, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SearchWidgetProps {
   searchQuery: string;
@@ -21,6 +22,7 @@ export function SearchWidget({
   crossSells,
 }: SearchWidgetProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const searchResults = () => {
     if (searchQuery.length < 3) return null;
@@ -75,16 +77,16 @@ export function SearchWidget({
 
   return (
     <div className="bg-gradient-to-br from-primary to-primary-hover rounded-lg p-10 text-white">
-      <h1 className="text-3xl font-bold mb-3">Opportunity Optimizer</h1>
+      <h1 className="text-3xl font-bold mb-3">{t('searchWidget.title')}</h1>
       <p className="text-base mb-6 opacity-90">
-        Finden Sie Cross-Selling und Up-Selling Potenziale in Ihren Kundenprojekten
+        {t('searchWidget.subtitle')}
       </p>
       
       <div className="relative max-w-3xl">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Suchen Sie nach Kunden, Projekten, Applikationen oder Produkten..."
+          placeholder={t('searchWidget.placeholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-11 pr-4 py-3 rounded-lg text-sm text-foreground bg-white shadow-lg focus:outline-none focus:ring-2 focus:ring-accent"
@@ -99,14 +101,14 @@ export function SearchWidget({
           onClick={() => navigate('/projects?filter=favorites')}
         >
           <Star className="mr-1 h-3 w-3" />
-          Favoriten
+          {t('filter.favorites')}
         </Badge>
         <Badge
           variant="outline"
           className="cursor-pointer px-2.5 py-1 text-xs bg-white/90 hover:bg-white transition-colors"
           onClick={() => navigate('/projects?filter=recent')}
         >
-          Zuletzt angesehen
+          {t('searchWidget.recentlyViewed')}
         </Badge>
       </div>
       
@@ -114,22 +116,22 @@ export function SearchWidget({
         <div className="mt-3 bg-white rounded-lg shadow-lg text-foreground max-h-80 overflow-y-auto">
           <div className="p-3 border-b">
             <p className="text-xs text-muted-foreground">
-              Suche nach: <span className="font-semibold">{searchQuery}</span>
+              {t('searchWidget.searching')}: <span className="font-semibold">{searchQuery}</span>
             </p>
           </div>
 
           {!hasResults ? (
             <div className="p-3 text-xs text-muted-foreground">
-              Keine Ergebnisse gefunden. Laden Sie Daten im Datenhub hoch, um zu beginnen.
+              {t('searchWidget.noResults')}
             </div>
           ) : (
             <div className="divide-y">
               {results.projects.length > 0 && (
                 <div className="p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-xs">Projekte ({results.projects.length})</h3>
+                    <h3 className="font-semibold text-xs">{t('search.projects')} ({results.projects.length})</h3>
                     <Link to="/projects" className="text-xs text-primary hover:underline flex items-center gap-1">
-                      Alle anzeigen <ArrowRight className="h-2.5 w-2.5" />
+                      {t('common.showAll')} <ArrowRight className="h-2.5 w-2.5" />
                     </Link>
                   </div>
                   <div className="space-y-1.5">
@@ -141,7 +143,7 @@ export function SearchWidget({
                       >
                         <div className="font-medium text-sm">{project.project_name}</div>
                         <div className="text-xs text-muted-foreground">
-                          Kunde: {project.customer} • Produkt: {project.product}
+                          {t('table.customer')}: {project.customer} • {t('table.product')}: {project.product}
                         </div>
                       </Link>
                     ))}
@@ -152,9 +154,9 @@ export function SearchWidget({
               {results.products.length > 0 && (
                 <div className="p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-xs">Produkte ({results.products.length})</h3>
+                    <h3 className="font-semibold text-xs">{t('search.products')} ({results.products.length})</h3>
                     <Link to="/products" className="text-xs text-primary hover:underline flex items-center gap-1">
-                      Alle anzeigen <ArrowRight className="h-2.5 w-2.5" />
+                      {t('common.showAll')} <ArrowRight className="h-2.5 w-2.5" />
                     </Link>
                   </div>
                   <div className="space-y-1.5">
@@ -191,7 +193,7 @@ export function SearchWidget({
 
               {results.applications.length > 0 && (
                 <div className="p-3">
-                  <h3 className="font-semibold text-xs mb-2">Applikationen ({results.applications.length})</h3>
+                  <h3 className="font-semibold text-xs mb-2">{t('search.applications')} ({results.applications.length})</h3>
                   <div className="space-y-1.5">
                     {results.applications.slice(0, 3).map((app: any) => (
                       <div
@@ -200,7 +202,7 @@ export function SearchWidget({
                       >
                         <div className="font-medium text-sm">{app.application || '-'}</div>
                         <div className="text-xs text-muted-foreground">
-                          Produkt: {app.related_product || '-'}
+                          {t('table.product')}: {app.related_product || '-'}
                         </div>
                       </div>
                     ))}
@@ -210,7 +212,7 @@ export function SearchWidget({
 
               {results.crossSells.length > 0 && (
                 <div className="p-3">
-                  <h3 className="font-semibold text-xs mb-2">Cross-Selling Möglichkeiten ({results.crossSells.length})</h3>
+                  <h3 className="font-semibold text-xs mb-2">{t('searchWidget.crossSellOpportunities')} ({results.crossSells.length})</h3>
                   <div className="space-y-1.5">
                     {results.crossSells.slice(0, 3).map((cs: any) => (
                       <div
@@ -219,7 +221,7 @@ export function SearchWidget({
                       >
                         <div className="font-medium text-sm">{cs.cross_sell_product}</div>
                         <div className="text-xs text-muted-foreground">
-                          Basis: {cs.base_product} • Applikation: {cs.application}
+                          Basis: {cs.base_product} • {t('table.application')}: {cs.application}
                         </div>
                       </div>
                     ))}
