@@ -1,0 +1,21 @@
+{
+  "name": "FASTND | B2B Sales Intelligence",
+  "short_name": "FASTND",
+  "description": "B2B Sales Intelligence Platform für Vertriebsmitarbeiter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0066cc",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
