@@ -1735,20 +1735,21 @@ export default function Projects() {
 
           {detailProjects.map((project: any) => <Card key={project.id}>
               <CardHeader>
-                <div className="flex items-start gap-2">
-                  <Button variant="ghost" size="sm" className="mt-0.5" onClick={e => {
-                e.stopPropagation();
-                const targetId = project.sourceIds?.[0] || project.id;
-                toggleFavorite(targetId);
-              }}>
-                    <Star className={`h-5 w-5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
-                  </Button>
+                <div className="flex items-start">
                   <div className="flex-1">
                     <Collapsible open={metadataExpanded} onOpenChange={setMetadataExpanded}>
                       <CollapsibleTrigger asChild>
                         <div className="flex items-center gap-2 cursor-pointer group">
                           <CardTitle className="text-xl">{project.project_name}</CardTitle>
                           <ChevronUp className={cn("h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground", !metadataExpanded && "rotate-180")} />
+                          <Star 
+                            className={`h-5 w-5 cursor-pointer ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              const targetId = project.sourceIds?.[0] || project.id;
+                              toggleFavorite(targetId);
+                            }}
+                          />
                         </div>
                       </CollapsibleTrigger>
                       
