@@ -287,7 +287,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <input
                   type="text"
                   placeholder={t('search.placeholder')}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-2 rounded-full bg-muted/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:bg-background border border-transparent focus:border-muted-foreground/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
