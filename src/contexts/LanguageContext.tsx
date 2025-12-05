@@ -583,6 +583,25 @@ const translations: Record<Language, Record<string, string>> = {
     'admin.deleteUserConfirm': 'Sind Sie sicher, dass Sie den Benutzer löschen möchten?',
     'admin.deleteUserWarning': 'Diese Aktion kann nicht rückgängig gemacht werden. Alle Daten des Benutzers werden dauerhaft gelöscht.',
     
+    // User Preferences Viewer
+    'userPrefsViewer.title': 'Benutzer-Einstellungen',
+    'userPrefsViewer.description': 'Übersicht aller Benutzer-Präferenzen im Mandanten',
+    'userPrefsViewer.usersWithDashboard': 'Benutzer mit Dashboard-Einstellungen',
+    'userPrefsViewer.usersWithColumns': 'Benutzer mit Spalten-Einstellungen',
+    'userPrefsViewer.ofUsers': 'von {count} Benutzern',
+    'userPrefsViewer.totalSettings': 'Gesamt-Einstellungen',
+    'userPrefsViewer.configurations': 'Konfigurationen',
+    'userPrefsViewer.userOverview': 'Benutzer-Übersicht',
+    'userPrefsViewer.userOverviewDesc': 'Dashboard- und Spalten-Einstellungen pro Benutzer',
+    'userPrefsViewer.dashboard': 'Dashboard',
+    'userPrefsViewer.columns': 'Spalten',
+    'userPrefsViewer.noDashboardSettings': 'Keine Dashboard-Einstellungen',
+    'userPrefsViewer.noColumnSettings': 'Keine Spalten-Einstellungen',
+    'userPrefsViewer.lastUpdated': 'Zuletzt aktualisiert',
+    'userPrefsViewer.position': 'Position',
+    'userPrefsViewer.visible': 'sichtbar',
+    'userPrefsViewer.andMore': '... und {count} weitere Spalten',
+    
     // DataHub
     'dataHub.title': 'Datenhub',
     'dataHub.description': 'Laden Sie Ihre Daten hoch und verwalten Sie Ihre Uploads',
@@ -1378,6 +1397,25 @@ const translations: Record<Language, Record<string, string>> = {
     'admin.deleteUserTitle': 'Delete User?',
     'admin.deleteUserConfirm': 'Are you sure you want to delete the user?',
     'admin.deleteUserWarning': 'This action cannot be undone. All user data will be permanently deleted.',
+    
+    // User Preferences Viewer
+    'userPrefsViewer.title': 'User Settings',
+    'userPrefsViewer.description': 'Overview of all user preferences in the tenant',
+    'userPrefsViewer.usersWithDashboard': 'Users with Dashboard Settings',
+    'userPrefsViewer.usersWithColumns': 'Users with Column Settings',
+    'userPrefsViewer.ofUsers': 'of {count} users',
+    'userPrefsViewer.totalSettings': 'Total Settings',
+    'userPrefsViewer.configurations': 'Configurations',
+    'userPrefsViewer.userOverview': 'User Overview',
+    'userPrefsViewer.userOverviewDesc': 'Dashboard and column settings per user',
+    'userPrefsViewer.dashboard': 'Dashboard',
+    'userPrefsViewer.columns': 'Columns',
+    'userPrefsViewer.noDashboardSettings': 'No dashboard settings',
+    'userPrefsViewer.noColumnSettings': 'No column settings',
+    'userPrefsViewer.lastUpdated': 'Last updated',
+    'userPrefsViewer.position': 'Position',
+    'userPrefsViewer.visible': 'visible',
+    'userPrefsViewer.andMore': '... and {count} more columns',
     
     // DataHub
     'dataHub.title': 'Data Hub',
