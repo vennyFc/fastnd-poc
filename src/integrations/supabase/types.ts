@@ -472,6 +472,7 @@ export type Database = {
           created_at: string
           customer: string
           id: string
+          opportunity_creation_date: string | null
           product: string
           project_name: string
           project_number: string
@@ -484,6 +485,7 @@ export type Database = {
           created_at?: string
           customer: string
           id?: string
+          opportunity_creation_date?: string | null
           product: string
           project_name: string
           project_number: string
@@ -496,6 +498,7 @@ export type Database = {
           created_at?: string
           customer?: string
           id?: string
+          opportunity_creation_date?: string | null
           product?: string
           project_name?: string
           project_number?: string

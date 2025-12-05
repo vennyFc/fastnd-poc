@@ -30,8 +30,8 @@ const dataTypes = [
   {
     id: 'customer_projects',
     title: 'Kundenprojekte',
-    description: 'Kunde, Projektname, Applikation, Produkt',
-    fields: ['customer', 'project_name', 'application', 'product'],
+    description: 'Kunde, Projektname, Applikation, Produkt, Opportunity Creation Date',
+    fields: ['customer', 'project_name', 'application', 'product', 'opportunity_creation_date'],
     icon: FileSpreadsheet,
   },
   {
