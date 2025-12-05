@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,7 @@ type SortDirection = 'asc' | 'desc' | null;
 
 export default function Customers() {
   const { user, isSuperAdmin, activeTenant } = useAuth();
+  const { t } = useLanguage();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,13 +59,26 @@ export default function Customers() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Column labels with translations
+  const getColumnLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      'customer_name': t('table.customerName'),
+      'industry': t('table.industry'),
+      'country': t('table.country'),
+      'city': t('table.city'),
+      'customer_category': t('table.category'),
+      'project_count': t('table.projectCount'),
+    };
+    return labels[key] || key;
+  };
+
   const defaultColumns = [
-    { key: 'customer_name', label: 'Kunde', visible: true, width: 250, order: 0 },
-    { key: 'industry', label: 'Branche', visible: true, width: 180, order: 1 },
-    { key: 'country', label: 'Land', visible: true, width: 150, order: 2 },
-    { key: 'city', label: 'Stadt', visible: true, width: 150, order: 3 },
-    { key: 'customer_category', label: 'Kategorie', visible: true, width: 150, order: 4 },
-    { key: 'project_count', label: 'Projekte', visible: true, width: 120, order: 5 },
+    { key: 'customer_name', label: t('table.customerName'), visible: true, width: 250, order: 0 },
+    { key: 'industry', label: t('table.industry'), visible: true, width: 180, order: 1 },
+    { key: 'country', label: t('table.country'), visible: true, width: 150, order: 2 },
+    { key: 'city', label: t('table.city'), visible: true, width: 150, order: 3 },
+    { key: 'customer_category', label: t('table.category'), visible: true, width: 150, order: 4 },
+    { key: 'project_count', label: t('table.projectCount'), visible: true, width: 120, order: 5 },
   ];
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -250,8 +265,8 @@ export default function Customers() {
       setFilteredCustomers(enrichedCustomers);
     } catch (error) {
       toast({
-        title: 'Fehler beim Laden',
-        description: 'Kunden konnten nicht geladen werden.',
+        title: t('toast.loadError'),
+        description: t('empty.customers'),
         variant: 'destructive',
       });
     } finally {
@@ -274,7 +289,7 @@ export default function Customers() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-medium font-clash">Kunden</h1>
+        <h1 className="text-3xl font-medium font-clash">{t('page.customers')}</h1>
       </div>
 
       <Card>
@@ -283,7 +298,7 @@ export default function Customers() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Kunde suchen..."
+                placeholder={t('search.searchCustomers')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -294,7 +309,7 @@ export default function Customers() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="relative">
                     <Filter className="h-4 w-4 mr-2" />
-                    Filter
+                    {t('common.filter')}
                     {activeFilterCount > 0 && (
                       <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
                         {activeFilterCount}
@@ -305,24 +320,24 @@ export default function Customers() {
                 <PopoverContent className="w-80" align="end">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">Filter</h4>
+                      <h4 className="font-medium">{t('common.filter')}</h4>
                       {activeFilterCount > 0 && (
                         <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-auto p-1 text-xs">
                           <X className="h-3 w-3 mr-1" />
-                          Zurücksetzen
+                          {t('common.reset')}
                         </Button>
                       )}
                     </div>
                     
                     <div className="space-y-3">
                       <div>
-                        <label className="text-sm font-medium mb-1.5 block">Kunde</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t('table.customerName')}</label>
                         <Select value={filterCustomerName || '__all__'} onValueChange={(val) => setFilterCustomerName(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Alle Kunden" />
+                            <SelectValue placeholder={t('filter.allCustomers')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__all__">Alle Kunden</SelectItem>
+                            <SelectItem value="__all__">{t('filter.allCustomers')}</SelectItem>
                             {filterOptions.customerNames.map(name => (
                               <SelectItem key={name} value={name}>{name}</SelectItem>
                             ))}
@@ -331,13 +346,13 @@ export default function Customers() {
                       </div>
                       
                       <div>
-                        <label className="text-sm font-medium mb-1.5 block">Branche</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t('table.industry')}</label>
                         <Select value={filterIndustry || '__all__'} onValueChange={(val) => setFilterIndustry(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Alle Branchen" />
+                            <SelectValue placeholder={t('filter.allIndustries')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__all__">Alle Branchen</SelectItem>
+                            <SelectItem value="__all__">{t('filter.allIndustries')}</SelectItem>
                             {filterOptions.industries.map(industry => (
                               <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                             ))}
@@ -346,13 +361,13 @@ export default function Customers() {
                       </div>
                       
                       <div>
-                        <label className="text-sm font-medium mb-1.5 block">Land</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t('table.country')}</label>
                         <Select value={filterCountry || '__all__'} onValueChange={(val) => setFilterCountry(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Alle Länder" />
+                            <SelectValue placeholder={t('filter.allCountries')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__all__">Alle Länder</SelectItem>
+                            <SelectItem value="__all__">{t('filter.allCountries')}</SelectItem>
                             {filterOptions.countries.map(country => (
                               <SelectItem key={country} value={country}>{country}</SelectItem>
                             ))}
@@ -361,13 +376,13 @@ export default function Customers() {
                       </div>
                       
                       <div>
-                        <label className="text-sm font-medium mb-1.5 block">Stadt</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t('table.city')}</label>
                         <Select value={filterCity || '__all__'} onValueChange={(val) => setFilterCity(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Alle Städte" />
+                            <SelectValue placeholder={t('filter.allCities')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__all__">Alle Städte</SelectItem>
+                            <SelectItem value="__all__">{t('filter.allCities')}</SelectItem>
                             {filterOptions.cities.map(city => (
                               <SelectItem key={city} value={city}>{city}</SelectItem>
                             ))}
@@ -376,13 +391,13 @@ export default function Customers() {
                       </div>
                       
                       <div>
-                        <label className="text-sm font-medium mb-1.5 block">Kategorie</label>
+                        <label className="text-sm font-medium mb-1.5 block">{t('table.category')}</label>
                         <Select value={filterCategory || '__all__'} onValueChange={(val) => setFilterCategory(val === '__all__' ? '' : val)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Alle Kategorien" />
+                            <SelectValue placeholder={t('filter.allCategories')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__all__">Alle Kategorien</SelectItem>
+                            <SelectItem value="__all__">{t('filter.allCategories')}</SelectItem>
                             {filterOptions.categories.map(category => (
                               <SelectItem key={category} value={category}>{category}</SelectItem>
                             ))}
@@ -428,13 +443,13 @@ export default function Customers() {
           ) : sortedCustomers.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Keine Kunden gefunden</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('empty.customers')}</h3>
               <p className="text-muted-foreground">
-                {searchTerm || activeFilterCount > 0 ? 'Versuchen Sie andere Suchkriterien oder Filter' : 'Beginnen Sie mit dem Hochladen von Kundendaten'}
+                {searchTerm || activeFilterCount > 0 ? t('search.noResults') : t('common.noData')}
               </p>
               {activeFilterCount > 0 && (
                 <Button variant="outline" size="sm" onClick={clearAllFilters} className="mt-4">
-                  Filter zurücksetzen
+                  {t('common.reset')} {t('common.filter')}
                 </Button>
               )}
             </div>
@@ -446,7 +461,7 @@ export default function Customers() {
                       {visibleColumns.map((column, index) => (
                         <ResizableTableHeader
                           key={column.key}
-                          label={column.label}
+                          label={getColumnLabel(column.key)}
                           width={column.width}
                           onResize={(newWidth) => updateColumnWidth(column.key, newWidth)}
                           sortable={true}
@@ -500,11 +515,11 @@ export default function Customers() {
               {/* Pagination Footer */}
               <div className="border-t pt-4 mt-4 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+                  {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} ${t('pagination.of')} ${totalItems} ${t('pagination.results')}` : `0 ${t('pagination.results')}`}
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                    <span className="text-sm text-muted-foreground">{t('pagination.resultsPerPage')}:</span>
                     <Select 
                       value={itemsPerPage.toString()} 
                       onValueChange={(val) => {
@@ -532,7 +547,7 @@ export default function Customers() {
                       className="h-8 px-3"
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
-                      Zurück
+                      {t('pagination.previous')}
                     </Button>
                     <div className="flex items-center gap-1 mx-2">
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -566,7 +581,7 @@ export default function Customers() {
                       disabled={currentPage === totalPages || totalPages === 0}
                       className="h-8 px-3"
                     >
-                      Weiter
+                      {t('pagination.next')}
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
@@ -588,7 +603,7 @@ export default function Customers() {
                   {selectedCustomer.customer_name}
                 </SheetTitle>
                 <SheetDescription>
-                  Kundendetails und Informationen
+                  {t('customer.details')}
                 </SheetDescription>
               </SheetHeader>
 
@@ -597,9 +612,9 @@ export default function Customers() {
                   <div className="flex items-start gap-3">
                     <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">Branche</p>
+                      <p className="text-sm font-medium text-foreground">{t('table.industry')}</p>
                       <p className="text-sm text-muted-foreground">
-                        {selectedCustomer.industry || 'Nicht angegeben'}
+                        {selectedCustomer.industry || t('common.noData')}
                       </p>
                     </div>
                   </div>
@@ -607,11 +622,11 @@ export default function Customers() {
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">Standort</p>
+                      <p className="text-sm font-medium text-foreground">{t('customer.location')}</p>
                       <p className="text-sm text-muted-foreground">
                         {selectedCustomer.city && selectedCustomer.country
                           ? `${selectedCustomer.city}, ${selectedCustomer.country}`
-                          : selectedCustomer.city || selectedCustomer.country || 'Nicht angegeben'}
+                          : selectedCustomer.city || selectedCustomer.country || t('common.noData')}
                       </p>
                     </div>
                   </div>
@@ -619,9 +634,9 @@ export default function Customers() {
                   <div className="flex items-start gap-3">
                     <Tag className="h-5 w-5 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">Kategorie</p>
+                      <p className="text-sm font-medium text-foreground">{t('table.category')}</p>
                       <p className="text-sm text-muted-foreground">
-                        {selectedCustomer.customer_category || 'Nicht angegeben'}
+                        {selectedCustomer.customer_category || t('common.noData')}
                       </p>
                     </div>
                   </div>
