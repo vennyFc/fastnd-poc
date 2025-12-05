@@ -72,6 +72,34 @@ const translations: Record<Language, Record<string, string>> = {
     'userPrefs.system': 'System',
     'userPrefs.language': 'Sprache',
     
+    // Preferences Popover
+    'prefs.title': 'Benutzer Präferenzen',
+    'prefs.subtitle': 'Passen Sie Ihre Inhalts- und Anzeigeeinstellungen an.',
+    'prefs.content': 'Inhalte',
+    'prefs.view': 'Ansicht',
+    'prefs.functions': 'Funktionen',
+    'prefs.targetApplications': 'Zielapplikationen',
+    'prefs.productFamilies': 'Produktfamilien',
+    'prefs.manufacturers': 'Hersteller',
+    'prefs.none': 'Keine',
+    'prefs.saved': 'Präferenzen gespeichert',
+    'prefs.saveError': 'Fehler beim Speichern der Präferenzen',
+    'prefs.saving': 'Speichern...',
+    'prefs.recentProjectsCount': 'Anzahl "Zuletzt" Projekte',
+    'prefs.recentProjectsDesc': 'Wie viele zuletzt angesehene Projekte sollen angezeigt werden?',
+    'prefs.selectCount': 'Anzahl wählen',
+    'prefs.projects': 'Projekte',
+    'prefs.autoLogoffTime': 'Auto-Logoff Zeit',
+    'prefs.autoLogoffDesc': 'Nach wie vielen Minuten ohne Aktivität sollen Sie automatisch abgemeldet werden?',
+    'prefs.selectTime': 'Zeit wählen',
+    'prefs.minutes': 'Minuten',
+    
+    // Notifications
+    'notifications.title': 'Benachrichtigungen',
+    'notifications.markAllRead': 'Alle als gelesen markieren',
+    'notifications.noNotifications': 'Keine Benachrichtigungen',
+    'notifications.showsLast7Days': 'Zeigt Aktivitäten der letzten 7 Tage',
+    
     // Dashboard
     'dashboard.welcome': 'Willkommen',
     'dashboard.statistics': 'Statistiken',
@@ -640,6 +668,34 @@ const translations: Record<Language, Record<string, string>> = {
     'userPrefs.dark': 'Dark',
     'userPrefs.system': 'System',
     'userPrefs.language': 'Language',
+    
+    // Preferences Popover
+    'prefs.title': 'User Preferences',
+    'prefs.subtitle': 'Customize your content and display settings.',
+    'prefs.content': 'Content',
+    'prefs.view': 'View',
+    'prefs.functions': 'Functions',
+    'prefs.targetApplications': 'Target Applications',
+    'prefs.productFamilies': 'Product Families',
+    'prefs.manufacturers': 'Manufacturers',
+    'prefs.none': 'None',
+    'prefs.saved': 'Preferences saved',
+    'prefs.saveError': 'Error saving preferences',
+    'prefs.saving': 'Saving...',
+    'prefs.recentProjectsCount': 'Number of "Recent" Projects',
+    'prefs.recentProjectsDesc': 'How many recently viewed projects should be displayed?',
+    'prefs.selectCount': 'Select count',
+    'prefs.projects': 'Projects',
+    'prefs.autoLogoffTime': 'Auto-Logoff Time',
+    'prefs.autoLogoffDesc': 'After how many minutes of inactivity should you be automatically logged out?',
+    'prefs.selectTime': 'Select time',
+    'prefs.minutes': 'Minutes',
+    
+    // Notifications
+    'notifications.title': 'Notifications',
+    'notifications.markAllRead': 'Mark all as read',
+    'notifications.noNotifications': 'No notifications',
+    'notifications.showsLast7Days': 'Shows activities from the last 7 days',
     
     // Dashboard
     'dashboard.welcome': 'Welcome',

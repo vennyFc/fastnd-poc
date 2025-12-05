@@ -7,11 +7,15 @@ import { Separator } from '@/components/ui/separator';
 import { useNotifications } from '@/hooks/useNotifications';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function NotificationPopover() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  
+  const dateLocale = language === 'de' ? de : enUS;
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -56,7 +60,7 @@ export function NotificationPopover() {
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
         <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-semibold text-lg">Benachrichtigungen</h3>
+          <h3 className="font-semibold text-lg">{t('notifications.title')}</h3>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -64,7 +68,7 @@ export function NotificationPopover() {
               onClick={markAllAsRead}
               className="text-xs"
             >
-              Alle als gelesen markieren
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </div>
@@ -74,7 +78,7 @@ export function NotificationPopover() {
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" />
               <p className="text-sm text-muted-foreground">
-                Keine Benachrichtigungen
+                {t('notifications.noNotifications')}
               </p>
             </div>
           ) : (
@@ -111,7 +115,7 @@ export function NotificationPopover() {
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(notification.created_at), {
                               addSuffix: true,
-                              locale: de,
+                              locale: dateLocale,
                             })}
                           </p>
                         </div>
@@ -136,7 +140,7 @@ export function NotificationPopover() {
                         <p className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(notification.created_at), {
                             addSuffix: true,
-                            locale: de,
+                            locale: dateLocale,
                           })}
                         </p>
                       </div>
@@ -153,7 +157,7 @@ export function NotificationPopover() {
             <Separator />
             <div className="p-2">
               <p className="text-xs text-center text-muted-foreground">
-                Zeigt Aktivitäten der letzten 7 Tage
+                {t('notifications.showsLast7Days')}
               </p>
             </div>
           </>
