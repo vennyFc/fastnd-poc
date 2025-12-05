@@ -1818,7 +1818,7 @@ export default function Projects() {
                         console.log('📋 Select onValueChange triggered:', value);
                         handleProjectStatusChange(project, value);
                       }}>
-                              <SelectTrigger className="w-full sm:w-auto sm:min-w-[100px] h-9 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90">
+                              <SelectTrigger className="w-full sm:w-[140px] h-9 rounded-full bg-foreground text-background border-foreground hover:bg-foreground/90">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="z-[9999] bg-popover">
