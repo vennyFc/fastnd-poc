@@ -1932,7 +1932,7 @@ export default function Projects() {
                               } else if (column.key === 'status') {
                                 const isRegistered = productStatus === 'Registriert';
                                 value = productStatus ? <Select value={productStatus} disabled={isRegistered} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, productName, newStatus, 'cross_sell')}>
-                                               <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
+                               <SelectTrigger className="h-7 w-[100px] text-2xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                  <SelectValue />
                                                </SelectTrigger>
                                                 <SelectContent>
@@ -2025,7 +2025,7 @@ export default function Projects() {
                                     width: `${column.width}px`
                                   }}>
                                                   {altStatus ? <Select value={altStatus} disabled={isRegistered} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, alt.alternative_product, newStatus, 'alternative')}>
-                                                      <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
+                                                      <SelectTrigger className="h-7 w-[100px] text-2xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                         <SelectValue />
                                                       </SelectTrigger>
                                                        <SelectContent>
@@ -2035,7 +2035,7 @@ export default function Projects() {
                                                          <SelectItem value="Registriert">Registriert</SelectItem>
                                                          <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                        </SelectContent>
-                                                    </Select> : !isAlreadyInProject && <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
+                                                    </Select> : !isAlreadyInProject && <Button size="sm" variant="outline" className="h-7 w-[100px] text-2xs" onClick={e => {
                                       e.stopPropagation();
                                       handleAddAlternative(project, alt.alternative_product);
                                     }}>
@@ -2179,7 +2179,7 @@ export default function Projects() {
                                   return <TableCell key={column.key} className="align-top py-3" style={{
                                     width: `${column.width}px`
                                   }}>
-                                                <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
+                                <Button size="sm" variant="outline" className="h-7 w-[100px] text-2xs" onClick={e => {
                                       e.stopPropagation();
                                       handleAddCrossSell(project, cs.cross_sell_product);
                                     }}>
@@ -2298,7 +2298,7 @@ export default function Projects() {
                                       width: `${column.width}px`
                                     }}>
                                                    {isAlreadyInProject && altStatus ? <Select value={altStatus} disabled={altStatus === 'Registriert'} onValueChange={newStatus => handleUpdateCrossSellStatus(project.customer, project.project_name, alt.alternative_product, newStatus, 'alternative')}>
-                                                       <SelectTrigger className="h-8 w-[120px] text-xs border border-input bg-background" onClick={e => e.stopPropagation()}>
+                                                       <SelectTrigger className="h-7 w-[100px] text-2xs border border-input bg-background" onClick={e => e.stopPropagation()}>
                                                          <SelectValue />
                                                        </SelectTrigger>
                                                         <SelectContent>
@@ -2308,7 +2308,7 @@ export default function Projects() {
                                                           <SelectItem value="Registriert">Registriert</SelectItem>
                                                           <SelectItem value="Abgelehnt">Abgelehnt</SelectItem>
                                                         </SelectContent>
-                                                     </Select> : <Button size="sm" variant="outline" className="h-8 w-[120px] text-xs" onClick={e => {
+                                                     </Select> : <Button size="sm" variant="outline" className="h-7 w-[100px] text-2xs" onClick={e => {
                                         e.stopPropagation();
                                         handleAddAlternative(project, alt.alternative_product);
                                       }}>
