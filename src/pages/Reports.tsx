@@ -19,12 +19,13 @@ import { useAuth } from '@/contexts/AuthContext';
 
 type ReportView = 'overview' | 'rejected-cross-sells' | 'added-products';
 
-const removalReasonLabels: Record<string, string> = {
-  'technischer_fit': 'Technischer Fit',
-  'commercial_fit': 'Commercial Fit',
-  'anderer_lieferant': 'Anderer Lieferant',
-  'kein_bedarf': 'Kein Bedarf',
-  'sonstige': 'Sonstige',
+// Removal reason keys for translation
+const removalReasonKeys: Record<string, string> = {
+  'technischer_fit': 'removal.technicalFit',
+  'commercial_fit': 'removal.commercialFit',
+  'anderer_lieferant': 'removal.otherSupplier',
+  'kein_bedarf': 'removal.noNeed',
+  'sonstige': 'removal.other',
 };
 
 export default function Reports() {
@@ -40,18 +41,41 @@ export default function Reports() {
   const [removalReasonFilter, setRemovalReasonFilter] = useState<string>('all');
   const queryClient = useQueryClient();
 
+  // Helper to get translated removal reason
+  const getRemovalReasonLabel = (reason: string) => {
+    const key = removalReasonKeys[reason];
+    return key ? t(key) : reason;
+  };
+
+  // Helper to get translated status
+  const getTranslatedStatus = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'Neu': t('status.new'),
+      'Offen': t('status.open'),
+      'Prüfung': t('status.review'),
+      'Validierung': t('status.validation'),
+      'Abgeschlossen': t('status.completed'),
+      'Identifiziert': t('status.identified'),
+      'Vorgeschlagen': t('status.suggested'),
+      'Akzeptiert': t('status.accepted'),
+      'Registriert': t('status.registered'),
+      'Abgelehnt': t('status.rejected'),
+    };
+    return statusMap[status] || status;
+  };
+
   const reportCards = [
     {
       id: 'rejected-cross-sells' as ReportView,
-      title: 'Abgelehnte Cross-Sells',
-      description: 'Übersicht aller abgelehnten Cross-Sell Produkte',
+      title: t('reports.rejectedCrossSells'),
+      description: t('reports.rejectedCrossSellsDesc'),
       icon: ThumbsDown,
       color: 'text-red-500',
     },
     {
       id: 'added-products' as ReportView,
-      title: 'Ergänzte Produkte',
-      description: 'Alle zu Projekten hinzugefügten Cross-Sells und Alternativen',
+      title: t('reports.addedProducts'),
+      description: t('reports.addedProductsDesc'),
       icon: BarChart3,
       color: 'text-blue-500',
     },
@@ -278,7 +302,7 @@ export default function Reports() {
 
   // Get unique values for rejected filters
   const uniqueProductFamiliesRejected = ['all', ...Array.from(new Set(enrichedRemovedCrossSells.map((p: any) => p.product_family).filter(Boolean)))];
-  const uniqueRemovalReasons = ['all', ...Object.keys(removalReasonLabels)];
+  const uniqueRemovalReasons = ['all', ...Object.keys(removalReasonKeys)];
 
   const filteredRemovedCrossSells = enrichedRemovedCrossSells.filter((item: any) => {
     // Search filter
@@ -288,7 +312,7 @@ export default function Reports() {
         item.cross_sell_product?.toLowerCase().includes(query) ||
         item.application?.toLowerCase().includes(query) ||
         item.project_number?.toLowerCase().includes(query) ||
-        removalReasonLabels[item.removal_reason]?.toLowerCase().includes(query) ||
+        getRemovalReasonLabel(item.removal_reason)?.toLowerCase().includes(query) ||
         item.product_family?.toLowerCase().includes(query)
       );
       if (!matchesSearch) return false;
@@ -455,7 +479,7 @@ export default function Reports() {
       'Produktfamilie': item.product_family,
       'Applikation': item.application,
       'Projekt-Nr.': item.project_number,
-      'Ablehnungsgrund': removalReasonLabels[item.removal_reason] || item.removal_reason,
+      'Ablehnungsgrund': getRemovalReasonLabel(item.removal_reason),
       'Datum': format(new Date(item.removed_at), 'dd.MM.yyyy HH:mm', { locale: de }),
     }));
 
@@ -493,10 +517,10 @@ export default function Reports() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <ThumbsDown className="h-5 w-5 text-red-500" />
-              Abgelehnte Cross-Sell Produkte
+              {t('reports.rejectedCrossSells')}
             </CardTitle>
             <CardDescription className="mt-2">
-              Alle abgelehnten Cross-Sells mit der Möglichkeit zur Wiederherstellung
+              {t('reports.allRejectedCrossSells')}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -508,10 +532,10 @@ export default function Reports() {
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Excel exportieren
+              {t('reports.exportExcel')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
-              Zurück zur Übersicht
+              {t('reports.backToOverview')}
             </Button>
           </div>
         </div>
@@ -521,7 +545,7 @@ export default function Reports() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Suche nach Produkt, Applikation, Projekt oder Grund..."
+              placeholder={t('reports.searchRejected')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -531,10 +555,10 @@ export default function Reports() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Select value={productFamilyFilterRejected} onValueChange={setProductFamilyFilterRejected}>
               <SelectTrigger>
-                <SelectValue placeholder="Produktfamilie" />
+                <SelectValue placeholder={t('filter.productFamily')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Produktfamilien</SelectItem>
+                <SelectItem value="all">{t('reports.allProductFamilies')}</SelectItem>
                 {uniqueProductFamiliesRejected.slice(1).map((family) => (
                   <SelectItem key={family} value={family}>
                     {family}
@@ -545,13 +569,13 @@ export default function Reports() {
 
             <Select value={removalReasonFilter} onValueChange={setRemovalReasonFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Ablehnungsgrund" />
+                <SelectValue placeholder={t('reports.removalReason')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Ablehnungsgründe</SelectItem>
+                <SelectItem value="all">{t('reports.allRemovalReasons')}</SelectItem>
                 {uniqueRemovalReasons.slice(1).map((reason) => (
                   <SelectItem key={reason} value={reason}>
-                    {removalReasonLabels[reason]}
+                    {getRemovalReasonLabel(reason)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -566,7 +590,7 @@ export default function Reports() {
               className="gap-2"
             >
               <X className="h-4 w-4" />
-              Filter zurücksetzen
+              {t('reports.resetFilters')}
             </Button>
           )}
         </div>
@@ -581,12 +605,12 @@ export default function Reports() {
           <div className="text-center py-12 text-muted-foreground">
             <ThumbsDown className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">
-              {searchQuery ? 'Keine Ergebnisse gefunden' : 'Keine abgelehnten Cross-Sells vorhanden'}
+              {searchQuery ? t('reports.noResults') : t('reports.noRejectedCrossSells')}
             </p>
             <p className="text-sm mt-2">
               {searchQuery
-                ? 'Versuchen Sie eine andere Suchanfrage'
-                : 'Produkte, die aus Cross-Sell Opportunities entfernt wurden, erscheinen hier'}
+                ? t('reports.tryDifferentSearch')
+                : t('reports.removedProductsAppearHere')}
             </p>
           </div>
         ) : (
@@ -594,13 +618,13 @@ export default function Reports() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead>Produktfamilie</TableHead>
-                  <TableHead>Applikation</TableHead>
-                  <TableHead>Projekt-Nr.</TableHead>
-                  <TableHead>Ablehnungsgrund</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead className="text-right">Aktion</TableHead>
+                  <TableHead>{t('table.product')}</TableHead>
+                  <TableHead>{t('table.productFamily')}</TableHead>
+                  <TableHead>{t('table.application')}</TableHead>
+                  <TableHead>{t('reports.projectNumber')}</TableHead>
+                  <TableHead>{t('reports.removalReason')}</TableHead>
+                  <TableHead>{t('reports.date')}</TableHead>
+                  <TableHead className="text-right">{t('table.action')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -614,7 +638,7 @@ export default function Reports() {
                     <TableCell className="text-muted-foreground">{item.project_number}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {removalReasonLabels[item.removal_reason] || item.removal_reason}
+                        {getRemovalReasonLabel(item.removal_reason)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -628,7 +652,7 @@ export default function Reports() {
                         className="gap-2"
                       >
                         <RotateCcw className="h-4 w-4" />
-                        Wiederherstellen
+                        {t('reports.restore')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -640,8 +664,8 @@ export default function Reports() {
 
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <p>
-            {filteredRemovedCrossSells.length} von {enrichedRemovedCrossSells.length} Einträge{' '}
-            {hasActiveRejectedFilters && 'gefunden'}
+            {filteredRemovedCrossSells.length} {t('pagination.of')} {enrichedRemovedCrossSells.length} {t('pagination.results')}{' '}
+            {hasActiveRejectedFilters && t('reports.found')}
           </p>
         </div>
       </CardContent>
@@ -655,10 +679,10 @@ export default function Reports() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-blue-500" />
-              Ergänzte Produkte
+              {t('reports.addedProducts')}
             </CardTitle>
             <CardDescription className="mt-2">
-              Alle zu Projekten hinzugefügten Cross-Sells und Alternativen mit Validierungsstatus
+              {t('reports.allAddedProducts')}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -670,10 +694,10 @@ export default function Reports() {
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Excel exportieren
+              {t('reports.exportExcel')}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setCurrentView('overview')}>
-              Zurück zur Übersicht
+              {t('reports.backToOverview')}
             </Button>
           </div>
         </div>
@@ -683,7 +707,7 @@ export default function Reports() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Suche nach Kunde, Projekt, Produkt, Status..."
+              placeholder={t('reports.searchAdded')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -693,10 +717,10 @@ export default function Reports() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <Select value={customerFilter} onValueChange={setCustomerFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Kunde" />
+                <SelectValue placeholder={t('table.customer')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Kunden</SelectItem>
+                <SelectItem value="all">{t('reports.allCustomers')}</SelectItem>
                 {uniqueCustomers.slice(1).map((customer) => (
                   <SelectItem key={customer} value={customer}>
                     {customer}
@@ -707,13 +731,13 @@ export default function Reports() {
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Projekt-Status" />
+                <SelectValue placeholder={t('reports.projectStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Status</SelectItem>
+                <SelectItem value="all">{t('reports.allStatuses')}</SelectItem>
                 {uniqueStatuses.slice(1).map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status}
+                    {getTranslatedStatus(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -721,10 +745,10 @@ export default function Reports() {
 
             <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Produkttyp" />
+                <SelectValue placeholder={t('reports.productType')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Typen</SelectItem>
+                <SelectItem value="all">{t('reports.allTypes')}</SelectItem>
                 <SelectItem value="Cross-Sell">Cross-Sell</SelectItem>
                 <SelectItem value="Alternative">Alternative</SelectItem>
               </SelectContent>
@@ -732,13 +756,13 @@ export default function Reports() {
 
             <Select value={validationStatusFilter} onValueChange={setValidationStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Validierungsstatus" />
+                <SelectValue placeholder={t('reports.validationStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Alle Validierungen</SelectItem>
+                <SelectItem value="all">{t('reports.allValidations')}</SelectItem>
                 {uniqueValidationStatuses.slice(1).map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status}
+                    {getTranslatedStatus(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -753,7 +777,7 @@ export default function Reports() {
               className="gap-2"
             >
               <X className="h-4 w-4" />
-              Filter zurücksetzen
+              {t('reports.resetFilters')}
             </Button>
           )}
         </div>
@@ -768,12 +792,12 @@ export default function Reports() {
           <div className="text-center py-12 text-muted-foreground">
             <BarChart3 className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">
-              {searchQuery ? 'Keine Ergebnisse gefunden' : 'Keine ergänzten Produkte vorhanden'}
+              {searchQuery ? t('reports.noResults') : t('reports.noAddedProducts')}
             </p>
             <p className="text-sm mt-2">
               {searchQuery
-                ? 'Versuchen Sie eine andere Suchanfrage'
-                : 'Fügen Sie Cross-Sells oder Alternativen zu Projekten hinzu'}
+                ? t('reports.tryDifferentSearch')
+                : t('reports.addCrossSellsOrAlternatives')}
             </p>
           </div>
         ) : (
@@ -781,15 +805,15 @@ export default function Reports() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Kunde</TableHead>
-                  <TableHead>Projekt</TableHead>
-                  <TableHead>Applikation</TableHead>
-                  <TableHead>Projekt-Status</TableHead>
-                  <TableHead>Produkt</TableHead>
-                  <TableHead>Produktfamilie</TableHead>
-                  <TableHead>Typ</TableHead>
-                  <TableHead>Validierungsstatus</TableHead>
-                  <TableHead>Hinzugefügt</TableHead>
+                  <TableHead>{t('table.customer')}</TableHead>
+                  <TableHead>{t('projects.project')}</TableHead>
+                  <TableHead>{t('table.application')}</TableHead>
+                  <TableHead>{t('reports.projectStatus')}</TableHead>
+                  <TableHead>{t('table.product')}</TableHead>
+                  <TableHead>{t('table.productFamily')}</TableHead>
+                  <TableHead>{t('reports.productType')}</TableHead>
+                  <TableHead>{t('reports.validationStatus')}</TableHead>
+                  <TableHead>{t('reports.dateAdded')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -801,7 +825,7 @@ export default function Reports() {
                       <Badge variant="outline">{item.application}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{item.optimization_status}</Badge>
+                      <Badge variant="secondary">{getTranslatedStatus(item.optimization_status)}</Badge>
                     </TableCell>
                     <TableCell className="font-medium">{item.product_name}</TableCell>
                     <TableCell className="text-muted-foreground">{item.product_family}</TableCell>
@@ -829,7 +853,7 @@ export default function Reports() {
                           color: 'white'
                         }}
                       >
-                        {item.validation_status}
+                        {getTranslatedStatus(item.validation_status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -846,8 +870,8 @@ export default function Reports() {
 
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <p>
-            {filteredAddedProducts.length} von {enrichedAddedProducts.length} Einträge{' '}
-            {searchQuery && 'gefunden'}
+            {filteredAddedProducts.length} {t('pagination.of')} {enrichedAddedProducts.length} {t('pagination.results')}{' '}
+            {searchQuery && t('reports.found')}
           </p>
         </div>
       </CardContent>
@@ -859,9 +883,9 @@ export default function Reports() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-medium tracking-tight font-clash">Reports</h1>
+            <h1 className="text-3xl font-medium tracking-tight font-clash">{t('reports.title')}</h1>
             <p className="text-muted-foreground mt-2">
-              Übersicht und Analyse Ihrer Geschäftsdaten
+              {t('reports.subtitle')}
             </p>
           </div>
         </div>
@@ -876,9 +900,9 @@ export default function Reports() {
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-medium tracking-tight font-clash">Reports</h1>
+            <h1 className="text-3xl font-medium tracking-tight font-clash">{t('reports.title')}</h1>
             <p className="text-muted-foreground mt-2">
-              Übersicht und Analyse Ihrer Geschäftsdaten
+              {t('reports.subtitle')}
             </p>
           </div>
         </div>
@@ -892,9 +916,9 @@ export default function Reports() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-medium tracking-tight font-clash">Reports</h1>
+          <h1 className="text-3xl font-medium tracking-tight font-clash">{t('reports.title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Übersicht und Analyse Ihrer Geschäftsdaten
+            {t('reports.subtitle')}
           </p>
         </div>
       </div>
@@ -935,7 +959,7 @@ export default function Reports() {
                   <div className="mt-2">
                     <p className="text-3xl font-bold text-primary">{count}</p>
                     <p className="text-sm text-muted-foreground">
-                      {report.id === 'rejected-cross-sells' ? 'Abgelehnte Produkte' : 'Ergänzte Einträge'}
+                      {report.id === 'rejected-cross-sells' ? t('reports.rejectedProducts') : t('reports.addedEntries')}
                     </p>
                   </div>
                 )}
@@ -947,15 +971,15 @@ export default function Reports() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Verfügbare Reports</CardTitle>
+          <CardTitle>{t('reports.availableReports')}</CardTitle>
           <CardDescription>
-            Wählen Sie einen Berichtstyp aus, um detaillierte Analysen anzuzeigen
+            {t('reports.selectReport')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-            <p>Wählen Sie einen Report aus den Karten oben aus</p>
+            <p>{t('reports.selectReport')}</p>
           </div>
         </CardContent>
       </Card>
