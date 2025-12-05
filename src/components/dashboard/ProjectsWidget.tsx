@@ -286,8 +286,8 @@ export function ProjectsWidget() {
             </div>
             
             {/* Metadata Row - all items aligned */}
-            <div className="flex items-start gap-4 pl-7">
-              <div className="min-w-0 w-[120px]">
+            <div className="flex items-start gap-6 pl-7">
+              <div className="min-w-0 w-[140px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Kunde</div>
                 <div className="text-xs font-medium truncate">{project.customer}</div>
               </div>
