@@ -235,17 +235,6 @@ export function ProjectsWidget() {
         </div>;
     }
 
-    const getStatusColor = (status: string) => {
-      switch (status) {
-        case 'Neu': return 'bg-[#3b82f6]/10 text-[#3b82f6] border-[#3b82f6]/30';
-        case 'Offen': return 'bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/30';
-        case 'Prüfung': return 'bg-[#8b5cf6]/10 text-[#8b5cf6] border-[#8b5cf6]/30';
-        case 'Validierung': return 'bg-[#06b6d4]/10 text-[#06b6d4] border-[#06b6d4]/30';
-        case 'Abgeschlossen': return 'bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30';
-        default: return 'bg-muted text-muted-foreground';
-      }
-    };
-
     // Helper to get last modified date from optimization records
     const getLastModifiedDate = (project: any) => {
       const projectNumbers = allProjectsRaw
@@ -278,7 +267,7 @@ export function ProjectsWidget() {
             onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}
             className="block p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all group"
           >
-            {/* Project Name with Favorite Star and Status Badge */}
+            {/* Project Name with Favorite Star */}
             <div className="flex items-center gap-2 mb-2">
               <Button 
                 variant="ghost" 
@@ -294,14 +283,11 @@ export function ProjectsWidget() {
                 <Star className={`h-3.5 w-3.5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
               </Button>
               <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
-              <Badge variant="outline" className={`text-2xs shrink-0 ${getStatusColor(status)}`}>
-                {status}
-              </Badge>
             </div>
             
-            {/* Metadata Row */}
-            <div className="flex items-start gap-6 pl-7">
-              <div className="min-w-0">
+            {/* Metadata Row - all items aligned */}
+            <div className="flex items-start gap-4 pl-7">
+              <div className="min-w-0 w-[120px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Kunde</div>
                 <div className="text-xs font-medium truncate">{project.customer}</div>
               </div>
@@ -313,11 +299,17 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 w-[90px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Zuletzt geändert</div>
                 <div className="text-xs font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                 </div>
+              </div>
+              <div className="shrink-0 w-[100px]">
+                <div className="text-2xs text-muted-foreground mb-0.5">Status</div>
+                <Badge variant="outline" className="text-2xs bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30">
+                  {status}
+                </Badge>
               </div>
             </div>
           </Link>
