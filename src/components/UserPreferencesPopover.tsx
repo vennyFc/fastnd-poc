@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 export function UserPreferencesPopover() {
   const { user, activeTenant } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
@@ -169,10 +171,10 @@ export function UserPreferencesPopover() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user_preferences'] });
-      toast.success('Präferenzen gespeichert');
+      toast.success(t('prefs.saved'));
     },
     onError: () => {
-      toast.error('Fehler beim Speichern der Präferenzen');
+      toast.error(t('prefs.saveError'));
     },
   });
 
@@ -237,9 +239,9 @@ export function UserPreferencesPopover() {
       <PopoverContent className="w-96" align="end">
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold text-sm mb-1">Benutzer Präferenzen</h3>
+            <h3 className="font-semibold text-sm mb-1">{t('prefs.title')}</h3>
             <p className="text-xs text-muted-foreground">
-              Passen Sie Ihre Inhalts- und Anzeigeeinstellungen an.
+              {t('prefs.subtitle')}
             </p>
           </div>
 
@@ -247,29 +249,29 @@ export function UserPreferencesPopover() {
 
           <Tabs defaultValue="content" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="content">Inhalte</TabsTrigger>
-              <TabsTrigger value="view">Ansicht</TabsTrigger>
-              <TabsTrigger value="functions">Funktionen</TabsTrigger>
+              <TabsTrigger value="content">{t('prefs.content')}</TabsTrigger>
+              <TabsTrigger value="view">{t('prefs.view')}</TabsTrigger>
+              <TabsTrigger value="functions">{t('prefs.functions')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="content" className="space-y-4 mt-4">
               {/* Applications */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Zielapplikationen</Label>
+                  <Label className="text-sm font-medium">{t('prefs.targetApplications')}</Label>
                   <div className="flex gap-2">
                     <button
                       onClick={selectAllApplications}
                       className="text-xs text-primary hover:underline"
                     >
-                      Alle
+                      {t('common.all')}
                     </button>
                     <span className="text-xs text-muted-foreground">|</span>
                     <button
                       onClick={deselectAllApplications}
                       className="text-xs text-primary hover:underline"
                     >
-                      Keine
+                      {t('prefs.none')}
                     </button>
                   </div>
                 </div>
@@ -300,20 +302,20 @@ export function UserPreferencesPopover() {
               {/* Product Families */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Produktfamilien</Label>
+                  <Label className="text-sm font-medium">{t('prefs.productFamilies')}</Label>
                   <div className="flex gap-2">
                     <button
                       onClick={selectAllFamilies}
                       className="text-xs text-primary hover:underline"
                     >
-                      Alle
+                      {t('common.all')}
                     </button>
                     <span className="text-xs text-muted-foreground">|</span>
                     <button
                       onClick={deselectAllFamilies}
                       className="text-xs text-primary hover:underline"
                     >
-                      Keine
+                      {t('prefs.none')}
                     </button>
                   </div>
                 </div>
@@ -341,20 +343,20 @@ export function UserPreferencesPopover() {
               {/* Manufacturers */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Hersteller</Label>
+                  <Label className="text-sm font-medium">{t('prefs.manufacturers')}</Label>
                   <div className="flex gap-2">
                     <button
                       onClick={selectAllManufacturers}
                       className="text-xs text-primary hover:underline"
                     >
-                      Alle
+                      {t('common.all')}
                     </button>
                     <span className="text-xs text-muted-foreground">|</span>
                     <button
                       onClick={deselectAllManufacturers}
                       className="text-xs text-primary hover:underline"
                     >
-                      Keine
+                      {t('prefs.none')}
                     </button>
                   </div>
                 </div>
@@ -384,28 +386,28 @@ export function UserPreferencesPopover() {
                 disabled={saveMutation.isPending}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
               >
-                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+                {saveMutation.isPending ? t('prefs.saving') : t('common.save')}
               </button>
             </TabsContent>
 
             <TabsContent value="view" className="space-y-4 mt-4">
               {/* Recent Projects Limit */}
               <div>
-                <Label className="text-sm font-medium">Anzahl "Zuletzt" Projekte</Label>
+                <Label className="text-sm font-medium">{t('prefs.recentProjectsCount')}</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Wie viele zuletzt angesehene Projekte sollen angezeigt werden?
+                  {t('prefs.recentProjectsDesc')}
                 </p>
                 <Select
                   value={recentProjectsLimit.toString()}
                   onValueChange={(value) => setRecentProjectsLimit(parseInt(value))}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Anzahl wählen" />
+                    <SelectValue placeholder={t('prefs.selectCount')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">10 Projekte</SelectItem>
-                    <SelectItem value="20">20 Projekte</SelectItem>
-                    <SelectItem value="30">30 Projekte</SelectItem>
+                    <SelectItem value="10">10 {t('prefs.projects')}</SelectItem>
+                    <SelectItem value="20">20 {t('prefs.projects')}</SelectItem>
+                    <SelectItem value="30">30 {t('prefs.projects')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -415,30 +417,30 @@ export function UserPreferencesPopover() {
                 disabled={saveMutation.isPending}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
               >
-                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+                {saveMutation.isPending ? t('prefs.saving') : t('common.save')}
               </button>
             </TabsContent>
 
             <TabsContent value="functions" className="space-y-4 mt-4">
               {/* Auto Logoff */}
               <div>
-                <Label className="text-sm font-medium">Auto-Logoff Zeit</Label>
+                <Label className="text-sm font-medium">{t('prefs.autoLogoffTime')}</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Nach wie vielen Minuten ohne Aktivität sollen Sie automatisch abgemeldet werden?
+                  {t('prefs.autoLogoffDesc')}
                 </p>
                 <Select
                   value={autoLogoffMinutes.toString()}
                   onValueChange={(value) => setAutoLogoffMinutes(parseInt(value))}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Zeit wählen" />
+                    <SelectValue placeholder={t('prefs.selectTime')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 Minuten</SelectItem>
-                    <SelectItem value="10">10 Minuten</SelectItem>
-                    <SelectItem value="15">15 Minuten</SelectItem>
-                    <SelectItem value="30">30 Minuten</SelectItem>
-                    <SelectItem value="60">60 Minuten</SelectItem>
+                    <SelectItem value="5">5 {t('prefs.minutes')}</SelectItem>
+                    <SelectItem value="10">10 {t('prefs.minutes')}</SelectItem>
+                    <SelectItem value="15">15 {t('prefs.minutes')}</SelectItem>
+                    <SelectItem value="30">30 {t('prefs.minutes')}</SelectItem>
+                    <SelectItem value="60">60 {t('prefs.minutes')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -448,7 +450,7 @@ export function UserPreferencesPopover() {
                 disabled={saveMutation.isPending}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2 rounded-md text-sm font-medium"
               >
-                {saveMutation.isPending ? 'Speichern...' : 'Speichern'}
+                {saveMutation.isPending ? t('prefs.saving') : t('common.save')}
               </button>
             </TabsContent>
           </Tabs>
