@@ -107,6 +107,22 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.actionItems': 'Aktionspunkte',
     'dashboard.gettingStarted': 'Erste Schritte',
     
+    // Widget Settings
+    'widgetSettings.customize': 'Dashboard anpassen',
+    'widgetSettings.customizeWidgets': 'Widgets anpassen',
+    'widgetSettings.customizeDesc': 'Wählen Sie, welche Widgets angezeigt werden sollen. Ziehen Sie sie, um die Reihenfolge zu ändern.',
+    'widgetSettings.projects': 'Projekte',
+    'widgetSettings.actionItems': 'Action Items',
+    'widgetSettings.npiProducts': 'NPI Produkte',
+    'widgetSettings.statistics': 'Statistiken',
+    'widgetSettings.optimizationStatus': 'Optimierungsstatus',
+    'widgetSettings.loginActivity': 'Login-Aktivität (Admin)',
+    'widgetSettings.accessStats': 'Access Statistiken (Admin)',
+    'widgetSettings.addedProducts': 'Ergänzte Produkte',
+    'widgetSettings.gettingStarted': 'Erste Schritte',
+    'widgetSettings.halfWidth': 'Halbe Breite',
+    'widgetSettings.fullWidth': 'Volle Breite',
+    
     // Common Actions
     'common.save': 'Speichern',
     'common.cancel': 'Abbrechen',
@@ -703,6 +719,22 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.recentProjects': 'Recent Projects',
     'dashboard.actionItems': 'Action Items',
     'dashboard.gettingStarted': 'Getting Started',
+    
+    // Widget Settings
+    'widgetSettings.customize': 'Customize Dashboard',
+    'widgetSettings.customizeWidgets': 'Customize Widgets',
+    'widgetSettings.customizeDesc': 'Choose which widgets to display. Drag them to change the order.',
+    'widgetSettings.projects': 'Projects',
+    'widgetSettings.actionItems': 'Action Items',
+    'widgetSettings.npiProducts': 'NPI Products',
+    'widgetSettings.statistics': 'Statistics',
+    'widgetSettings.optimizationStatus': 'Optimization Status',
+    'widgetSettings.loginActivity': 'Login Activity (Admin)',
+    'widgetSettings.accessStats': 'Access Statistics (Admin)',
+    'widgetSettings.addedProducts': 'Added Products',
+    'widgetSettings.gettingStarted': 'Getting Started',
+    'widgetSettings.halfWidth': 'Half Width',
+    'widgetSettings.fullWidth': 'Full Width',
     
     // Common Actions
     'common.save': 'Save',
