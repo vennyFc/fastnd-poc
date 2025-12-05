@@ -750,6 +750,23 @@ export default function Projects() {
     // Default fallback
     return 'Offen';
   };
+
+  // Handle direct navigation to project detail from dashboard widget
+  useEffect(() => {
+    const detailParam = searchParams.get('detail');
+    if (detailParam && groupedProjects && groupedProjects.length > 0) {
+      const project = groupedProjects.find((p: any) => p.project_name === detailParam);
+      if (project) {
+        setSelectedProject(project);
+        setViewMode('detail');
+        // Add to history
+        addToHistory(project.sourceIds?.[0] || project.id);
+        // Clear the detail param from URL
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, groupedProjects]);
+
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
     if (quickFilter === 'favorites') {

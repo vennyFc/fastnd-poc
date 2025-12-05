@@ -268,7 +268,7 @@ export function ProjectsWidget() {
         }}>
               <Star className={`h-3 w-3 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
             </Button>
-            <Link to={`/projects?search=${encodeURIComponent(project.project_name)}`} className="flex-1 min-w-0" onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}>
+            <Link to={`/projects?detail=${encodeURIComponent(project.project_name)}`} className="flex-1 min-w-0" onClick={() => addToHistory(project.sourceIds?.[0] || project.id)}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-0.5">
                   <div className="font-medium text-sm truncate">{project.project_name}</div>
