@@ -280,7 +280,7 @@ export function ProjectsWidget() {
                   toggleFavorite(targetId);
                 }}
               >
-                <Star className={`h-3.5 w-3.5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                <Star className={`h-3.5 w-3.5 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
               </Button>
               <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
             </div>

@@ -2839,7 +2839,7 @@ export default function Projects() {
                       const targetId = project.sourceIds?.[0] || project.id;
                       toggleFavorite(targetId);
                     }}>
-                        <Star className={`h-4 w-4 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                        <Star className={`h-4 w-4 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
                       </Button>
                     </TableCell>
                     {visibleColumns.map(column => {
