@@ -7,18 +7,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Skeleton } from '@/components/ui/skeleton';
 import { LogIn } from 'lucide-react';
 import { subMonths, format, startOfDay, eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval, startOfWeek, startOfMonth } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type TimeRange = '1' | '3' | '6' | '12';
 type Granularity = 'day' | 'week' | 'month';
-
-const timeRangeLabels: Record<TimeRange, string> = {
-  '1': '1 Monat',
-  '3': '3 Monate',
-  '6': '6 Monate',
-  '12': '12 Monate',
-};
 
 // Custom Tooltip Component
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -46,6 +40,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function LoginActivityWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
   const { activeTenant } = useAuth();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'de' ? de : enUS;
+
+  const timeRangeLabels: Record<TimeRange, string> = {
+    '1': t('loginActivity.1month'),
+    '3': t('loginActivity.3months'),
+    '6': t('loginActivity.6months'),
+    '12': t('loginActivity.12months'),
+  };
 
   // Fetch login events
   const { data: loginEvents = [], isLoading } = useQuery({
@@ -150,11 +153,11 @@ export function LoginActivityWidget() {
       // Format label based on granularity
       let label: string;
       if (granularity === 'day') {
-        label = format(interval, 'dd.MM', { locale: de });
+        label = format(interval, 'dd.MM', { locale: dateLocale });
       } else if (granularity === 'week') {
-        label = `KW ${format(interval, 'ww', { locale: de })}`;
+        label = `${t('loginActivity.week')} ${format(interval, 'ww', { locale: dateLocale })}`;
       } else {
-        label = format(interval, 'MMM yy', { locale: de });
+        label = format(interval, 'MMM yy', { locale: dateLocale });
       }
 
       return {
@@ -193,6 +196,12 @@ export function LoginActivityWidget() {
   const statistics = getStatistics();
   const granularity = getGranularity();
 
+  const getGranularityLabel = () => {
+    if (granularity === 'day') return t('loginActivity.daily');
+    if (granularity === 'week') return t('loginActivity.weekly');
+    return t('loginActivity.monthly');
+  };
+
   return (
     <Card className="shadow-card h-full flex flex-col">
       <CardHeader>
@@ -200,13 +209,13 @@ export function LoginActivityWidget() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <LogIn className="h-4 w-4 text-primary" />
-              Login-Aktivität
+              {t('loginActivity.title')}
               <span className="ml-2 px-1.5 py-0.5 text-2xs bg-primary/10 text-primary rounded">
                 Admin
               </span>
             </CardTitle>
             <CardDescription className="mt-1">
-              Login-Verlauf im ausgewählten Zeitraum
+              {t('loginActivity.description')}
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
@@ -233,19 +242,19 @@ export function LoginActivityWidget() {
             {/* Statistics Cards */}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Gesamt Logins</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('loginActivity.totalLogins')}</p>
                 <p className="text-xl font-bold">{statistics.totalLogins}</p>
               </div>
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Aktive Benutzer</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('loginActivity.activeUsers')}</p>
                 <p className="text-xl font-bold">{statistics.uniqueUsers}</p>
               </div>
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Ø Logins/Benutzer</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('loginActivity.avgLoginsPerUser')}</p>
                 <p className="text-xl font-bold">{statistics.avgLoginsPerUser}</p>
               </div>
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Ø Logins/Tag</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('loginActivity.avgLoginsPerDay')}</p>
                 <p className="text-xl font-bold">{statistics.avgLoginsPerDay}</p>
               </div>
             </div>
@@ -277,7 +286,7 @@ export function LoginActivityWidget() {
                   <Area 
                     type="monotone" 
                     dataKey="logins" 
-                    name="Logins"
+                    name={t('loginActivity.logins')}
                     stroke="hsl(var(--primary))"
                     strokeWidth={2}
                     fill="url(#colorLogins)"
@@ -290,9 +299,9 @@ export function LoginActivityWidget() {
 
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-2xs text-muted-foreground">
-                Zeitraum: {format(getDateThreshold(), 'dd. MMM yyyy', { locale: de })} - {format(new Date(), 'dd. MMM yyyy', { locale: de })}
+                {t('loginActivity.timeRange')}: {format(getDateThreshold(), 'dd. MMM yyyy', { locale: dateLocale })} - {format(new Date(), 'dd. MMM yyyy', { locale: dateLocale })}
                 {' • '}
-                Granularität: {granularity === 'day' ? 'Täglich' : granularity === 'week' ? 'Wöchentlich' : 'Monatlich'}
+                {t('loginActivity.granularity')}: {getGranularityLabel()}
               </p>
             </div>
           </>
