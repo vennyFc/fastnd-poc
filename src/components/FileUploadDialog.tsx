@@ -15,6 +15,7 @@ const customerProjectSchema = z.object({
   project_name: z.string().trim().min(1, 'Project name required').max(255, 'Project name too long'),
   application: z.string().trim().min(1, 'Application required').max(255, 'Application too long'),
   product: z.string().trim().min(1, 'Product required').max(255, 'Product too long'),
+  opportunity_creation_date: z.string().nullable().optional(),
   user_id: z.string().uuid(),
   upload_id: z.string().uuid(),
 }).passthrough();
@@ -334,6 +335,23 @@ export default function FileUploadDialog({
                 const normalizedValue = String(value).toLowerCase().trim();
                 value = (normalizedValue === 'y' || normalizedValue === 'yes' || 
                          normalizedValue === 'true' || normalizedValue === '1') ? 'Y' : '';
+              }
+              
+              // Handle date fields - convert to ISO string
+              if (field === 'opportunity_creation_date') {
+                if (value) {
+                  try {
+                    // Try to parse various date formats
+                    const dateValue = new Date(value);
+                    if (!isNaN(dateValue.getTime())) {
+                      value = dateValue.toISOString();
+                    } else {
+                      value = null;
+                    }
+                  } catch {
+                    value = null;
+                  }
+                }
               }
             }
             
