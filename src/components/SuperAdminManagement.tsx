@@ -8,7 +8,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "sonner";
 import { Shield, UserMinus, Clock, Mail } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { de } from "date-fns/locale";
+import { de, enUS } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SuperAdmin {
   id: string;
@@ -20,6 +21,7 @@ interface SuperAdmin {
 
 export function SuperAdminManagement() {
   const queryClient = useQueryClient();
+  const { t, language } = useLanguage();
 
   const { data: superAdmins, isLoading } = useQuery({
     queryKey: ['super-admins'],
@@ -81,9 +83,9 @@ export function SuperAdminManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Super-Admin Verwaltung
+            {t('superAdmin.management')}
           </CardTitle>
-          <CardDescription>Lädt...</CardDescription>
+          <CardDescription>{t('superAdmin.loading')}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -94,27 +96,27 @@ export function SuperAdminManagement() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
-          Super-Admin Verwaltung
+          {t('superAdmin.management')}
         </CardTitle>
         <CardDescription>
-          Übersicht aller Super-Administratoren im System
+          {t('superAdmin.managementDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {!superAdmins || superAdmins.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            Keine Super-Administratoren gefunden
+            {t('superAdmin.noAdmins')}
           </div>
         ) : (
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>E-Mail</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Erstellt</TableHead>
-                  <TableHead className="text-right">Aktionen</TableHead>
+                  <TableHead>{t('superAdmin.name')}</TableHead>
+                  <TableHead>{t('superAdmin.email')}</TableHead>
+                  <TableHead>{t('superAdmin.status')}</TableHead>
+                  <TableHead>{t('superAdmin.created')}</TableHead>
+                  <TableHead className="text-right">{t('superAdmin.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -124,9 +126,9 @@ export function SuperAdminManagement() {
                   return (
                     <TableRow key={admin.id}>
                       <TableCell className="font-medium">
-                        {admin.full_name || 'Kein Name'}
+                        {admin.full_name || t('superAdmin.noName')}
                         {isCurrentUser && (
-                          <Badge variant="outline" className="ml-2">Sie</Badge>
+                          <Badge variant="outline" className="ml-2">{t('superAdmin.you')}</Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -146,7 +148,7 @@ export function SuperAdminManagement() {
                           <Clock className="h-4 w-4" />
                           {formatDistanceToNow(new Date(admin.created_at), {
                             addSuffix: true,
-                            locale: de
+                            locale: language === 'de' ? de : enUS
                           })}
                         </div>
                       </TableCell>
@@ -160,25 +162,25 @@ export function SuperAdminManagement() {
                               className="text-destructive hover:text-destructive"
                             >
                               <UserMinus className="h-4 w-4 mr-2" />
-                              Rechte entziehen
+                              {t('superAdmin.revokeRights')}
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Super-Admin Rechte entziehen?</AlertDialogTitle>
+                              <AlertDialogTitle>{t('superAdmin.revokeTitle')}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Sind Sie sicher, dass Sie {admin.full_name || admin.email} die Super-Admin Rechte entziehen möchten?
+                                {t('superAdmin.revokeDesc').replace('{name}', admin.full_name || admin.email)}
                                 <br /><br />
-                                Der Benutzer verliert alle administrativen Berechtigungen und kann nicht mehr auf die Super-Admin Funktionen zugreifen.
+                                {t('superAdmin.revokeWarning')}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                              <AlertDialogCancel>{t('superAdmin.cancel')}</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => revokeSuperAdminMutation.mutate(admin.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Rechte entziehen
+                                {t('superAdmin.revokeConfirm')}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -193,7 +195,7 @@ export function SuperAdminManagement() {
         )}
         
         <div className="mt-4 text-sm text-muted-foreground">
-          <p>Gesamt: {superAdmins?.length || 0} Super-Administrator{superAdmins?.length !== 1 ? 'en' : ''}</p>
+          <p>{t('superAdmin.total')}: {superAdmins?.length || 0} Super-Administrator{superAdmins?.length !== 1 ? 'en' : ''}</p>
         </div>
       </CardContent>
     </Card>
