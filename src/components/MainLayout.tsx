@@ -1,7 +1,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { Search, HelpCircle, ArrowRight, Building2, AlertTriangle, LogOut, Settings, User, Globe } from 'lucide-react';
+import { Search, ArrowRight, Building2, AlertTriangle, LogOut, Settings, User, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -471,9 +471,6 @@ export function MainLayout({ children }: MainLayoutProps) {
               )}
               <LanguageSelector />
               <UserPreferencesPopover />
-              <button className="p-2 hover:bg-muted rounded-full transition-colors">
-                <HelpCircle className="h-5 w-5 text-muted-foreground" />
-              </button>
               <NotificationPopover />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
