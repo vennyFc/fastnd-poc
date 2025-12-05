@@ -3,34 +3,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Activity, Calendar } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { subMonths, format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type TimeRange = '1' | '3' | '6' | '12';
-
-const timeRangeLabels: Record<TimeRange, string> = {
-  '1': '1 Monat',
-  '3': '3 Monate',
-  '6': '6 Monate',
-  '12': '12 Monate',
-};
 
 const eventTypeColors: Record<string, string> = {
   'login': '#10b981',
   'logout': '#ef4444',
   'page_view': '#3b82f6',
   'action': '#f59e0b',
-};
-
-const eventTypeLabels: Record<string, string> = {
-  'login': 'Logins',
-  'logout': 'Logouts',
-  'page_view': 'Seitenaufrufe',
-  'action': 'Aktionen',
 };
 
 // Custom Tooltip Component
@@ -59,6 +46,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function AccessStatsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
   const { activeTenant } = useAuth();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'de' ? de : enUS;
+
+  const timeRangeLabels: Record<TimeRange, string> = {
+    '1': t('accessStats.1month'),
+    '3': t('accessStats.3months'),
+    '6': t('accessStats.6months'),
+    '12': t('accessStats.12months'),
+  };
+
+  const eventTypeLabels: Record<string, string> = {
+    'login': t('accessStats.logins'),
+    'logout': t('accessStats.logouts'),
+    'page_view': t('accessStats.pageViews'),
+    'action': t('accessStats.actions'),
+  };
 
   // Fetch access logs data
   const { data: accessLogs = [], isLoading } = useQuery({
@@ -132,6 +135,7 @@ export function AccessStatsWidget() {
     // Convert to chart format
     return Object.entries(eventTypeCounts).map(([eventType, count]) => ({
       eventType: eventTypeLabels[eventType] || eventType,
+      eventTypeKey: eventType,
       anzahl: count,
       fill: eventTypeColors[eventType] || '#94a3b8',
     }));
@@ -166,13 +170,13 @@ export function AccessStatsWidget() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
-              Access Statistiken
+              {t('accessStats.title')}
               <span className="ml-2 px-1.5 py-0.5 text-2xs bg-primary/10 text-primary rounded">
                 Admin
               </span>
             </CardTitle>
             <CardDescription className="mt-1">
-              Benutzeraktivitäten im ausgewählten Zeitraum
+              {t('accessStats.description')}
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
@@ -199,15 +203,15 @@ export function AccessStatsWidget() {
             {/* Statistics Cards */}
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Gesamt Events</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('accessStats.totalEvents')}</p>
                 <p className="text-xl font-bold">{statistics.totalEvents}</p>
               </div>
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Aktive Benutzer</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('accessStats.activeUsers')}</p>
                 <p className="text-xl font-bold">{statistics.uniqueUsers}</p>
               </div>
               <div className="bg-muted/50 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-0.5">Ø Events/Benutzer</p>
+                <p className="text-xs text-muted-foreground mb-0.5">{t('accessStats.avgEventsPerUser')}</p>
                 <p className="text-xl font-bold">{statistics.avgEventsPerUser}</p>
               </div>
             </div>
@@ -247,20 +251,17 @@ export function AccessStatsWidget() {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar 
                     dataKey="anzahl" 
-                    name="Anzahl"
+                    name={t('accessStats.count')}
                     radius={[8, 8, 0, 0]}
                   >
                     {chartData.map((entry, index) => {
-                      const eventTypeKey = Object.keys(eventTypeLabels).find(
-                        key => eventTypeLabels[key] === entry.eventType
-                      ) || 'login';
                       const gradientMap: Record<string, string> = {
                         'login': 'url(#gradientLogin)',
                         'logout': 'url(#gradientLogout)',
                         'page_view': 'url(#gradientPageView)',
                         'action': 'url(#gradientAction)',
                       };
-                      return <Cell key={`cell-${index}`} fill={gradientMap[eventTypeKey] || 'url(#gradientLogin)'} />;
+                      return <Cell key={`cell-${index}`} fill={gradientMap[entry.eventTypeKey] || 'url(#gradientLogin)'} />;
                     })}
                   </Bar>
                 </BarChart>
@@ -269,7 +270,7 @@ export function AccessStatsWidget() {
 
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-2xs text-muted-foreground">
-                Zeitraum: {format(getDateThreshold(), 'dd. MMM yyyy', { locale: de })} - {format(new Date(), 'dd. MMM yyyy', { locale: de })}
+                {t('accessStats.timeRange')}: {format(getDateThreshold(), 'dd. MMM yyyy', { locale: dateLocale })} - {format(new Date(), 'dd. MMM yyyy', { locale: dateLocale })}
               </p>
             </div>
           </>

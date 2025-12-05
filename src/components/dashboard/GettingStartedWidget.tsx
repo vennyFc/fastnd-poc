@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function GettingStartedWidget() {
+  const { t } = useLanguage();
+
   return (
     <Card className="shadow-card">
       <CardHeader>
-        <CardTitle>Erste Schritte</CardTitle>
+        <CardTitle>{t('gettingStarted.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
@@ -12,9 +15,9 @@ export function GettingStartedWidget() {
             1
           </div>
           <div>
-            <h3 className="font-semibold">Daten hochladen</h3>
+            <h3 className="font-semibold">{t('gettingStarted.step1Title')}</h3>
             <p className="text-sm text-muted-foreground">
-              Beginnen Sie mit dem Upload Ihrer Kundenprojekte und Produktdaten im Datenhub
+              {t('gettingStarted.step1Description')}
             </p>
           </div>
         </div>
@@ -24,9 +27,9 @@ export function GettingStartedWidget() {
             2
           </div>
           <div>
-            <h3 className="font-semibold">Daten durchsuchen</h3>
+            <h3 className="font-semibold">{t('gettingStarted.step2Title')}</h3>
             <p className="text-sm text-muted-foreground">
-              Nutzen Sie die Suche, um Cross-Selling und Alternative Produktempfehlungen zu finden
+              {t('gettingStarted.step2Description')}
             </p>
           </div>
         </div>
@@ -36,9 +39,9 @@ export function GettingStartedWidget() {
             3
           </div>
           <div>
-            <h3 className="font-semibold">Verkaufschancen nutzen</h3>
+            <h3 className="font-semibold">{t('gettingStarted.step3Title')}</h3>
             <p className="text-sm text-muted-foreground">
-              Analysieren Sie die Vorschläge und kontaktieren Sie Ihre Kunden mit neuen Angeboten
+              {t('gettingStarted.step3Description')}
             </p>
           </div>
         </div>

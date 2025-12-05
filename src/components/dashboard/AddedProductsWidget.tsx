@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp } from 'lucide-react';
 import { subMonths } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Custom Tooltip Component
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -34,13 +35,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 type TimeRange = '1' | '3' | '6' | '12';
 
-const timeRangeLabels: Record<TimeRange, string> = {
-  '1': '1 Monat',
-  '3': '3 Monate',
-  '6': '6 Monate',
-  '12': '12 Monate',
-};
-
 const statusColors: Record<string, string> = {
   'Neu': '#3b82f6',           // Blue
   'Offen': '#f97316',         // Orange
@@ -59,6 +53,23 @@ const statusOrder = ['Identifiziert', 'Vorgeschlagen', 'Akzeptiert', 'Registrier
 export function AddedProductsWidget() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3');
   const { activeTenant } = useAuth();
+  const { t } = useLanguage();
+
+  const timeRangeLabels: Record<TimeRange, string> = {
+    '1': t('addedProducts.1month'),
+    '3': t('addedProducts.3months'),
+    '6': t('addedProducts.6months'),
+    '12': t('addedProducts.12months'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    'Identifiziert': t('productStatus.identified'),
+    'Vorgeschlagen': t('productStatus.suggested'),
+    'Akzeptiert': t('productStatus.accepted'),
+    'Registriert': t('productStatus.registered'),
+    'Abgelehnt': t('productStatus.rejected'),
+    'Neu': t('status.new'),
+  };
 
   // Fetch opps_optimization data
   const { data: optimizationData = [], isLoading } = useQuery({
@@ -165,10 +176,10 @@ export function AddedProductsWidget() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Hinzugefügte Produkte nach Status
+              {t('addedProducts.title')}
             </CardTitle>
             <CardDescription className="mt-1">
-              Cross-Sells und Alternativen, die zu Projekten hinzugefügt wurden
+              {t('addedProducts.description')}
             </CardDescription>
           </div>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
@@ -194,24 +205,24 @@ export function AddedProductsWidget() {
         ) : totalProducts === 0 ? (
           <div className="text-center py-10 text-muted-foreground">
             <TrendingUp className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm font-medium">Keine hinzugefügten Produkte im ausgewählten Zeitraum</p>
+            <p className="text-sm font-medium">{t('addedProducts.noProducts')}</p>
             <p className="text-xs mt-1">
-              Fügen Sie Cross-Sells oder Alternativen zu Projekten hinzu, um sie hier zu sehen
+              {t('addedProducts.addProductsHint')}
             </p>
           </div>
         ) : (
           <>
             <div className="mb-3 grid grid-cols-3 gap-3 min-h-[72px]">
               <div className="text-center p-2 rounded-lg bg-muted/50 flex flex-col justify-center">
-                <p className="text-2xs text-muted-foreground">Gesamt</p>
+                <p className="text-2xs text-muted-foreground">{t('addedProducts.total')}</p>
                 <p className="text-xl font-bold text-foreground">{totalProducts}</p>
               </div>
               <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
-                <p className="text-2xs text-muted-foreground">Cross-Sells</p>
+                <p className="text-2xs text-muted-foreground">{t('addedProducts.crossSells')}</p>
                 <p className="text-xl font-bold" style={{ color: '#3b82f6' }}>{totalCrossSells}</p>
               </div>
               <div className="text-center p-2 rounded-lg flex flex-col justify-center" style={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>
-                <p className="text-2xs text-muted-foreground">Alternativen</p>
+                <p className="text-2xs text-muted-foreground">{t('addedProducts.alternatives')}</p>
                 <p className="text-xl font-bold" style={{ color: '#8b5cf6' }}>{totalAlternatives}</p>
               </div>
             </div>
@@ -264,7 +275,7 @@ export function AddedProductsWidget() {
             </ResponsiveContainer>
 
             <div className="mt-4">
-              <p className="text-xs font-medium mb-2">Verteilung nach Status:</p>
+              <p className="text-xs font-medium mb-2">{t('addedProducts.distributionByStatus')}:</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {chartData.map((item) => (
                   <div 
@@ -277,15 +288,15 @@ export function AddedProductsWidget() {
                         className="h-2 w-2 rounded-full" 
                         style={{ backgroundColor: statusColors[item.status] || item.fill }}
                       />
-                      <p className="text-xs font-medium">{item.status}</p>
+                      <p className="text-xs font-medium">{statusLabels[item.status] || item.status}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-2xs">
                       <div>
-                        <p className="text-muted-foreground">Cross-Sells</p>
+                        <p className="text-muted-foreground">{t('addedProducts.crossSells')}</p>
                         <p className="font-bold text-base">{item.crossSells}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Alternativen</p>
+                        <p className="text-muted-foreground">{t('addedProducts.alternatives')}</p>
                         <p className="font-bold text-base">{item.alternativen}</p>
                       </div>
                     </div>
