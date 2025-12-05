@@ -36,7 +36,7 @@ export function AppSidebar() {
     url: '/collections',
     icon: Layers
   }, {
-    title: 'Applikationen',
+    title: t('nav.applications'),
     url: '/applications',
     icon: Boxes
   }, {
@@ -63,11 +63,11 @@ export function AppSidebar() {
     icon: Upload
   }];
   const superAdminMenuItems = [{
-    title: 'Super Admin',
+    title: t('nav.superAdmin'),
     url: '/super-admin',
     icon: Shield
   }, {
-    title: 'Access Logs',
+    title: t('nav.accessLogs'),
     url: '/access-logs',
     icon: Activity
   }];
@@ -99,7 +99,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {(isTenantAdmin || isSuperAdmin && activeTenant?.id !== 'global') && <SidebarGroup>
-            <SidebarGroupLabel>Utility</SidebarGroupLabel>
+            <SidebarGroupLabel>{t('nav.utility')}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {tenantAdminMenuItems.map(item => <SidebarMenuItem key={item.title}>

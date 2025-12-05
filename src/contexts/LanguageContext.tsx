@@ -32,6 +32,9 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.dataHub': 'Datenhub',
     'nav.logout': 'Abmelden',
     'nav.applications': 'Applikationen',
+    'nav.superAdmin': 'Super Admin',
+    'nav.accessLogs': 'Zugriffsprotokolle',
+    'nav.utility': 'Werkzeuge',
     
     // Page Titles
     'page.projects': 'Projekte',
@@ -598,6 +601,9 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.dataHub': 'Data Hub',
     'nav.logout': 'Logout',
     'nav.applications': 'Applications',
+    'nav.superAdmin': 'Super Admin',
+    'nav.accessLogs': 'Access Logs',
+    'nav.utility': 'Utility',
     
     // Page Titles
     'page.projects': 'Projects',
