@@ -2090,7 +2090,7 @@ export default function Projects() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-semibold">Cross-Sell Opportunities</h3>
+                        <h3 className="font-semibold text-base">Cross-Sell Opportunities</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={e => {
