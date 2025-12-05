@@ -95,7 +95,7 @@ export function ResizableTableHeader({
                 <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left cursor-help underline decoration-dotted decoration-muted-foreground">{label}</span>
               </TooltipTrigger>
               <TooltipContent>{labelTooltip}</TooltipContent>
-            </Tooltip> : <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left">{label}</span>}
+            </Tooltip> : <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left text-sm">{label}</span>}
         <div onMouseDown={handleMouseDown} className={`absolute right-0 top-0 h-full w-2 cursor-col-resize border-r-2 transition-colors ${isResizing ? 'border-primary bg-primary/20' : 'border-transparent hover:border-primary/30 hover:bg-primary/10'}`} style={{
         userSelect: 'none'
       }} title="Spaltenbreite anpassen" />
