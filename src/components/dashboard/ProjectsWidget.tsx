@@ -286,8 +286,8 @@ export function ProjectsWidget() {
             </div>
             
             {/* Metadata Row - all items aligned */}
-            <div className="flex items-start gap-8 pl-7">
-              <div className="min-w-0 w-[180px]">
+            <div className="flex items-start gap-4 pl-7">
+              <div className="min-w-0 w-[160px]">
                 <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
                 <div className="text-sm font-medium truncate">{project.customer}</div>
               </div>
@@ -299,7 +299,7 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[85px]">
+              <div className="shrink-0 w-[72px]">
                 <div className="text-xs text-muted-foreground mb-0.5">Erstellt</div>
                 <div className="text-sm font-medium">
                   {project.opportunity_creation_date 
@@ -307,15 +307,15 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[85px]">
+              <div className="shrink-0 w-[72px]">
                 <div className="text-xs text-muted-foreground mb-0.5">Geändert</div>
                 <div className="text-sm font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[100px]">
+              <div className="shrink-0">
                 <div className="text-xs text-muted-foreground mb-0.5">Status</div>
-                <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                   <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
                   <span className="text-xs">{status}</span>
                 </div>
