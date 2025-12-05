@@ -288,34 +288,34 @@ export function ProjectsWidget() {
             {/* Metadata Row - all items aligned */}
             <div className="flex items-start gap-8 pl-7">
               <div className="min-w-0 w-[180px]">
-                <div className="text-2xs text-muted-foreground mb-0.5">Kunde</div>
-                <div className="text-xs font-medium truncate">{project.customer}</div>
+                <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
+                <div className="text-sm font-medium truncate">{project.customer}</div>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-2xs text-muted-foreground mb-0.5">Applikation</div>
-                <div className="text-xs font-medium truncate">
+                <div className="text-xs text-muted-foreground mb-0.5">Applikation</div>
+                <div className="text-sm font-medium truncate">
                   {project.applications && project.applications.length > 0 
                     ? project.applications.join(', ') 
                     : '-'}
                 </div>
               </div>
               <div className="shrink-0 w-[85px]">
-                <div className="text-2xs text-muted-foreground mb-0.5">Erstellt</div>
-                <div className="text-xs font-medium">
+                <div className="text-xs text-muted-foreground mb-0.5">Erstellt</div>
+                <div className="text-sm font-medium">
                   {project.opportunity_creation_date 
                     ? format(new Date(project.opportunity_creation_date), 'dd.MM.yyyy') 
                     : '-'}
                 </div>
               </div>
               <div className="shrink-0 w-[85px]">
-                <div className="text-2xs text-muted-foreground mb-0.5">Geändert</div>
-                <div className="text-xs font-medium">
+                <div className="text-xs text-muted-foreground mb-0.5">Geändert</div>
+                <div className="text-sm font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                 </div>
               </div>
               <div className="shrink-0 w-[100px]">
-                <div className="text-2xs text-muted-foreground mb-0.5">Status</div>
-                <Badge variant="outline" className="text-2xs bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30">
+                <div className="text-xs text-muted-foreground mb-0.5">Status</div>
+                <Badge variant="outline" className="text-xs bg-[#10b981]/10 text-[#10b981] border-[#10b981]/30">
                   {status}
                 </Badge>
               </div>
