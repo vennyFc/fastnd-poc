@@ -220,6 +220,19 @@ export function ProjectsWidget() {
     // Default fallback
     return 'Offen';
   };
+
+  // Status translation helper
+  const getTranslatedStatus = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'Neu': t('status.new'),
+      'Offen': t('status.open'),
+      'Prüfung': t('status.review'),
+      'Validierung': t('status.validation'),
+      'Abgeschlossen': t('status.completed'),
+    };
+    return statusMap[status] || status;
+  };
+
   const {
     isFavorite,
     toggleFavorite
@@ -321,7 +334,7 @@ export function ProjectsWidget() {
                   <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.status')}</div>
                   <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                     <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
-                    <span className="text-xs whitespace-nowrap">{status}</span>
+                    <span className="text-xs whitespace-nowrap">{getTranslatedStatus(status)}</span>
                   </div>
                 </div>
               </div>
@@ -345,7 +358,7 @@ export function ProjectsWidget() {
                     <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.status')}</div>
                     <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                       <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
-                      <span className="text-xs whitespace-nowrap">{status}</span>
+                      <span className="text-xs whitespace-nowrap">{getTranslatedStatus(status)}</span>
                     </div>
                   </div>
                 </div>
