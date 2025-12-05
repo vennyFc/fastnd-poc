@@ -1735,7 +1735,14 @@ export default function Projects() {
 
           {detailProjects.map((project: any) => <Card key={project.id}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start gap-2">
+                  <Button variant="ghost" size="sm" className="mt-0.5" onClick={e => {
+                e.stopPropagation();
+                const targetId = project.sourceIds?.[0] || project.id;
+                toggleFavorite(targetId);
+              }}>
+                    <Star className={`h-5 w-5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                  </Button>
                   <div className="flex-1">
                     <Collapsible open={metadataExpanded} onOpenChange={setMetadataExpanded}>
                       <CollapsibleTrigger asChild>
@@ -1840,13 +1847,6 @@ export default function Projects() {
                   })()}
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={e => {
-                e.stopPropagation();
-                const targetId = project.sourceIds?.[0] || project.id;
-                toggleFavorite(targetId);
-              }}>
-                    <Star className={`h-5 w-5 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
