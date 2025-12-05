@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { WidgetConfig, WidgetSize } from '@/hooks/useWidgets';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface WidgetSettingsProps {
   widgets: WidgetConfig[];
@@ -23,24 +24,26 @@ interface WidgetSettingsProps {
   isAdmin?: boolean;
 }
 
-const widgetLabels: Record<string, string> = {
-  'projects': 'Projekte',
-  'action-items': 'Action Items',
-  'npi-products': 'NPI Produkte',
-  'statistics': 'Statistiken',
-  'optimization-status': 'Optimierungsstatus',
-  'login-activity': 'Login-Aktivität (Admin)',
-  'access-stats': 'Access Statistiken (Admin)',
-  'added-products': 'Ergänzte Produkte',
-  'getting-started': 'Erste Schritte',
-};
-
-const sizeLabels: Record<WidgetSize, string> = {
-  medium: 'Halbe Breite',
-  full: 'Volle Breite',
-};
-
 export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSize, isAdmin = false }: WidgetSettingsProps) {
+  const { t } = useLanguage();
+  
+  const widgetLabels: Record<string, string> = {
+    'projects': t('widgetSettings.projects'),
+    'action-items': t('widgetSettings.actionItems'),
+    'npi-products': t('widgetSettings.npiProducts'),
+    'statistics': t('widgetSettings.statistics'),
+    'optimization-status': t('widgetSettings.optimizationStatus'),
+    'login-activity': t('widgetSettings.loginActivity'),
+    'access-stats': t('widgetSettings.accessStats'),
+    'added-products': t('widgetSettings.addedProducts'),
+    'getting-started': t('widgetSettings.gettingStarted'),
+  };
+
+  const sizeLabels: Record<WidgetSize, string> = {
+    medium: t('widgetSettings.halfWidth'),
+    full: t('widgetSettings.fullWidth'),
+  };
+
   // Filter widgets based on admin status
   const visibleWidgets = widgets.filter(widget => {
     // Hide admin-only widgets for non-admins
@@ -55,15 +58,15 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSi
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Settings className="h-4 w-4" />
-          Dashboard anpassen
+          {t('widgetSettings.customize')}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
         <div className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Widgets anpassen</h4>
+            <h4 className="font-semibold mb-2">{t('widgetSettings.customizeWidgets')}</h4>
             <p className="text-sm text-muted-foreground mb-4">
-              Wählen Sie, welche Widgets angezeigt werden sollen. Ziehen Sie sie, um die Reihenfolge zu ändern.
+              {t('widgetSettings.customizeDesc')}
             </p>
           </div>
 
@@ -120,7 +123,7 @@ export function WidgetSettings({ widgets, onToggleWidget, onReset, onSetWidgetSi
             className="w-full gap-2"
           >
             <RotateCcw className="h-4 w-4" />
-            Zurücksetzen
+            {t('common.reset')}
           </Button>
         </div>
       </PopoverContent>
