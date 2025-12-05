@@ -2428,7 +2428,27 @@ export default function Projects() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
-              Projekte / {crossSellsProject.project_name}
+              <span 
+                className="hover:underline cursor-pointer" 
+                onClick={() => {
+                  setViewMode('list');
+                  setSelectedProject(null);
+                  setCrossSellsProject(null);
+                }}
+              >
+                Projekte
+              </span>
+              {' / '}
+              <span 
+                className="hover:underline cursor-pointer"
+                onClick={() => {
+                  setViewMode('detail');
+                  setSelectedProject(crossSellsProject);
+                  setCrossSellsProject(null);
+                }}
+              >
+                {crossSellsProject.project_name}
+              </span>
             </p>
             <h1 className="text-3xl font-medium text-foreground font-clash">Cross Sells</h1>
           </div>
