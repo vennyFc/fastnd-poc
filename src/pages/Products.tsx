@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ type SortDirection = 'asc' | 'desc' | null;
 
 export default function Products() {
   const { user, isSuperAdmin, activeTenant, tenantId } = useAuth();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -52,18 +54,35 @@ export default function Products() {
 
   const queryClient = useQueryClient();
 
+  // Column labels with translations
+  const getColumnLabel = (key: string): string => {
+    const labels: Record<string, string> = {
+      'product': t('table.component'),
+      'product_family': t('table.productFamily'),
+      'manufacturer': t('table.manufacturer'),
+      'product_description': t('table.description'),
+      'product_tags': t('table.tags'),
+      'cross_sell_count': t('table.crossSells'),
+      'product_price': t('table.price'),
+      'product_lead_time': t('table.leadTime'),
+      'product_inventory': t('table.inventory'),
+      'manufacturer_link': t('table.link'),
+    };
+    return labels[key] || key;
+  };
+
   const defaultColumns = React.useMemo(() => [
-    { key: 'product', label: 'Bauteil', visible: true, width: 220, order: 0 },
-    { key: 'product_family', label: 'Produktfamilie', visible: false, width: 180, order: 1 },
-    { key: 'manufacturer', label: 'Hersteller', visible: true, width: 150, order: 2 },
-    { key: 'product_description', label: 'Beschreibung', visible: true, width: 300, order: 3 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 4 },
-    { key: 'cross_sell_count', label: 'Cross-Sells', visible: true, width: 100, order: 5 },
-    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 6 },
-    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 7 },
-    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 8 },
-    { key: 'manufacturer_link', label: 'Link', visible: true, width: 100, order: 9 },
-  ], []);
+    { key: 'product', label: t('table.component'), visible: true, width: 220, order: 0 },
+    { key: 'product_family', label: t('table.productFamily'), visible: false, width: 180, order: 1 },
+    { key: 'manufacturer', label: t('table.manufacturer'), visible: true, width: 150, order: 2 },
+    { key: 'product_description', label: t('table.description'), visible: true, width: 300, order: 3 },
+    { key: 'product_tags', label: t('table.tags'), visible: true, width: 100, order: 4 },
+    { key: 'cross_sell_count', label: t('table.crossSells'), visible: true, width: 100, order: 5 },
+    { key: 'product_price', label: t('table.price'), labelTooltip: t('table.priceTooltip'), visible: true, width: 80, order: 6 },
+    { key: 'product_lead_time', label: t('table.leadTime'), labelTooltip: t('table.leadTimeTooltip'), visible: true, width: 90, order: 7 },
+    { key: 'product_inventory', label: t('table.inventory'), labelTooltip: t('table.inventoryTooltip'), visible: true, width: 100, order: 8 },
+    { key: 'manufacturer_link', label: t('table.link'), visible: true, width: 100, order: 9 },
+  ], [t]);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
     'products-columns',
@@ -491,7 +510,7 @@ export default function Products() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-medium text-foreground font-clash">Produkte</h1>
+          <h1 className="text-3xl font-medium text-foreground font-clash">{t('page.products')}</h1>
         </div>
       </div>
 
@@ -502,7 +521,7 @@ export default function Products() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Produktname, Hersteller oder Produktfamilie suchen..."
+                placeholder={t('search.searchProducts')}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -514,10 +533,10 @@ export default function Products() {
                 onValueChange={setSelectedApplication}
               >
                 <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Alle Applikationen" />
+                  <SelectValue placeholder={t('filter.allApplications')} />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
-                  <SelectItem value="all">Alle Applikationen</SelectItem>
+                  <SelectItem value="all">{t('filter.allApplications')}</SelectItem>
                   {uniqueApplications.map((app: string) => (
                     <SelectItem key={app} value={app}>
                       {app}
@@ -529,7 +548,7 @@ export default function Products() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Filter className="mr-2 h-4 w-4" />
-                    Filter
+                    {t('common.filter')}
                     {(selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
                       <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                         {[
@@ -546,14 +565,14 @@ export default function Products() {
               <PopoverContent className="w-80" align="end">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Filter</h4>
+                    <h4 className="font-medium text-sm">{t('common.filter')}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Produkte nach Kriterien filtern
+                      {t('search.searchProducts')}
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Produktfamilie</Label>
+                    <Label>{t('table.productFamily')}</Label>
                     {selectedProductFamilies.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {selectedProductFamilies.map((family) => (
@@ -597,7 +616,7 @@ export default function Products() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Hersteller</Label>
+                    <Label>{t('table.manufacturer')}</Label>
                     {selectedManufacturers.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {selectedManufacturers.map((manufacturer) => (
@@ -641,16 +660,16 @@ export default function Products() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="lifecycle-filter">Lifecycle Status</Label>
+                    <Label htmlFor="lifecycle-filter">{t('filter.lifecycle')}</Label>
                     <Select
                       value={selectedLifecycle}
                       onValueChange={setSelectedLifecycle}
                     >
                       <SelectTrigger id="lifecycle-filter">
-                        <SelectValue placeholder="Nach Lifecycle filtern" />
+                        <SelectValue placeholder={t('filter.lifecycle')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Alle Status</SelectItem>
+                        <SelectItem value="all">{t('filter.all')}</SelectItem>
                         <SelectItem value="Coming Soon">Coming Soon</SelectItem>
                         <SelectItem value="Active">Active</SelectItem>
                         <SelectItem value="NFND">NFND</SelectItem>
@@ -660,7 +679,7 @@ export default function Products() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Produkt-Tags</Label>
+                    <Label>{t('table.tags')}</Label>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -672,7 +691,7 @@ export default function Products() {
                           htmlFor="new-products"
                           className="text-sm cursor-pointer flex-1"
                         >
-                          Nur neue Produkte
+                          {t('filter.npiOnly')}
                         </label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -685,7 +704,7 @@ export default function Products() {
                           htmlFor="top-products"
                           className="text-sm cursor-pointer flex-1"
                         >
-                          Nur Top-Produkte
+                          {t('filter.topOnly')}
                         </label>
                       </div>
                     </div>
@@ -705,7 +724,7 @@ export default function Products() {
                         setShowTopOnly(false);
                       }}
                     >
-                      Alle Filter zurücksetzen
+                      {t('common.reset')}
                     </Button>
                   )}
                 </div>
@@ -1071,11 +1090,11 @@ export default function Products() {
             {/* Pagination Footer */}
             <div className="border-t pt-4 mt-4 flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} von ${totalItems} Ergebnissen` : '0 Ergebnisse'}
+                {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} ${t('pagination.of')} ${totalItems} ${t('pagination.results')}` : `0 ${t('pagination.results')}`}
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
+                  <span className="text-sm text-muted-foreground">{t('pagination.resultsPerPage')}:</span>
                   <Select 
                     value={itemsPerPage.toString()} 
                     onValueChange={(val) => {
@@ -1103,7 +1122,7 @@ export default function Products() {
                     className="h-8 px-3"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Zurück
+                    {t('pagination.previous')}
                   </Button>
                   <div className="flex items-center gap-1 mx-2">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -1137,7 +1156,7 @@ export default function Products() {
                     disabled={currentPage === totalPages || totalPages === 0}
                     className="h-8 px-3"
                   >
-                    Weiter
+                    {t('pagination.next')}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
@@ -1147,8 +1166,8 @@ export default function Products() {
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               {searchQuery.length >= 2
-                ? 'Keine Produkte gefunden.'
-                : 'Keine Produkte vorhanden. Laden Sie Produktdaten im Datenhub hoch.'}
+                ? t('empty.products')
+                : t('common.noData')}
             </div>
           )}
         </CardContent>
@@ -1159,7 +1178,7 @@ export default function Products() {
         <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>{selectedProduct?.product}</SheetTitle>
-            <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
+            <SheetDescription>{t('product.details')}</SheetDescription>
           </SheetHeader>
           
           {selectedProduct && (
@@ -1169,19 +1188,19 @@ export default function Products() {
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 flex-1">
                       <Layers className="h-4 w-4" />
-                      Zu Sammlung hinzufügen
+                      {t('product.addToCollection')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Zu Sammlung hinzufügen</DialogTitle>
+                      <DialogTitle>{t('product.addToCollection')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium">Neue Sammlung erstellen</label>
+                        <label className="text-sm font-medium">{t('product.createCollection')}</label>
                         <div className="flex gap-2 mt-1">
                           <Input
-                            placeholder="Name der neuen Sammlung"
+                            placeholder={t('product.collectionName')}
                             value={newCollectionName}
                             onChange={(e) => setNewCollectionName(e.target.value)}
                           />
@@ -1204,21 +1223,16 @@ export default function Products() {
                         <div className="absolute inset-0 flex items-center">
                           <span className="w-full border-t" />
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-background px-2 text-muted-foreground">
-                            Oder existierende wählen
-                          </span>
-                        </div>
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium">Sammlung auswählen</label>
+                        <label className="text-sm font-medium">{t('product.selectCollection')}</label>
                         <Select
                           value={selectedCollectionId}
                           onValueChange={setSelectedCollectionId}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Sammlung auswählen..." />
+                            <SelectValue placeholder={t('product.selectCollection')} />
                           </SelectTrigger>
                           <SelectContent position="popper">
                             {collections.map((collection: any) => (
@@ -1230,7 +1244,7 @@ export default function Products() {
                         </Select>
                         {collections.length === 0 && (
                           <p className="text-sm text-muted-foreground mt-2">
-                            Noch keine Sammlungen vorhanden
+                            {t('empty.collections')}
                           </p>
                         )}
                       </div>
@@ -1240,7 +1254,7 @@ export default function Products() {
                           variant="outline"
                           onClick={() => setAddToCollectionOpen(false)}
                         >
-                          Abbrechen
+                          {t('common.cancel')}
                         </Button>
                         <Button
                           onClick={() => {
@@ -1253,7 +1267,7 @@ export default function Products() {
                           }}
                           disabled={!selectedCollectionId || addToCollectionMutation.isPending}
                         >
-                          {addToCollectionMutation.isPending ? 'Hinzufügen...' : 'Hinzufügen'}
+                          {addToCollectionMutation.isPending ? t('common.loading') : t('common.add')}
                         </Button>
                       </div>
                     </div>
