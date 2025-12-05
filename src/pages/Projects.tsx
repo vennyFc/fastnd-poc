@@ -126,7 +126,7 @@ export default function Projects() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [filterOpen, setFilterOpen] = useState(false);
-  
+
   // Cross-sells full view state
   const [crossSellsProject, setCrossSellsProject] = useState<any>(null);
   const [crossSellSearchQuery, setCrossSellSearchQuery] = useState('');
@@ -137,25 +137,65 @@ export default function Projects() {
   const [crossSellViewDraggedIndex, setCrossSellViewDraggedIndex] = useState<number | null>(null);
 
   // Cross-sells VIEW columns configuration (like Products table) - separate from detail view columns
-  const defaultCrossSellViewColumns = React.useMemo(() => [
-    { key: 'product', label: 'Bauteil', visible: true, width: 280, order: 0 },
-    { key: 'product_tags', label: 'Tags', visible: true, width: 100, order: 1 },
-    { key: 'product_price', label: 'Preis', labelTooltip: 'in €/pcs', visible: true, width: 80, order: 2 },
-    { key: 'product_lead_time', label: 'Lieferzeit', labelTooltip: 'in Wochen', visible: true, width: 90, order: 3 },
-    { key: 'product_inventory', label: 'Lagerbestand', labelTooltip: 'in pcs', visible: true, width: 100, order: 4 },
-    { key: 'rec_source', label: 'Grund', visible: true, width: 120, order: 5 },
-    { key: 'rec_score', label: 'Score', visible: true, width: 150, order: 6 },
-    { key: 'actions', label: 'Aktion', visible: true, width: 160, order: 7 },
-  ], []);
-
-  const { 
-    columns: crossSellViewColumns, 
-    toggleColumn: toggleCrossSellViewColumn, 
-    updateColumnWidth: updateCrossSellViewColumnWidth, 
-    reorderColumns: reorderCrossSellViewColumns, 
-    resetColumns: resetCrossSellViewColumns 
+  const defaultCrossSellViewColumns = React.useMemo(() => [{
+    key: 'product',
+    label: 'Bauteil',
+    visible: true,
+    width: 280,
+    order: 0
+  }, {
+    key: 'product_tags',
+    label: 'Tags',
+    visible: true,
+    width: 100,
+    order: 1
+  }, {
+    key: 'product_price',
+    label: 'Preis',
+    labelTooltip: 'in €/pcs',
+    visible: true,
+    width: 80,
+    order: 2
+  }, {
+    key: 'product_lead_time',
+    label: 'Lieferzeit',
+    labelTooltip: 'in Wochen',
+    visible: true,
+    width: 90,
+    order: 3
+  }, {
+    key: 'product_inventory',
+    label: 'Lagerbestand',
+    labelTooltip: 'in pcs',
+    visible: true,
+    width: 100,
+    order: 4
+  }, {
+    key: 'rec_source',
+    label: 'Grund',
+    visible: true,
+    width: 120,
+    order: 5
+  }, {
+    key: 'rec_score',
+    label: 'Score',
+    visible: true,
+    width: 150,
+    order: 6
+  }, {
+    key: 'actions',
+    label: 'Aktion',
+    visible: true,
+    width: 160,
+    order: 7
+  }], []);
+  const {
+    columns: crossSellViewColumns,
+    toggleColumn: toggleCrossSellViewColumn,
+    updateColumnWidth: updateCrossSellViewColumnWidth,
+    reorderColumns: reorderCrossSellViewColumns,
+    resetColumns: resetCrossSellViewColumns
   } = useTableColumns('cross-sells-view-columns', defaultCrossSellViewColumns);
-  
   const {
     isFavorite,
     toggleFavorite
@@ -301,29 +341,21 @@ export default function Projects() {
   } = useTableColumns('project-detail-product-columns-v2', defaultProductColumns);
 
   // Recommendation Score Bar Component
-  const RecommendationScoreBar = ({ score }: { score: number | null }) => {
+  const RecommendationScoreBar = ({
+    score
+  }: {
+    score: number | null;
+  }) => {
     if (score === null || score === undefined) return <span className="text-muted-foreground text-center block">-</span>;
-    
     const filledBlocks = Math.round(score / 10);
-    
-    return (
-      <div className="flex items-center justify-center gap-1 w-full">
+    return <div className="flex items-center justify-center gap-1 w-full">
         <span className="font-semibold text-2xs">{score}%</span>
         <div className="flex gap-px">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "h-2 w-[3px] rounded-sm",
-                i < filledBlocks 
-                  ? "bg-emerald-500" 
-                  : "bg-muted"
-              )}
-            />
-          ))}
+          {Array.from({
+          length: 10
+        }).map((_, i) => <div key={i} className={cn("h-2 w-[3px] rounded-sm", i < filledBlocks ? "bg-emerald-500" : "bg-muted")} />)}
         </div>
-      </div>
-    );
+      </div>;
   };
 
   // Cross-sell columns for detail view
@@ -593,13 +625,10 @@ export default function Projects() {
       if (!isAddedRow) return true;
       return hasActiveOptimizationForProduct(project.project_number, prod);
     };
-    
+
     // Ensure we extract string value in case application is an object
-    const appValue = typeof project.application === 'object' && project.application !== null 
-      ? project.application?.application 
-      : project.application;
+    const appValue = typeof project.application === 'object' && project.application !== null ? project.application?.application : project.application;
     const safeAppValue = appValue ? String(appValue) : null;
-    
     if (existing) {
       // Add application and product if not already included
       if (safeAppValue && !existing.applications.includes(safeAppValue)) {
@@ -619,11 +648,9 @@ export default function Projects() {
       // Track the latest updated_at from optimization records for this project
       const projectNumbers = projects?.filter((p: any) => p.customer === project.customer && p.project_name === project.project_name).map((p: any) => p.project_number).filter(Boolean) || [];
       const relatedOptRecords = optimizationRecords.filter((rec: any) => projectNumbers.includes(rec.project_number));
-      const latestOptUpdate = relatedOptRecords.length > 0 
-        ? relatedOptRecords.reduce((latest: string, rec: any) => {
-            return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
-          }, relatedOptRecords[0].updated_at)
-        : null;
+      const latestOptUpdate = relatedOptRecords.length > 0 ? relatedOptRecords.reduce((latest: string, rec: any) => {
+        return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
+      }, relatedOptRecords[0].updated_at) : null;
       // Update existing project's updated_at if this one is newer
       if (latestOptUpdate && (!existing.updated_at || new Date(latestOptUpdate) > new Date(existing.updated_at))) {
         existing.updated_at = latestOptUpdate;
@@ -632,12 +659,9 @@ export default function Projects() {
       // Calculate updated_at for new entry
       const projectNumbers = projects?.filter((p: any) => p.customer === project.customer && p.project_name === project.project_name).map((p: any) => p.project_number).filter(Boolean) || [];
       const relatedOptRecords = optimizationRecords.filter((rec: any) => projectNumbers.includes(rec.project_number));
-      const latestOptUpdate = relatedOptRecords.length > 0 
-        ? relatedOptRecords.reduce((latest: string, rec: any) => {
-            return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
-          }, relatedOptRecords[0].updated_at)
-        : null;
-      
+      const latestOptUpdate = relatedOptRecords.length > 0 ? relatedOptRecords.reduce((latest: string, rec: any) => {
+        return new Date(rec.updated_at) > new Date(latest) ? rec.updated_at : latest;
+      }, relatedOptRecords[0].updated_at) : null;
       acc.push({
         id: project.id,
         customer: project.customer,
@@ -810,7 +834,6 @@ export default function Projects() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, quickFilter, statusFilter, selectedCustomer]);
-
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Cycle through: asc -> desc -> null
@@ -835,13 +858,10 @@ export default function Projects() {
       const customerProjects = projects.filter(p => p.customer === selectedCustomer);
       const grouped = customerProjects.reduce((acc: any[], project: any) => {
         const existing = acc.find(p => p.project_name === project.project_name);
-        
+
         // Ensure we extract string value in case application is an object
-        const appValue = typeof project.application === 'object' && project.application !== null 
-          ? project.application?.application 
-          : project.application;
+        const appValue = typeof project.application === 'object' && project.application !== null ? project.application?.application : project.application;
         const safeAppValue = appValue ? String(appValue) : null;
-        
         if (existing) {
           if (safeAppValue && !existing.applications.includes(safeAppValue)) {
             existing.applications.push(safeAppValue);
@@ -876,9 +896,7 @@ export default function Projects() {
         project_name: selectedProject.project_name,
         project_number: projectData[0]?.project_number || null,
         applications: projectData.map(p => {
-          const appVal = typeof p.application === 'object' && p.application !== null 
-            ? p.application?.application 
-            : p.application;
+          const appVal = typeof p.application === 'object' && p.application !== null ? p.application?.application : p.application;
           return appVal ? String(appVal) : null;
         }).filter(Boolean),
         products: projectData.map(p => p.product).filter(Boolean),
@@ -1838,7 +1856,7 @@ export default function Projects() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Package className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-semibold">Produkte im Projekt</h3>
+                        <h3 className="font-semibold text-base">Enthaltene Produkte</h3>
                       </div>
                       <ColumnVisibilityToggle columns={productColumns} onToggle={toggleProductColumn} onReset={resetProductColumns} />
                     </div>
@@ -2075,17 +2093,13 @@ export default function Projects() {
                         <h3 className="text-sm font-semibold">Cross-Sell Opportunities</h3>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCrossSellsProject(project);
-                            setCrossSellSearchQuery('');
-                            setCrossSellsPage(1);
-                            setViewMode('crossSellsView');
-                          }}
-                        >
+                        <Button variant="outline" size="sm" onClick={e => {
+                      e.stopPropagation();
+                      setCrossSellsProject(project);
+                      setCrossSellSearchQuery('');
+                      setCrossSellsPage(1);
+                      setViewMode('crossSellsView');
+                    }}>
                           <Maximize2 className="h-4 w-4 mr-2" />
                           Alles anzeigen
                         </Button>
@@ -2406,19 +2420,13 @@ export default function Projects() {
   // Cross-Sells Full View as Page
   if (viewMode === 'crossSellsView' && crossSellsProject) {
     const allCrossSells = getCrossSells(crossSellsProject.products, crossSellsProject.customer, crossSellsProject.project_name);
-    
+
     // Filter by search
     const filteredCrossSells = allCrossSells.filter((cs: any) => {
       if (!crossSellSearchQuery || crossSellSearchQuery.length < 2) return true;
       const details = getProductDetails(cs.cross_sell_product);
       const searchLower = crossSellSearchQuery.toLowerCase();
-      return (
-        cs.cross_sell_product?.toLowerCase().includes(searchLower) ||
-        details?.manufacturer?.toLowerCase().includes(searchLower) ||
-        details?.product_family?.toLowerCase().includes(searchLower) ||
-        details?.product_description?.toLowerCase().includes(searchLower) ||
-        cs.rec_source?.toLowerCase().includes(searchLower)
-      );
+      return cs.cross_sell_product?.toLowerCase().includes(searchLower) || details?.manufacturer?.toLowerCase().includes(searchLower) || details?.product_family?.toLowerCase().includes(searchLower) || details?.product_description?.toLowerCase().includes(searchLower) || cs.rec_source?.toLowerCase().includes(searchLower);
     });
 
     // Pagination
@@ -2430,9 +2438,7 @@ export default function Projects() {
 
     // Visible columns for cross-sells view
     const visibleCrossSellViewColumns = crossSellViewColumns.filter((col: any) => col.visible).sort((a: any, b: any) => a.order - b.order);
-
-    return (
-      <div className="p-6 space-y-6">
+    return <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -2441,13 +2447,10 @@ export default function Projects() {
             </p>
             <h1 className="text-3xl font-medium text-foreground font-clash">Cross Sells</h1>
           </div>
-          <Button 
-            variant="ghost" 
-            onClick={() => {
-              setViewMode('detail');
-              setCrossSellsProject(null);
-            }}
-          >
+          <Button variant="ghost" onClick={() => {
+          setViewMode('detail');
+          setCrossSellsProject(null);
+        }}>
             <X className="h-4 w-4 mr-2" />
             Schließen
           </Button>
@@ -2459,22 +2462,13 @@ export default function Projects() {
             <div className="flex items-center justify-between gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Suchen..." 
-                  className="pl-10 bg-muted/50"
-                  value={crossSellSearchQuery}
-                  onChange={(e) => {
-                    setCrossSellSearchQuery(e.target.value);
-                    setCrossSellsPage(1);
-                  }}
-                />
+                <Input placeholder="Suchen..." className="pl-10 bg-muted/50" value={crossSellSearchQuery} onChange={e => {
+                setCrossSellSearchQuery(e.target.value);
+                setCrossSellsPage(1);
+              }} />
               </div>
               <div className="flex items-center gap-2">
-                <ColumnVisibilityToggle
-                  columns={crossSellViewColumns}
-                  onToggle={toggleCrossSellViewColumn}
-                  onReset={resetCrossSellViewColumns}
-                />
+                <ColumnVisibilityToggle columns={crossSellViewColumns} onToggle={toggleCrossSellViewColumn} onReset={resetCrossSellViewColumns} />
               </div>
             </div>
           </CardHeader>
@@ -2482,115 +2476,92 @@ export default function Projects() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {visibleCrossSellViewColumns.map((col: any, colIdx: number) => (
-                    <ResizableTableHeader
-                      key={col.key}
-                      label={col.label}
-                      labelTooltip={col.labelTooltip}
-                      width={col.width}
-                      onResize={(w) => updateCrossSellViewColumnWidth(col.key, w)}
-                      draggable={true}
-                      onDragStart={() => setCrossSellViewDraggedIndex(colIdx)}
-                      onDragEnd={() => {
-                        setCrossSellViewDraggedIndex(null);
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (crossSellViewDraggedIndex !== null && crossSellViewDraggedIndex !== colIdx) {
-                          reorderCrossSellViewColumns(crossSellViewDraggedIndex, colIdx);
-                          setCrossSellViewDraggedIndex(colIdx);
-                        }
-                      }}
-                    />
-                  ))}
+                  {visibleCrossSellViewColumns.map((col: any, colIdx: number) => <ResizableTableHeader key={col.key} label={col.label} labelTooltip={col.labelTooltip} width={col.width} onResize={w => updateCrossSellViewColumnWidth(col.key, w)} draggable={true} onDragStart={() => setCrossSellViewDraggedIndex(colIdx)} onDragEnd={() => {
+                  setCrossSellViewDraggedIndex(null);
+                }} onDragOver={e => {
+                  e.preventDefault();
+                  if (crossSellViewDraggedIndex !== null && crossSellViewDraggedIndex !== colIdx) {
+                    reorderCrossSellViewColumns(crossSellViewDraggedIndex, colIdx);
+                    setCrossSellViewDraggedIndex(colIdx);
+                  }
+                }} />)}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedCrossSells.map((cs: any, idx: number) => {
-                  const details = getProductDetails(cs.cross_sell_product);
-                  return (
-                    <TableRow key={`crosssellsview-cs-${cs.cross_sell_product}-${idx}`}>
+                const details = getProductDetails(cs.cross_sell_product);
+                return <TableRow key={`crosssellsview-cs-${cs.cross_sell_product}-${idx}`}>
                       {visibleCrossSellViewColumns.map((col: any) => {
-                        switch (col.key) {
-                          case 'product':
-                            return (
-                              <TableCell key={col.key} className="py-3 pl-4" style={{ width: col.width }}>
+                    switch (col.key) {
+                      case 'product':
+                        return <TableCell key={col.key} className="py-3 pl-4" style={{
+                          width: col.width
+                        }}>
                                 <div className="flex flex-col gap-0.5">
-                                  <span 
-                                    className="text-xs font-semibold text-foreground hover:underline cursor-pointer"
-                                    onClick={() => {
-                                      setSelectedProductForQuickView(details || { product: cs.cross_sell_product });
-                                      setProductQuickViewOpen(true);
-                                    }}
-                                  >
+                                  <span className="text-xs font-semibold text-foreground hover:underline cursor-pointer" onClick={() => {
+                              setSelectedProductForQuickView(details || {
+                                product: cs.cross_sell_product
+                              });
+                              setProductQuickViewOpen(true);
+                            }}>
                                     {cs.cross_sell_product}
                                   </span>
                                   <span className="text-2xs text-muted-foreground">
                                     {[details?.manufacturer, details?.product_family].filter(Boolean).join(' • ') || '-'}
                                   </span>
-                                  {details?.product_description && (
-                                    <span className="text-2xs text-muted-foreground truncate max-w-[250px]">
+                                  {details?.product_description && <span className="text-2xs text-muted-foreground truncate max-w-[250px]">
                                       {truncateText(details.product_description, 60)}
-                                    </span>
-                                  )}
+                                    </span>}
                                 </div>
-                              </TableCell>
-                            );
-                          case 'product_tags':
-                            return (
-                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                              </TableCell>;
+                      case 'product_tags':
+                        return <TableCell key={col.key} className="py-3" style={{
+                          width: col.width
+                        }}>
                                 <div className="flex flex-wrap gap-1">
                                   {details?.product_lifecycle && renderLifecycleBadge(details.product_lifecycle)}
                                   {details?.product_new === 'Y' && renderNeuBadge()}
                                   {details?.product_top === 'Y' && renderTopBadge()}
                                 </div>
-                              </TableCell>
-                            );
-                          case 'product_price':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
+                              </TableCell>;
+                      case 'product_price':
+                        return <TableCell key={col.key} className="py-3 text-xs text-right" style={{
+                          width: col.width
+                        }}>
                                 {details?.product_price ? `${Number(details.product_price).toFixed(2)} €` : '-'}
-                              </TableCell>
-                            );
-                          case 'product_lead_time':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
+                              </TableCell>;
+                      case 'product_lead_time':
+                        return <TableCell key={col.key} className="py-3 text-xs text-right" style={{
+                          width: col.width
+                        }}>
                                 {details?.product_lead_time ? `${details.product_lead_time}` : '-'}
-                              </TableCell>
-                            );
-                          case 'product_inventory':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-xs text-right" style={{ width: col.width }}>
+                              </TableCell>;
+                      case 'product_inventory':
+                        return <TableCell key={col.key} className="py-3 text-xs text-right" style={{
+                          width: col.width
+                        }}>
                                 {details?.product_inventory ?? '-'}
-                              </TableCell>
-                            );
-                          case 'rec_source':
-                            return (
-                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
-                                {cs.rec_source ? (
-                                  <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
+                              </TableCell>;
+                      case 'rec_source':
+                        return <TableCell key={col.key} className="py-3" style={{
+                          width: col.width
+                        }}>
+                                {cs.rec_source ? <Badge variant="secondary" className="bg-muted border-border text-muted-foreground text-xs">
                                     {cs.rec_source}
-                                  </Badge>
-                                ) : '-'}
-                              </TableCell>
-                            );
-                          case 'rec_score':
-                            return (
-                              <TableCell key={col.key} className="py-3 text-center align-middle" style={{ width: col.width }}>
+                                  </Badge> : '-'}
+                              </TableCell>;
+                      case 'rec_score':
+                        return <TableCell key={col.key} className="py-3 text-center align-middle" style={{
+                          width: col.width
+                        }}>
                                 <RecommendationScoreBar score={cs.rec_score} />
-                              </TableCell>
-                            );
-                          case 'actions':
-                            return (
-                              <TableCell key={col.key} className="py-3" style={{ width: col.width }}>
+                              </TableCell>;
+                      case 'actions':
+                        return <TableCell key={col.key} className="py-3" style={{
+                          width: col.width
+                        }}>
                                 <div className="flex items-center gap-1">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="h-7 w-7 p-0"
-                                    onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)}
-                                    title="Hinzufügen"
-                                  >
+                                  <Button size="sm" variant="outline" className="h-7 w-7 p-0" onClick={() => handleAddCrossSell(crossSellsProject, cs.cross_sell_product)} title="Hinzufügen">
                                     <Plus className="h-3.5 w-3.5" />
                                   </Button>
                                   <DropdownMenu>
@@ -2600,53 +2571,63 @@ export default function Projects() {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent side="left" align="end">
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('technischer_fit', {
+                                  project: crossSellsProject,
+                                  crossSellProduct: cs.cross_sell_product
+                                })}>
                                         Technischer Fit
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('commercial_fit', {
+                                  project: crossSellsProject,
+                                  crossSellProduct: cs.cross_sell_product
+                                })}>
                                         Commercial Fit
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('anderer_lieferant', {
+                                  project: crossSellsProject,
+                                  crossSellProduct: cs.cross_sell_product
+                                })}>
                                         Anderer Lieferant
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('kein_bedarf', {
+                                  project: crossSellsProject,
+                                  crossSellProduct: cs.cross_sell_product
+                                })}>
                                         Kein Bedarf
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', { project: crossSellsProject, crossSellProduct: cs.cross_sell_product })}>
+                                      <DropdownMenuItem onSelect={() => handleConfirmRemoval('sonstige', {
+                                  project: crossSellsProject,
+                                  crossSellProduct: cs.cross_sell_product
+                                })}>
                                         Sonstige
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 </div>
-                              </TableCell>
-                            );
-                          default:
-                            return <TableCell key={col.key} style={{ width: col.width }}>-</TableCell>;
-                        }
-                      })}
-                    </TableRow>
-                  );
-                })}
+                              </TableCell>;
+                      default:
+                        return <TableCell key={col.key} style={{
+                          width: col.width
+                        }}>-</TableCell>;
+                    }
+                  })}
+                    </TableRow>;
+              })}
               </TableBody>
             </Table>
 
             {/* Pagination Footer */}
             <div className="flex items-center justify-between py-4 mt-4 border-t">
               <div className="text-sm text-muted-foreground">
-                {totalCrossSells > 0 
-                  ? `${crossSellStartIndex + 1}-${Math.min(crossSellEndIndex, totalCrossSells)} von ${totalCrossSells} Ergebnissen` 
-                  : '0 Ergebnisse'}
+                {totalCrossSells > 0 ? `${crossSellStartIndex + 1}-${Math.min(crossSellEndIndex, totalCrossSells)} von ${totalCrossSells} Ergebnissen` : '0 Ergebnisse'}
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
-                  <Select 
-                    value={crossSellsPerPage.toString()} 
-                    onValueChange={(val) => { 
-                      setCrossSellsPerPage(Number(val)); 
-                      setCrossSellsPage(1); 
-                    }}
-                  >
+                  <Select value={crossSellsPerPage.toString()} onValueChange={val => {
+                  setCrossSellsPerPage(Number(val));
+                  setCrossSellsPage(1);
+                }}>
                     <SelectTrigger className="w-[70px] h-8">
                       <SelectValue />
                     </SelectTrigger>
@@ -2659,43 +2640,30 @@ export default function Projects() {
                   </Select>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCrossSellsPage(p => Math.max(1, p - 1))} 
-                    disabled={crossSellsPage === 1} 
-                    className="h-8 px-3"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setCrossSellsPage(p => Math.max(1, p - 1))} disabled={crossSellsPage === 1} className="h-8 px-3">
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Zurück
                   </Button>
                   <div className="flex items-center gap-1 mx-2">
-                    {Array.from({ length: Math.min(5, totalCrossSellPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalCrossSellPages <= 5) { pageNum = i + 1; }
-                      else if (crossSellsPage <= 3) { pageNum = i + 1; }
-                      else if (crossSellsPage >= totalCrossSellPages - 2) { pageNum = totalCrossSellPages - 4 + i; }
-                      else { pageNum = crossSellsPage - 2 + i; }
-                      return (
-                        <Button 
-                          key={pageNum} 
-                          variant={crossSellsPage === pageNum ? "default" : "outline"} 
-                          size="sm" 
-                          onClick={() => setCrossSellsPage(pageNum)} 
-                          className="h-8 w-8 p-0"
-                        >
+                    {Array.from({
+                    length: Math.min(5, totalCrossSellPages)
+                  }, (_, i) => {
+                    let pageNum;
+                    if (totalCrossSellPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (crossSellsPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (crossSellsPage >= totalCrossSellPages - 2) {
+                      pageNum = totalCrossSellPages - 4 + i;
+                    } else {
+                      pageNum = crossSellsPage - 2 + i;
+                    }
+                    return <Button key={pageNum} variant={crossSellsPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCrossSellsPage(pageNum)} className="h-8 w-8 p-0">
                           {pageNum}
-                        </Button>
-                      );
-                    })}
+                        </Button>;
+                  })}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCrossSellsPage(p => Math.min(totalCrossSellPages, p + 1))} 
-                    disabled={crossSellsPage === totalCrossSellPages || totalCrossSellPages === 0} 
-                    className="h-8 px-3"
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setCrossSellsPage(p => Math.min(totalCrossSellPages, p + 1))} disabled={crossSellsPage === totalCrossSellPages || totalCrossSellPages === 0} className="h-8 px-3">
                     Weiter
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
@@ -2725,8 +2693,7 @@ export default function Projects() {
               <SheetTitle>{selectedProductForQuickView?.product}</SheetTitle>
               <SheetDescription>Produktdetails und Spezifikationen</SheetDescription>
             </SheetHeader>
-            {selectedProductForQuickView && (
-              <div className="mt-6 space-y-6">
+            {selectedProductForQuickView && <div className="mt-6 space-y-6">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Produktfamilie</h3>
                   <Badge variant="secondary">
@@ -2747,14 +2714,12 @@ export default function Projects() {
                     {selectedProductForQuickView.product_description || 'Keine Beschreibung verfügbar'}
                   </p>
                 </div>
-              </div>
-            )}
+              </div>}
           </SheetContent>
         </Sheet>
 
         {/* Removal Reason Modal */}
-        {removalDialogOpen && (
-          <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        {removalDialogOpen && <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-lg border bg-background p-6 shadow-lg">
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">Cross-Sell Opportunity entfernen</h2>
@@ -2783,12 +2748,9 @@ export default function Projects() {
                 <Button variant="ghost" onClick={() => setRemovalDialogOpen(false)}>Abbrechen</Button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    );
+          </div>}
+      </div>;
   }
-
   return <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -2810,11 +2772,9 @@ export default function Projects() {
                   <Button variant="outline" size="sm">
                     <Filter className="mr-2 h-4 w-4" />
                     Filter
-                    {(quickFilter !== 'all' || statusFilter) && (
-                      <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
+                    {(quickFilter !== 'all' || statusFilter) && <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                         {(quickFilter !== 'all' ? 1 : 0) + (statusFilter ? 1 : 0)}
-                      </Badge>
-                    )}
+                      </Badge>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-64" align="end">
@@ -2827,19 +2787,17 @@ export default function Projects() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Ansicht</Label>
                       <div className="flex flex-wrap gap-2">
-                        <Badge 
-                          variant={quickFilter === 'favorites' ? 'default' : 'outline'} 
-                          className="cursor-pointer text-xs" 
-                          onClick={() => { setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites'); setStatusFilter(null); }}
-                        >
+                        <Badge variant={quickFilter === 'favorites' ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
+                        setQuickFilter(quickFilter === 'favorites' ? 'all' : 'favorites');
+                        setStatusFilter(null);
+                      }}>
                           <Star className={`mr-1 h-3 w-3 ${quickFilter === 'favorites' ? 'fill-current' : ''}`} />
                           Favoriten
                         </Badge>
-                        <Badge 
-                          variant={quickFilter === 'recent' ? 'default' : 'outline'} 
-                          className="cursor-pointer text-xs" 
-                          onClick={() => { setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent'); setStatusFilter(null); }}
-                        >
+                        <Badge variant={quickFilter === 'recent' ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
+                        setQuickFilter(quickFilter === 'recent' ? 'all' : 'recent');
+                        setStatusFilter(null);
+                      }}>
                           Zuletzt angesehen
                         </Badge>
                       </div>
@@ -2848,24 +2806,21 @@ export default function Projects() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Status</Label>
                       <div className="flex flex-wrap gap-2">
-                        {['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].map(status => (
-                          <Badge 
-                            key={status}
-                            variant={statusFilter === status ? 'default' : 'outline'} 
-                            className="cursor-pointer text-xs" 
-                            onClick={() => { setStatusFilter(statusFilter === status ? null : status); setQuickFilter('all'); }}
-                          >
+                        {['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].map(status => <Badge key={status} variant={statusFilter === status ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
+                        setStatusFilter(statusFilter === status ? null : status);
+                        setQuickFilter('all');
+                      }}>
                             {status}
-                          </Badge>
-                        ))}
+                          </Badge>)}
                       </div>
                     </div>
 
-                    {(quickFilter !== 'all' || statusFilter) && (
-                      <Button variant="ghost" size="sm" className="w-full" onClick={() => { setQuickFilter('all'); setStatusFilter(null); }}>
+                    {(quickFilter !== 'all' || statusFilter) && <Button variant="ghost" size="sm" className="w-full" onClick={() => {
+                    setQuickFilter('all');
+                    setStatusFilter(null);
+                  }}>
                         Alle Filter zurücksetzen
-                      </Button>
-                    )}
+                      </Button>}
                   </div>
                 </PopoverContent>
               </Popover>
@@ -2884,80 +2839,80 @@ export default function Projects() {
                 <TableRow>
                   <th className="w-12"></th>
                   {visibleColumns.map((column, index) => <ResizableTableHeader key={column.key} label={column.label} width={column.width} onResize={width => updateColumnWidth(column.key, width)} sortable={true} sortDirection={sortField === column.key ? sortDirection : null} onSort={() => handleSort(column.key as SortField)} draggable={true} onDragStart={() => setDraggedIndex(index)} onDragOver={e => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-              }} onDrop={e => {
-                e.preventDefault();
-                if (draggedIndex !== null && draggedIndex !== index) {
-                  reorderColumns(draggedIndex, index);
-                }
-                setDraggedIndex(null);
-              }} onDragEnd={() => setDraggedIndex(null)} />)}
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = 'move';
+                }} onDrop={e => {
+                  e.preventDefault();
+                  if (draggedIndex !== null && draggedIndex !== index) {
+                    reorderColumns(draggedIndex, index);
+                  }
+                  setDraggedIndex(null);
+                }} onDragEnd={() => setDraggedIndex(null)} />)}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedProjects.map((project: any) => {
-              return <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleRowClick(project)}>
+                return <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleRowClick(project)}>
                     <TableCell className="w-12">
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => {
-                    e.stopPropagation();
-                    const targetId = project.sourceIds?.[0] || project.id;
-                    toggleFavorite(targetId);
-                  }}>
+                      e.stopPropagation();
+                      const targetId = project.sourceIds?.[0] || project.id;
+                      toggleFavorite(targetId);
+                    }}>
                         <Star className={`h-4 w-4 ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
                       </Button>
                     </TableCell>
                     {visibleColumns.map(column => {
-                  let value;
-                  if (column.key === 'applications') {
-                    value = null; // Will be handled separately
-                  } else if (column.key === 'products') {
-                    value = null; // Will be handled separately
-                  } else if (column.key === 'optimization_status') {
-                    value = null; // Will be handled separately
-                  } else if (column.key === 'created_at') {
-                    value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
-                  } else if (column.key === 'updated_at') {
-                    value = project.updated_at ? format(new Date(project.updated_at), 'dd.MM.yyyy') : '-';
-                  } else {
-                    value = project[column.key];
-                  }
-                  return <TableCell key={column.key} className={column.key === 'project_name' ? 'font-medium' : ''} style={{
-                    width: `${column.width}px`
-                  }} onClick={e => {
-                    if (column.key === 'customer') {
-                      e.stopPropagation();
-                      handleCustomerClick(project.customer);
+                    let value;
+                    if (column.key === 'applications') {
+                      value = null; // Will be handled separately
+                    } else if (column.key === 'products') {
+                      value = null; // Will be handled separately
+                    } else if (column.key === 'optimization_status') {
+                      value = null; // Will be handled separately
+                    } else if (column.key === 'created_at') {
+                      value = project.created_at ? format(new Date(project.created_at), 'dd.MM.yyyy') : '-';
+                    } else if (column.key === 'updated_at') {
+                      value = project.updated_at ? format(new Date(project.updated_at), 'dd.MM.yyyy') : '-';
+                    } else {
+                      value = project[column.key];
                     }
-                  }}>
+                    return <TableCell key={column.key} className={column.key === 'project_name' ? 'font-medium' : ''} style={{
+                      width: `${column.width}px`
+                    }} onClick={e => {
+                      if (column.key === 'customer') {
+                        e.stopPropagation();
+                        handleCustomerClick(project.customer);
+                      }
+                    }}>
                           {column.key === 'customer' ? <span className="text-foreground hover:underline cursor-pointer">
                               {value}
                             </span> : column.key === 'applications' ? <div className="flex flex-wrap gap-1">
                               {project.applications.length > 0 ? project.applications.map((appName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
-                        e.stopPropagation();
-                        setSelectedApplicationForQuickView(appName);
-                        setApplicationQuickViewOpen(true);
-                      }}>
+                          e.stopPropagation();
+                          setSelectedApplicationForQuickView(appName);
+                          setApplicationQuickViewOpen(true);
+                        }}>
                                     {appName}
                                     {idx < project.applications.length - 1 && ', '}
                                   </span>) : '-'}
                             </div> : column.key === 'products' ? <div className="flex flex-wrap gap-1">
                               {project.products.length > 0 ? project.products.map((productName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
-                        e.stopPropagation();
-                        const details = getProductDetails(productName);
-                        setSelectedProductForQuickView(details || {
-                          product: productName
-                        });
-                        setProductQuickViewOpen(true);
-                      }}>
+                          e.stopPropagation();
+                          const details = getProductDetails(productName);
+                          setSelectedProductForQuickView(details || {
+                            product: productName
+                          });
+                          setProductQuickViewOpen(true);
+                        }}>
                                     {productName}
                                     {idx < project.products.length - 1 && ', '}
                                   </span>) : '-'}
                             </div> : column.key === 'optimization_status' ? <StatusBadge status={calculateProjectStatus(project, false)} /> : value}
                         </TableCell>;
-                })}
+                  })}
                   </TableRow>;
-            })}
+              })}
               </TableBody>
             </Table>
             {/* Pagination Footer */}
@@ -2968,7 +2923,10 @@ export default function Projects() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">Ergebnisse pro Seite:</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={(val) => { setItemsPerPage(Number(val)); setCurrentPage(1); }}>
+                  <Select value={itemsPerPage.toString()} onValueChange={val => {
+                  setItemsPerPage(Number(val));
+                  setCurrentPage(1);
+                }}>
                     <SelectTrigger className="w-[70px] h-8">
                       <SelectValue />
                     </SelectTrigger>
@@ -2986,18 +2944,23 @@ export default function Projects() {
                     Zurück
                   </Button>
                   <div className="flex items-center gap-1 mx-2">
-                    {Array.from({ length: Math.min(5, totalProjectPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalProjectPages <= 5) { pageNum = i + 1; }
-                      else if (currentPage <= 3) { pageNum = i + 1; }
-                      else if (currentPage >= totalProjectPages - 2) { pageNum = totalProjectPages - 4 + i; }
-                      else { pageNum = currentPage - 2 + i; }
-                      return (
-                        <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)} className="h-8 w-8 p-0">
+                    {Array.from({
+                    length: Math.min(5, totalProjectPages)
+                  }, (_, i) => {
+                    let pageNum;
+                    if (totalProjectPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalProjectPages - 2) {
+                      pageNum = totalProjectPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)} className="h-8 w-8 p-0">
                           {pageNum}
-                        </Button>
-                      );
-                    })}
+                        </Button>;
+                  })}
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalProjectPages, p + 1))} disabled={currentPage === totalProjectPages || totalProjectPages === 0} className="h-8 px-3">
                     Weiter
