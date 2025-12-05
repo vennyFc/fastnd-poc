@@ -268,14 +268,6 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto py-6 space-y-8">
-      {isSuperAdmin && (
-        <Link to="/super-admin">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('admin.backToSuperAdmin')}
-          </Button>
-        </Link>
-      )}
 
       {!activeTenant && (
         <Card className="bg-destructive/5 border-destructive/20">
