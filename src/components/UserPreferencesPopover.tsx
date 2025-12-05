@@ -23,7 +23,7 @@ export function UserPreferencesPopover() {
 
   // Fetch available applications
   const { data: applications } = useQuery({
-    queryKey: ['applications', activeTenant?.id],
+    queryKey: ['user-pref-applications', activeTenant?.id],
     queryFn: async () => {
       if (!activeTenant?.id) return [];
       
@@ -37,7 +37,12 @@ export function UserPreferencesPopover() {
       }
       
       const { data } = await query;
-      const uniqueApps = [...new Set(data?.map(a => a.application).filter(Boolean) || [])];
+      // Ensure we extract only string values
+      const uniqueApps = [...new Set(
+        (data || [])
+          .map(a => typeof a === 'string' ? a : a?.application)
+          .filter((app): app is string => typeof app === 'string' && app.length > 0)
+      )];
       return uniqueApps.sort();
     },
     enabled: !!user && !!activeTenant,
@@ -270,21 +275,24 @@ export function UserPreferencesPopover() {
                 </div>
                 <ScrollArea className="h-32 border rounded-md p-2">
                   <div className="space-y-2">
-                    {applications?.map(app => (
-                      <div key={app} className="flex items-center space-x-2">
+                    {applications?.map(app => {
+                      const appName = typeof app === 'string' ? app : String(app);
+                      return (
+                      <div key={appName} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`app-${app}`}
-                          checked={selectedApplications.includes(app)}
-                          onCheckedChange={() => toggleApplication(app)}
+                          id={`app-${appName}`}
+                          checked={selectedApplications.includes(appName)}
+                          onCheckedChange={() => toggleApplication(appName)}
                         />
                         <label
-                          htmlFor={`app-${app}`}
+                          htmlFor={`app-${appName}`}
                           className="text-sm cursor-pointer flex-1"
                         >
-                          {app}
+                          {appName}
                         </label>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </ScrollArea>
               </div>
