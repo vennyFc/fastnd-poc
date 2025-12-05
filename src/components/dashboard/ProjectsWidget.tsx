@@ -286,8 +286,8 @@ export function ProjectsWidget() {
             </div>
             
             {/* Metadata Row - all items aligned */}
-            <div className="flex items-start gap-6 pl-7">
-              <div className="min-w-0 w-[140px]">
+            <div className="flex items-start gap-8 pl-7">
+              <div className="min-w-0 w-[180px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Kunde</div>
                 <div className="text-xs font-medium truncate">{project.customer}</div>
               </div>
@@ -299,7 +299,7 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[80px]">
+              <div className="shrink-0 w-[85px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Erstellt</div>
                 <div className="text-xs font-medium">
                   {project.opportunity_creation_date 
@@ -307,7 +307,7 @@ export function ProjectsWidget() {
                     : '-'}
                 </div>
               </div>
-              <div className="shrink-0 w-[80px]">
+              <div className="shrink-0 w-[85px]">
                 <div className="text-2xs text-muted-foreground mb-0.5">Geändert</div>
                 <div className="text-xs font-medium">
                   {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
