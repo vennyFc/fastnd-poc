@@ -90,7 +90,7 @@ const StatusBadge = ({
   const config = getStatusConfig(status);
   return <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold", config.bgColor, config.textColor, config.borderColor)}>
       <div className={cn("h-2 w-2 rounded-full animate-pulse", config.dotColor)} />
-      <span className="text-2xs">{status}</span>
+      <span className="text-xs">{status}</span>
     </div>;
 };
 export default function Projects() {
