@@ -5,12 +5,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Settings, User, Eye, EyeOff } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export function UserPreferencesViewer() {
   const { activeTenant } = useAuth();
+  const { t, language } = useLanguage();
 
   // Fetch all users in the tenant
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -99,9 +101,9 @@ export function UserPreferencesViewer() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Benutzer-Einstellungen</h2>
+        <h2 className="text-2xl font-bold tracking-tight">{t('userPrefsViewer.title')}</h2>
         <p className="text-muted-foreground mt-2">
-          Übersicht aller Benutzer-Präferenzen im Mandanten
+          {t('userPrefsViewer.description')}
         </p>
       </div>
 
@@ -109,42 +111,42 @@ export function UserPreferencesViewer() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Benutzer mit Dashboard-Einstellungen</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('userPrefsViewer.usersWithDashboard')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
               {usersWithSettings.filter(u => u.dashboardSettings.length > 0).length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              von {usersWithSettings.length} Benutzern
+              {t('userPrefsViewer.ofUsers').replace('{count}', usersWithSettings.length.toString())}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Benutzer mit Spalten-Einstellungen</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('userPrefsViewer.usersWithColumns')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
               {usersWithSettings.filter(u => u.columnSettings.length > 0).length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              von {usersWithSettings.length} Benutzern
+              {t('userPrefsViewer.ofUsers').replace('{count}', usersWithSettings.length.toString())}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Gesamt-Einstellungen</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('userPrefsViewer.totalSettings')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
               {(dashboardSettings?.length || 0) + (columnSettings?.length || 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Konfigurationen
+              {t('userPrefsViewer.configurations')}
             </p>
           </CardContent>
         </Card>
@@ -153,9 +155,9 @@ export function UserPreferencesViewer() {
       {/* Users with Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Benutzer-Übersicht</CardTitle>
+          <CardTitle>{t('userPrefsViewer.userOverview')}</CardTitle>
           <CardDescription>
-            Dashboard- und Spalten-Einstellungen pro Benutzer
+            {t('userPrefsViewer.userOverviewDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -174,10 +176,10 @@ export function UserPreferencesViewer() {
                       </div>
                       <div className="flex gap-2">
                         <Badge variant={user.dashboardSettings.length > 0 ? "default" : "outline"}>
-                          {user.dashboardSettings.length} Dashboard
+                          {user.dashboardSettings.length} {t('userPrefsViewer.dashboard')}
                         </Badge>
                         <Badge variant={user.columnSettings.length > 0 ? "default" : "outline"}>
-                          {user.columnSettings.length} Spalten
+                          {user.columnSettings.length} {t('userPrefsViewer.columns')}
                         </Badge>
                       </div>
                     </div>
@@ -188,16 +190,16 @@ export function UserPreferencesViewer() {
                       <Tabs defaultValue="dashboard" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="dashboard" className="text-xs">
-                            Dashboard ({user.dashboardSettings.length})
+                            {t('userPrefsViewer.dashboard')} ({user.dashboardSettings.length})
                           </TabsTrigger>
                           <TabsTrigger value="columns" className="text-xs">
-                            Spalten ({user.columnSettings.length})
+                            {t('userPrefsViewer.columns')} ({user.columnSettings.length})
                           </TabsTrigger>
                         </TabsList>
                         
                         <TabsContent value="dashboard" className="mt-4">
                           {user.dashboardSettings.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Keine Dashboard-Einstellungen</p>
+                            <p className="text-sm text-muted-foreground">{t('userPrefsViewer.noDashboardSettings')}</p>
                           ) : (
                             <div className="space-y-3">
                               {user.dashboardSettings.map(setting => {
@@ -205,7 +207,7 @@ export function UserPreferencesViewer() {
                                 return (
                                   <div key={setting.id} className="border rounded-lg p-3 bg-muted/30">
                                     <p className="text-xs text-muted-foreground mb-2">
-                                      Zuletzt aktualisiert: {new Date(setting.updated_at).toLocaleDateString('de-DE')}
+                                      {t('userPrefsViewer.lastUpdated')}: {new Date(setting.updated_at).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
                                     </p>
                                     <div className="space-y-1">
                                       {widgets.map((widget: any, idx: number) => (
@@ -222,7 +224,7 @@ export function UserPreferencesViewer() {
                                           </div>
                                           <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="text-xs">
-                                              Position {widget.order}
+                                              {t('userPrefsViewer.position')} {widget.order}
                                             </Badge>
                                             <Badge variant="outline" className="text-xs">
                                               {widget.size}
@@ -240,7 +242,7 @@ export function UserPreferencesViewer() {
                         
                         <TabsContent value="columns" className="mt-4">
                           {user.columnSettings.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">Keine Spalten-Einstellungen</p>
+                            <p className="text-sm text-muted-foreground">{t('userPrefsViewer.noColumnSettings')}</p>
                           ) : (
                             <div className="space-y-3">
                               {user.columnSettings.map(setting => {
@@ -251,11 +253,11 @@ export function UserPreferencesViewer() {
                                     <div className="flex items-center justify-between mb-2">
                                       <p className="text-sm font-medium">{setting.table_name}</p>
                                       <Badge variant="outline" className="text-xs">
-                                        {visibleColumns.length}/{columns.length} sichtbar
+                                        {visibleColumns.length}/{columns.length} {t('userPrefsViewer.visible')}
                                       </Badge>
                                     </div>
                                     <p className="text-xs text-muted-foreground mb-2">
-                                      Zuletzt aktualisiert: {new Date(setting.updated_at).toLocaleDateString('de-DE')}
+                                      {t('userPrefsViewer.lastUpdated')}: {new Date(setting.updated_at).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US')}
                                     </p>
                                     <div className="space-y-1">
                                       {columns.slice(0, 5).map((column: any, idx: number) => (
@@ -277,7 +279,7 @@ export function UserPreferencesViewer() {
                                       ))}
                                       {columns.length > 5 && (
                                         <p className="text-xs text-muted-foreground pt-1">
-                                          ... und {columns.length - 5} weitere Spalten
+                                          {t('userPrefsViewer.andMore').replace('{count}', (columns.length - 5).toString())}
                                         </p>
                                       )}
                                     </div>
