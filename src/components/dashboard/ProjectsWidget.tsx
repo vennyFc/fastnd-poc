@@ -272,7 +272,7 @@ export function ProjectsWidget() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-5 w-5 p-0 opacity-60 group-hover:opacity-100 transition-opacity" 
+                className="h-5 w-5 p-0 opacity-60 group-hover:opacity-100 transition-opacity group/star" 
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -280,7 +280,7 @@ export function ProjectsWidget() {
                   toggleFavorite(targetId);
                 }}
               >
-                <Star className={`h-3.5 w-3.5 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
+                <Star className={`h-3.5 w-3.5 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground group-hover/star:text-yellow-400'}`} />
               </Button>
               <span className="font-semibold text-sm truncate flex-1">{project.project_name}</span>
             </div>

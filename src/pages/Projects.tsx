@@ -2834,12 +2834,12 @@ export default function Projects() {
                 {paginatedProjects.map((project: any) => {
                 return <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleRowClick(project)}>
                     <TableCell className="w-12">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => {
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 group/star" onClick={e => {
                       e.stopPropagation();
                       const targetId = project.sourceIds?.[0] || project.id;
                       toggleFavorite(targetId);
                     }}>
-                        <Star className={`h-4 w-4 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
+                        <Star className={`h-4 w-4 transition-colors ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground group-hover/star:text-yellow-400'}`} />
                       </Button>
                     </TableCell>
                     {visibleColumns.map(column => {
