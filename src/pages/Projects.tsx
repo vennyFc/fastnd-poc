@@ -300,7 +300,7 @@ export default function Projects() {
     updateColumnWidth: updateProductColumnWidth,
     reorderColumns: reorderProductColumns,
     resetColumns: resetProductColumns
-  } = useTableColumns('project-detail-product-columns-v2', defaultProductColumns);
+  } = useTableColumns('project-detail-product-columns-v3', defaultProductColumns);
 
   // Recommendation Score Bar Component
   const RecommendationScoreBar = ({
@@ -379,7 +379,7 @@ export default function Projects() {
     updateColumnWidth: updateCrossSellColumnWidth,
     reorderColumns: reorderCrossSellColumns,
     resetColumns: resetCrossSellColumns
-  } = useTableColumns('project-detail-crosssell-columns', defaultCrossSellColumns);
+  } = useTableColumns('project-detail-crosssell-columns-v2', defaultCrossSellColumns);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [draggedCrossSellIndex, setDraggedCrossSellIndex] = useState<number | null>(null);
   useEffect(() => {
