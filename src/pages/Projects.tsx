@@ -349,7 +349,7 @@ export default function Projects() {
     if (score === null || score === undefined) return <span className="text-muted-foreground text-center block">-</span>;
     const filledBlocks = Math.round(score / 10);
     return <div className="flex items-center justify-center gap-1 w-full">
-        <span className="font-semibold text-2xs">{score}%</span>
+        <span className="font-semibold text-xs">{score}%</span>
         <div className="flex gap-px">
           {Array.from({
           length: 10
