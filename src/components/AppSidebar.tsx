@@ -73,7 +73,7 @@ export function AppSidebar() {
   }];
   return <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3 justify-center">
+        <div className="flex items-center gap-3 justify-start">
           <img 
             src={state === "collapsed" ? fastndIconCollapsed : fastndLogo} 
             alt="FASTND Logo" 
