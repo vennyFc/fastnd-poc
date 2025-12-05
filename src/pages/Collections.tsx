@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,10 +15,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, Trash2, Edit, Users, Lock, Globe, Eye, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { de, enUS } from 'date-fns/locale';
 
 export default function Collections() {
   const { isSuperAdmin, activeTenant, tenantId } = useAuth();
+  const { t, language } = useLanguage();
+  const dateLocale = language === 'de' ? de : enUS;
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [open, setOpen] = useState(false);
@@ -194,10 +197,10 @@ export default function Collections() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setOpen(false);
       resetForm();
-      toast.success(editingCollection ? 'Sammlung aktualisiert' : 'Sammlung erstellt');
+      toast.success(editingCollection ? t('collections.updated') : t('collections.created'));
     },
     onError: (error) => {
-      toast.error('Fehler beim Speichern: ' + error.message);
+      toast.error(t('collections.saveError') + ': ' + error.message);
     },
   });
 
@@ -213,7 +216,7 @@ export default function Collections() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       setSelectedCollection(null);
-      toast.success('Sammlung gelöscht');
+      toast.success(t('collections.deleted'));
     },
   });
 
@@ -230,7 +233,7 @@ export default function Collections() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collection_products'] });
       queryClient.invalidateQueries({ queryKey: ['collections'] });
-      toast.success('Produkt entfernt');
+      toast.success(t('collections.productRemoved'));
     },
   });
 
@@ -271,9 +274,9 @@ export default function Collections() {
 
   const getVisibilityLabel = (visibility: string) => {
     switch (visibility) {
-      case 'private': return 'Privat';
-      case 'selected': return 'Ausgewählt';
-      case 'organization': return 'Organisation';
+      case 'private': return t('collections.visibilityPrivate');
+      case 'selected': return t('collections.visibilitySelected');
+      case 'organization': return t('collections.visibilityOrganization');
       default: return visibility;
     }
   };
@@ -291,7 +294,7 @@ export default function Collections() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-medium font-clash">Sammlungen</h1>
+        <h1 className="text-3xl font-medium font-clash">{t('collections.title')}</h1>
         <Dialog open={open} onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) resetForm();
@@ -299,36 +302,36 @@ export default function Collections() {
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              Neue Sammlung
+              {t('collections.new')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingCollection ? 'Sammlung bearbeiten' : 'Neue Sammlung erstellen'}
+                {editingCollection ? t('collections.edit') : t('collections.create')}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Name</label>
+                <label className="text-sm font-medium">{t('collections.name')}</label>
                 <Input
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Name der Sammlung"
+                  placeholder={t('collections.name')}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Beschreibung (optional)</label>
+                <label className="text-sm font-medium">{t('collections.description')}</label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Beschreibung der Sammlung"
+                  placeholder={t('collections.description')}
                   rows={3}
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Sichtbarkeit</label>
+                <label className="text-sm font-medium">{t('collections.visibility')}</label>
                 <Select
                   value={formData.visibility}
                   onValueChange={(value) => setFormData({ ...formData, visibility: value })}
@@ -337,15 +340,15 @@ export default function Collections() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="private">Nur für mich</SelectItem>
-                    <SelectItem value="selected">Ausgewählte Nutzer</SelectItem>
-                    <SelectItem value="organization">Gesamte Organisation</SelectItem>
+                    <SelectItem value="private">{t('collections.visibilityPrivate')}</SelectItem>
+                    <SelectItem value="selected">{t('collections.visibilitySelected')}</SelectItem>
+                    <SelectItem value="organization">{t('collections.visibilityOrganization')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {formData.visibility === 'selected' && (
                 <div>
-                  <label className="text-sm font-medium">Mit Nutzern teilen</label>
+                  <label className="text-sm font-medium">{t('collections.shareWith')}</label>
                   <Select
                     value={formData.shared_users[0] || undefined}
                     onValueChange={(value) => {
@@ -358,7 +361,7 @@ export default function Collections() {
                     }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Nutzer auswählen..." />
+                      <SelectValue placeholder={t('collections.selectUser')} />
                     </SelectTrigger>
                     <SelectContent>
                       {users.map((user) => (
@@ -391,10 +394,10 @@ export default function Collections() {
               )}
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                  Abbrechen
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={saveMutation.isPending}>
-                  {saveMutation.isPending ? 'Speichert...' : 'Speichern'}
+                  {saveMutation.isPending ? t('common.loading') : t('common.save')}
                 </Button>
               </div>
             </form>
@@ -408,7 +411,7 @@ export default function Collections() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Sammlungen durchsuchen..."
+              placeholder={t('search.searchCollections') || t('search.placeholder')}
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -423,14 +426,14 @@ export default function Collections() {
           {isLoading ? (
             <Card>
               <CardContent className="p-6">
-                <p className="text-sm text-muted-foreground">Lädt...</p>
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
               </CardContent>
             </Card>
           ) : filteredCollections.length === 0 ? (
             <Card>
               <CardContent className="p-6">
                 <p className="text-sm text-muted-foreground text-center">
-                  {searchQuery.length >= 2 ? 'Keine Sammlungen gefunden' : 'Noch keine Sammlungen vorhanden'}
+                  {searchQuery.length >= 2 ? t('empty.collections') : t('collections.noCollections')}
                 </p>
               </CardContent>
             </Card>
@@ -471,7 +474,7 @@ export default function Collections() {
                         className="h-7 w-7 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm('Sammlung wirklich löschen?')) {
+                          if (confirm(t('collections.confirmDelete'))) {
                             deleteMutation.mutate(collection.id);
                           }
                         }}

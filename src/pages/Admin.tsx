@@ -16,11 +16,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { UserPreferencesViewer } from '@/components/UserPreferencesViewer';
 
 export default function Admin() {
   const { isSuperAdmin, user, activeTenant } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   // Immer den aktiven Mandanten verwenden
@@ -270,7 +272,7 @@ export default function Admin() {
         <Link to="/super-admin">
           <Button variant="ghost" className="mb-4">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Zurück zum Super-Admin Dashboard
+            {t('admin.backToSuperAdmin')}
           </Button>
         </Link>
       )}
@@ -281,7 +283,7 @@ export default function Admin() {
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-destructive" />
               <p className="text-sm font-medium text-destructive">
-                Kein Mandant ausgewählt. Bitte wählen Sie einen Mandanten in der Seitenleiste aus.
+                {t('admin.noTenantSelected')}
               </p>
             </div>
           </CardContent>
@@ -290,9 +292,9 @@ export default function Admin() {
       
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-medium tracking-tight font-clash">Benutzerverwaltung</h1>
+          <h1 className="text-3xl font-medium tracking-tight font-clash">{t('admin.title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Verwalten Sie Benutzer, deren Rollen und Einstellungen
+            {t('admin.description')}
           </p>
         </div>
       </div>
@@ -301,11 +303,11 @@ export default function Admin() {
         <TabsList>
           <TabsTrigger value="users">
             <User className="mr-2 h-4 w-4" />
-            Benutzer
+            {t('admin.usersTab')}
           </TabsTrigger>
           <TabsTrigger value="preferences">
             <Settings className="mr-2 h-4 w-4" />
-            Benutzer-Einstellungen
+            {t('admin.preferencesTab')}
           </TabsTrigger>
         </TabsList>
 
@@ -316,20 +318,20 @@ export default function Admin() {
               <DialogTrigger asChild>
                 <Button>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Benutzer einladen
+                  {t('admin.inviteButton')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Neuen Benutzer einladen</DialogTitle>
+                  <DialogTitle>{t('admin.inviteDialogTitle')}</DialogTitle>
                   <DialogDescription>
-                    Senden Sie eine Einladungs-E-Mail an einen neuen Benutzer
+                    {t('admin.inviteDialogDesc')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">Vorname</Label>
+                      <Label htmlFor="firstName">{t('admin.firstName')}</Label>
                       <Input
                         id="firstName"
                         placeholder="Max"
@@ -338,7 +340,7 @@ export default function Admin() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Nachname</Label>
+                      <Label htmlFor="lastName">{t('admin.lastName')}</Label>
                       <Input
                         id="lastName"
                         placeholder="Mustermann"
@@ -349,11 +351,11 @@ export default function Admin() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-Mail-Adresse</Label>
+                    <Label htmlFor="email">{t('admin.email')}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="benutzer@beispiel.de"
+                      placeholder="user@example.com"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleInviteUser()}
@@ -361,7 +363,7 @@ export default function Admin() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="role">Rolle</Label>
+                    <Label htmlFor="role">{t('admin.roleLabel')}</Label>
                     <Select value={inviteRole} onValueChange={(value: 'user' | 'tenant_admin') => setInviteRole(value)}>
                       <SelectTrigger id="role">
                         <SelectValue />
@@ -370,13 +372,13 @@ export default function Admin() {
                         <SelectItem value="user">
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4" />
-                            <span>Benutzer</span>
+                            <span>{t('admin.roleUser')}</span>
                           </div>
                         </SelectItem>
                         <SelectItem value="tenant_admin">
                           <div className="flex items-center gap-2">
                             <Shield className="h-4 w-4" />
-                            <span>Tenant Admin</span>
+                            <span>{t('admin.roleTenantAdmin')}</span>
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -388,7 +390,7 @@ export default function Admin() {
                     <div className="border rounded-lg p-4 bg-muted/50">
                       <div className="flex items-center gap-2 mb-3">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <h4 className="text-sm font-medium">Bereits registrierte Benutzer ({users.length})</h4>
+                        <h4 className="text-sm font-medium">{t('admin.registeredUsers')} ({users.length})</h4>
                       </div>
                       <div className="max-h-[200px] overflow-y-auto space-y-1">
                         {users.map((user: any) => (
@@ -407,25 +409,25 @@ export default function Admin() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground mt-3">
-                        💡 Diese E-Mail-Adressen sind bereits registriert
+                        💡 {t('admin.registeredUsersHint')}
                       </p>
                     </div>
                   )}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                    Abbrechen
+                    {t('common.cancel')}
                   </Button>
                   <Button onClick={handleInviteUser} disabled={inviteUserMutation.isPending}>
                     {inviteUserMutation.isPending ? (
                       <>
                         <Mail className="mr-2 h-4 w-4 animate-spin" />
-                        Wird gesendet...
+                        {t('admin.sending')}
                       </>
                     ) : (
                       <>
                         <Mail className="mr-2 h-4 w-4" />
-                        Einladung senden
+                        {t('admin.sendInvite')}
                       </>
                     )}
                   </Button>
@@ -438,17 +440,17 @@ export default function Admin() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle className="text-lg">Benutzer gesamt</CardTitle>
+                <CardTitle className="text-lg">{t('admin.totalUsers')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-primary">{users?.length || 0}</p>
-                <p className="text-sm text-muted-foreground mt-1">Registrierte Benutzer</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('admin.registeredUsersCount')}</p>
               </CardContent>
             </Card>
 
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle className="text-lg">Administratoren</CardTitle>
+                <CardTitle className="text-lg">{t('admin.admins')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-primary">
