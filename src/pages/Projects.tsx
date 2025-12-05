@@ -353,7 +353,7 @@ export default function Projects() {
         <div className="flex gap-px">
           {Array.from({
           length: 10
-        }).map((_, i) => <div key={i} className={cn("h-2 w-[3px] rounded-sm", i < filledBlocks ? "bg-emerald-500" : "bg-muted")} />)}
+        }).map((_, i) => <div key={i} className={cn("h-2.5 w-1 rounded-sm", i < filledBlocks ? "bg-emerald-500" : "bg-muted")} />)}
         </div>
       </div>;
   };
