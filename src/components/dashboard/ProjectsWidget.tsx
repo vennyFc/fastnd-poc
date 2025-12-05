@@ -288,8 +288,8 @@ export function ProjectsWidget() {
             {/* Metadata Row - clean responsive layout */}
             <div className="pl-7 pr-2">
               {/* Desktop: single row */}
-              <div className="hidden xl:flex items-start gap-4">
-                <div className="min-w-0 w-[140px] shrink-0">
+              <div className="hidden xl:flex items-start gap-6">
+                <div className="min-w-0 w-[180px] shrink-0">
                   <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
                   <div className="text-sm font-medium truncate">{project.customer}</div>
                 </div>
@@ -327,7 +327,7 @@ export function ProjectsWidget() {
               {/* Tablet/Mobile: two rows */}
               <div className="xl:hidden space-y-2">
                 <div className="flex items-start gap-4">
-                  <div className="min-w-0 w-[140px] shrink-0">
+                  <div className="min-w-0 w-[160px] shrink-0">
                     <div className="text-xs text-muted-foreground mb-0.5">Kunde</div>
                     <div className="text-sm font-medium truncate">{project.customer}</div>
                   </div>
