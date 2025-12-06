@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { Search, Filter, Plus, X, ArrowLeft, Package, TrendingUp, Star, Replace, ChevronDown, ChevronUp, ThumbsDown, ChevronLeft, ChevronRight, Maximize2, RotateCcw } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -94,6 +95,11 @@ export default function Projects() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [filterOpen, setFilterOpen] = useState(false);
+  
+  // Industry/Application filter states
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [selectedApplicationsFilter, setSelectedApplicationsFilter] = useState<string[]>([]);
+  const [applicationFilterOpen, setApplicationFilterOpen] = useState(false);
 
   // Cross-sells full view state
   const [crossSellsProject, setCrossSellsProject] = useState<any>(null);
@@ -526,7 +532,63 @@ export default function Projects() {
     enabled: !!activeTenant
   });
 
-  // Fetch customers data for quick view
+  // Fetch applications for filter
+  const {
+    data: applicationsData = []
+  } = useQuery({
+    queryKey: ['applications', activeTenant?.id],
+    queryFn: async () => {
+      if (!activeTenant) return [];
+      const {
+        data,
+        error
+      } = await supabase.from('applications').select('*').eq('tenant_id', activeTenant.id);
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!activeTenant
+  });
+
+  // Industry/Application filter computations
+  const uniqueIndustries = useMemo(() => {
+    const industries = applicationsData
+      .map((app: any) => app.industry)
+      .filter((industry: string | null) => industry && industry.trim() !== '');
+    return Array.from(new Set(industries)).sort() as string[];
+  }, [applicationsData]);
+
+  const applicationsByIndustry = useMemo(() => {
+    const grouped: Record<string, string[]> = {};
+    applicationsData.forEach((app: any) => {
+      const industry = app.industry || t('filter.noIndustry');
+      if (!grouped[industry]) {
+        grouped[industry] = [];
+      }
+      if (!grouped[industry].includes(app.application)) {
+        grouped[industry].push(app.application);
+      }
+    });
+    // Sort applications within each industry
+    Object.keys(grouped).forEach(industry => {
+      grouped[industry].sort();
+    });
+    return grouped;
+  }, [applicationsData, t]);
+
+  const filteredApplicationsByIndustry = useMemo(() => {
+    if (selectedIndustries.length === 0) {
+      return applicationsByIndustry;
+    }
+    const filtered: Record<string, string[]> = {};
+    selectedIndustries.forEach(industry => {
+      if (applicationsByIndustry[industry]) {
+        filtered[industry] = applicationsByIndustry[industry];
+      }
+    });
+    return filtered;
+  }, [applicationsByIndustry, selectedIndustries]);
+
+
   const {
     data: customersData = [],
     isLoading: customersLoading
@@ -773,6 +835,23 @@ export default function Projects() {
       if (status !== statusFilter) return false;
     }
 
+    // Industry filter - filter projects by selected industries through their applications
+    if (selectedIndustries.length > 0) {
+      const projectApps = project.applications || [];
+      const matchesIndustry = projectApps.some((app: string) => {
+        const appData = applicationsData.find((a: any) => a.application === app);
+        return appData && selectedIndustries.includes(appData.industry);
+      });
+      if (!matchesIndustry) return false;
+    }
+
+    // Application filter - filter projects by selected applications
+    if (selectedApplicationsFilter.length > 0) {
+      const projectApps = project.applications || [];
+      const matchesApp = projectApps.some((app: string) => selectedApplicationsFilter.includes(app));
+      if (!matchesApp) return false;
+    }
+
     // Search filter
     const matchesSearch = searchQuery.length < 2 ? true : project.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) || project.customer?.toLowerCase().includes(searchQuery.toLowerCase()) || project.applications?.some((app: string) => app?.toLowerCase().includes(searchQuery.toLowerCase())) || project.products?.some((prod: string) => prod?.toLowerCase().includes(searchQuery.toLowerCase()));
     if (!matchesSearch) return false;
@@ -834,7 +913,15 @@ export default function Projects() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, quickFilter, statusFilter, selectedCustomer]);
+  }, [searchQuery, quickFilter, statusFilter, selectedCustomer, selectedIndustries, selectedApplicationsFilter]);
+
+  // Clear selected applications if they no longer match selected industries
+  useEffect(() => {
+    if (selectedIndustries.length > 0) {
+      const validApps = Object.values(filteredApplicationsByIndustry).flat();
+      setSelectedApplicationsFilter(prev => prev.filter(app => validApps.includes(app)));
+    }
+  }, [selectedIndustries, filteredApplicationsByIndustry]);
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       // Cycle through: asc -> desc -> null
@@ -2772,11 +2859,154 @@ export default function Projects() {
               <Input placeholder={t('projects.searchProjects')} className="pl-10" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
             </div>
             <div className="flex items-center gap-2">
+              {/* Combined Industry/Application Filter */}
+              <Popover open={applicationFilterOpen} onOpenChange={setApplicationFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter className="mr-2 h-4 w-4" />
+                    {selectedIndustries.length > 0 || selectedApplicationsFilter.length > 0 ? (
+                      <>
+                        {selectedIndustries.length > 0 && (
+                          <span className="mr-1">{selectedIndustries.length} {t('filter.industriesSelected')}</span>
+                        )}
+                        {selectedApplicationsFilter.length > 0 && (
+                          <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                            {selectedApplicationsFilter.length}
+                          </Badge>
+                        )}
+                      </>
+                    ) : (
+                      t('filter.industryApplication')
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="start">
+                  <div className="p-3 border-b flex items-center justify-between">
+                    <h4 className="font-medium text-sm">{t('filter.industryApplication')}</h4>
+                    {(selectedIndustries.length > 0 || selectedApplicationsFilter.length > 0) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedIndustries([]);
+                          setSelectedApplicationsFilter([]);
+                        }}
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        {t('common.reset')}
+                      </Button>
+                    )}
+                  </div>
+                  <ScrollArea className="max-h-[400px]">
+                    {/* Industries Section */}
+                    <div className="p-3 border-b">
+                      <h5 className="text-xs font-semibold text-muted-foreground uppercase mb-2">{t('filter.industries')}</h5>
+                      <div className="space-y-1">
+                        {uniqueIndustries.map((industry) => {
+                          const appCount = applicationsByIndustry[industry]?.length || 0;
+                          return (
+                            <div key={industry} className="flex items-center space-x-2 py-1">
+                              <Checkbox
+                                id={`industry-${industry}`}
+                                checked={selectedIndustries.includes(industry)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedIndustries([...selectedIndustries, industry]);
+                                  } else {
+                                    setSelectedIndustries(selectedIndustries.filter(i => i !== industry));
+                                  }
+                                }}
+                              />
+                              <label
+                                htmlFor={`industry-${industry}`}
+                                className="text-sm flex-1 cursor-pointer"
+                              >
+                                {industry}
+                              </label>
+                              <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                                {appCount}
+                              </Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Applications Section */}
+                    <div className="p-3">
+                      <h5 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
+                        {t('filter.applications')}
+                        {selectedIndustries.length > 0 && (
+                          <span className="font-normal normal-case ml-1">({t('filter.filteredByIndustry')})</span>
+                        )}
+                      </h5>
+                      {Object.keys(filteredApplicationsByIndustry).length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t('filter.noApplicationsForIndustry')}</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {Object.entries(filteredApplicationsByIndustry).map(([industry, apps]) => {
+                            const allSelected = apps.every(app => selectedApplicationsFilter.includes(app));
+                            const someSelected = apps.some(app => selectedApplicationsFilter.includes(app));
+                            
+                            return (
+                              <div key={industry}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs font-medium text-muted-foreground">{industry}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-xs"
+                                    onClick={() => {
+                                      if (allSelected) {
+                                        setSelectedApplicationsFilter(prev => prev.filter(a => !apps.includes(a)));
+                                      } else {
+                                        setSelectedApplicationsFilter(prev => [...new Set([...prev, ...apps])]);
+                                      }
+                                    }}
+                                  >
+                                    {allSelected ? t('filter.deselectAll') : t('filter.selectAll')}
+                                  </Button>
+                                </div>
+                                <div className="space-y-1 pl-2">
+                                  {apps.map((app) => (
+                                    <div key={app} className="flex items-center space-x-2 py-0.5">
+                                      <Checkbox
+                                        id={`app-${app}`}
+                                        checked={selectedApplicationsFilter.includes(app)}
+                                        onCheckedChange={(checked) => {
+                                          if (checked) {
+                                            setSelectedApplicationsFilter([...selectedApplicationsFilter, app]);
+                                          } else {
+                                            setSelectedApplicationsFilter(selectedApplicationsFilter.filter(a => a !== app));
+                                          }
+                                        }}
+                                      />
+                                      <label
+                                        htmlFor={`app-${app}`}
+                                        className="text-sm cursor-pointer"
+                                      >
+                                        {app}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
+
+              {/* Status & Quick Filter */}
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Filter className="mr-2 h-4 w-4" />
-                    {t('common.filter')}
+                    {t('filter.status')}
                     {(quickFilter !== 'all' || statusFilter) && <Badge variant="secondary" className="ml-2 h-5 px-1 text-xs">
                         {(quickFilter !== 'all' ? 1 : 0) + (statusFilter ? 1 : 0)}
                       </Badge>}
@@ -2785,8 +3015,7 @@ export default function Projects() {
                 <PopoverContent className="w-64" align="end">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm">{t('common.filter')}</h4>
-                      <p className="text-sm text-muted-foreground">{t('filter.all')}</p>
+                      <h4 className="font-medium text-sm">{t('filter.status')}</h4>
                     </div>
                     
                     <div className="space-y-2">
