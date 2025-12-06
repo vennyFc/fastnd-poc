@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Building2, FolderKanban, Loader2 } from 'lucide-react';
+import { Search, Building2, FolderKanban, Loader2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddProductToProjectDialogProps {
@@ -37,6 +38,7 @@ export function AddProductToProjectDialog({
   const { activeTenant, tenantId, user } = useAuth();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -181,8 +183,14 @@ export function AddProductToProjectDialog({
     onOpenChange(false);
   };
 
-  const handleAdd = () => {
-    addProductMutation.mutate();
+  const handleAdd = (navigateToProject: boolean = false) => {
+    addProductMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        if (navigateToProject && selectedProjectId) {
+          navigate(`/projects?view=detail&id=${selectedProjectId}`);
+        }
+      },
+    });
   };
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
@@ -311,18 +319,29 @@ export function AddProductToProjectDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
           <Button variant="outline" onClick={handleClose}>
             {t('common.cancel')}
           </Button>
           <Button
-            onClick={handleAdd}
+            variant="outline"
+            onClick={() => handleAdd(false)}
             disabled={!selectedProjectId || addProductMutation.isPending}
           >
             {addProductMutation.isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
             {t('common.add')}
+          </Button>
+          <Button
+            onClick={() => handleAdd(true)}
+            disabled={!selectedProjectId || addProductMutation.isPending}
+          >
+            {addProductMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            <ExternalLink className="mr-2 h-4 w-4" />
+            {t('products.addAndOpen')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -310,6 +310,7 @@ const translations: Record<Language, Record<string, string>> = {
     'products.selectCustomerFirst': 'Bitte zuerst einen Kunden auswählen',
     'products.addedToProject': 'Produkt zu Projekt "{project}" hinzugefügt',
     'products.alreadyInProject': 'Produkt ist bereits in diesem Projekt',
+    'products.addAndOpen': 'Hinzufügen & öffnen',
     
     // Toast Messages
     'toast.success': 'Erfolgreich',
@@ -1160,6 +1161,7 @@ const translations: Record<Language, Record<string, string>> = {
     'products.selectCustomerFirst': 'Please select a customer first',
     'products.addedToProject': 'Product added to project "{project}"',
     'products.alreadyInProject': 'Product is already in this project',
+    'products.addAndOpen': 'Add & open',
     
     // Toast Messages
     'toast.success': 'Success',
