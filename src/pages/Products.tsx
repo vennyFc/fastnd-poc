@@ -42,6 +42,7 @@ export default function Products() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [expandedCrossSells, setExpandedCrossSells] = useState<Set<string>>(new Set());
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
   const [applicationFilterOpen, setApplicationFilterOpen] = useState(false);
   const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
@@ -172,6 +173,20 @@ export default function Products() {
     });
     return grouped;
   }, [applications, t]);
+
+  // Get applications filtered by selected industries
+  const filteredApplicationsByIndustry = useMemo(() => {
+    if (selectedIndustries.length === 0) {
+      return applicationsByIndustry;
+    }
+    const filtered: Record<string, string[]> = {};
+    selectedIndustries.forEach(industry => {
+      if (applicationsByIndustry[industry]) {
+        filtered[industry] = applicationsByIndustry[industry];
+      }
+    });
+    return filtered;
+  }, [applicationsByIndustry, selectedIndustries]);
 
   // Get all unique applications (for filtering)
   const allUniqueApplications = Array.from(
@@ -512,7 +527,15 @@ export default function Products() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedApplications, selectedProductFamilies, selectedManufacturers, selectedLifecycle, showNewOnly, showTopOnly]);
+  }, [searchQuery, selectedIndustries, selectedApplications, selectedProductFamilies, selectedManufacturers, selectedLifecycle, showNewOnly, showTopOnly]);
+
+  // Clear applications when industries change (if selected apps no longer match)
+  useEffect(() => {
+    if (selectedIndustries.length > 0) {
+      const validApps = Object.values(filteredApplicationsByIndustry).flat();
+      setSelectedApplications(prev => prev.filter(app => validApps.includes(app)));
+    }
+  }, [selectedIndustries, filteredApplicationsByIndustry]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -555,64 +578,127 @@ export default function Products() {
             <div className="flex items-center gap-2">
               <Popover open={applicationFilterOpen} onOpenChange={setApplicationFilterOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[280px] justify-between">
-                    {selectedApplications.length === 0 
+                  <Button variant="outline" className="w-[320px] justify-between">
+                    {selectedIndustries.length === 0 && selectedApplications.length === 0
                       ? t('filter.allApplications')
-                      : `${selectedApplications.length} ${t('filter.applicationsSelected')}`
+                      : selectedIndustries.length > 0 && selectedApplications.length === 0
+                        ? `${selectedIndustries.length} ${t('filter.industriesSelected')}`
+                        : selectedApplications.length > 0
+                          ? `${selectedApplications.length} ${t('filter.applicationsSelected')}`
+                          : t('filter.allApplications')
                     }
                     <Filter className="ml-2 h-4 w-4 shrink-0" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[320px] p-0 bg-background" align="start">
+                <PopoverContent className="w-[360px] p-0 bg-background" align="start">
                   <div className="p-3 border-b">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{t('filter.industryApplication')}</span>
-                      {selectedApplications.length > 0 && (
+                      {(selectedIndustries.length > 0 || selectedApplications.length > 0) && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-7 text-xs"
-                          onClick={() => setSelectedApplications([])}
+                          onClick={() => {
+                            setSelectedIndustries([]);
+                            setSelectedApplications([]);
+                          }}
                         >
                           {t('common.reset')}
                         </Button>
                       )}
                     </div>
                   </div>
-                  <ScrollArea className="h-[300px]">
-                    <div className="p-2">
-                      {Object.keys(applicationsByIndustry).sort().map((industry) => (
-                        <div key={industry} className="mb-3">
-                          <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                            {industry}
-                          </div>
-                          <div className="space-y-1">
-                            {applicationsByIndustry[industry].map((app: string) => (
-                              <div key={app} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
-                                <Checkbox
-                                  id={`app-${app}`}
-                                  checked={selectedApplications.includes(app)}
-                                  onCheckedChange={(checked) => {
-                                    if (checked) {
-                                      setSelectedApplications(prev => [...prev, app]);
-                                    } else {
-                                      setSelectedApplications(prev => prev.filter(a => a !== app));
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`app-${app}`}
-                                  className="text-sm cursor-pointer flex-1 truncate"
-                                >
-                                  {app}
-                                </label>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                  
+                  {/* Industries Section */}
+                  <div className="border-b">
+                    <div className="px-3 py-2 bg-muted/30">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t('filter.industries')}
+                      </span>
                     </div>
-                  </ScrollArea>
+                    <ScrollArea className="h-[120px]">
+                      <div className="p-2 space-y-1">
+                        {uniqueIndustries.map((industry: string) => (
+                          <div key={industry} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                            <Checkbox
+                              id={`industry-${industry}`}
+                              checked={selectedIndustries.includes(industry)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedIndustries(prev => [...prev, industry]);
+                                } else {
+                                  setSelectedIndustries(prev => prev.filter(i => i !== industry));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`industry-${industry}`}
+                              className="text-sm cursor-pointer flex-1 truncate"
+                            >
+                              {industry}
+                            </label>
+                            <span className="text-xs text-muted-foreground">
+                              ({applicationsByIndustry[industry]?.length || 0})
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+
+                  {/* Applications Section */}
+                  <div>
+                    <div className="px-3 py-2 bg-muted/30">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t('filter.applications')}
+                      </span>
+                      {selectedIndustries.length > 0 && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({t('filter.filteredByIndustry')})
+                        </span>
+                      )}
+                    </div>
+                    <ScrollArea className="h-[200px]">
+                      <div className="p-2">
+                        {Object.keys(filteredApplicationsByIndustry).sort().map((industry) => (
+                          <div key={industry} className="mb-3">
+                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                              {industry}
+                            </div>
+                            <div className="space-y-1">
+                              {filteredApplicationsByIndustry[industry].map((app: string) => (
+                                <div key={app} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                                  <Checkbox
+                                    id={`app-${app}`}
+                                    checked={selectedApplications.includes(app)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedApplications(prev => [...prev, app]);
+                                      } else {
+                                        setSelectedApplications(prev => prev.filter(a => a !== app));
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`app-${app}`}
+                                    className="text-sm cursor-pointer flex-1 truncate"
+                                  >
+                                    {app}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        {Object.keys(filteredApplicationsByIndustry).length === 0 && (
+                          <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                            {t('filter.noApplicationsForIndustry')}
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
                 </PopoverContent>
               </Popover>
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
