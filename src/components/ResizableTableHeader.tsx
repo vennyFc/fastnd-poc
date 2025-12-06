@@ -92,7 +92,7 @@ export function ResizableTableHeader({
             {getSortIcon()}
           </Button> : labelTooltip ? <Tooltip>
               <TooltipTrigger asChild>
-                <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left cursor-help underline decoration-dotted decoration-muted-foreground">{label}</span>
+                <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left cursor-help underline decoration-dotted decoration-muted-foreground text-sm">{label}</span>
               </TooltipTrigger>
               <TooltipContent>{labelTooltip}</TooltipContent>
             </Tooltip> : <span className="font-semibold flex-1 block whitespace-normal leading-tight text-left text-sm">{label}</span>}
