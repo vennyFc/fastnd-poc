@@ -85,7 +85,7 @@ export function ResizableTableHeader({
         {sortable && onSort ? <Button variant="ghost" size="sm" onClick={onSort} className="h-auto p-0 font-semibold hover:bg-transparent flex-1 justify-start text-left whitespace-normal leading-tight">
             {labelTooltip ? <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="block cursor-help underline decoration-dotted decoration-muted-foreground">{label}</span>
+                  <span className="block cursor-help underline decoration-dotted decoration-muted-foreground text-sm">{label}</span>
                 </TooltipTrigger>
                 <TooltipContent>{labelTooltip}</TooltipContent>
               </Tooltip> : <span className="block text-sm">{label}</span>}
