@@ -156,6 +156,9 @@ const translations: Record<Language, Record<string, string>> = {
     'common.noData': 'Keine Daten vorhanden',
     'common.error': 'Fehler',
     'common.success': 'Erfolg',
+    'common.customer': 'Kunde',
+    'common.project': 'Projekt',
+    'common.noResults': 'Keine Ergebnisse gefunden',
     
     // Table Headers - Projects
     'table.projectName': 'Projektname',
@@ -297,6 +300,16 @@ const translations: Record<Language, Record<string, string>> = {
     'dialog.inviteUser': 'Benutzer einladen',
     'dialog.addToCollection': 'Zur Sammlung hinzufügen',
     'dialog.removeReason': 'Grund für Entfernung',
+    
+    // Products - Add to Project
+    'products.addToProject': 'Produkt zu Projekt hinzufügen',
+    'products.assignProduct': 'Produkt zuordnen',
+    'products.searchCustomer': 'Kunde suchen...',
+    'products.searchProject': 'Projekt suchen...',
+    'products.noProjectsForCustomer': 'Keine Projekte für diesen Kunden',
+    'products.selectCustomerFirst': 'Bitte zuerst einen Kunden auswählen',
+    'products.addedToProject': 'Produkt zu Projekt "{project}" hinzugefügt',
+    'products.alreadyInProject': 'Produkt ist bereits in diesem Projekt',
     
     // Toast Messages
     'toast.success': 'Erfolgreich',
@@ -993,6 +1006,9 @@ const translations: Record<Language, Record<string, string>> = {
     'common.noData': 'No data available',
     'common.error': 'Error',
     'common.success': 'Success',
+    'common.customer': 'Customer',
+    'common.project': 'Project',
+    'common.noResults': 'No results found',
     
     // Table Headers - Projects
     'table.projectName': 'Project Name',
@@ -1134,6 +1150,16 @@ const translations: Record<Language, Record<string, string>> = {
     'dialog.inviteUser': 'Invite User',
     'dialog.addToCollection': 'Add to Collection',
     'dialog.removeReason': 'Reason for removal',
+    
+    // Products - Add to Project
+    'products.addToProject': 'Add product to project',
+    'products.assignProduct': 'Assign product',
+    'products.searchCustomer': 'Search customer...',
+    'products.searchProject': 'Search project...',
+    'products.noProjectsForCustomer': 'No projects for this customer',
+    'products.selectCustomerFirst': 'Please select a customer first',
+    'products.addedToProject': 'Product added to project "{project}"',
+    'products.alreadyInProject': 'Product is already in this project',
     
     // Toast Messages
     'toast.success': 'Success',

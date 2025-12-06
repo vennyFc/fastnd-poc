@@ -24,6 +24,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AddProductToProjectDialog } from '@/components/AddProductToProjectDialog';
 
 type SortField = 'product' | 'product_family' | 'manufacturer' | 'product_price' | 'product_lead_time' | 'product_inventory' | 'product_description' | 'product_lifecycle' | 'product_new' | 'product_top';
 type SortDirection = 'asc' | 'desc' | null;
@@ -53,6 +54,8 @@ export default function Products() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [addToProjectOpen, setAddToProjectOpen] = useState(false);
+  const [productToAdd, setProductToAdd] = useState<any>(null);
 
   const queryClient = useQueryClient();
 
@@ -83,7 +86,8 @@ export default function Products() {
     { key: 'product_price', label: t('table.price'), labelTooltip: t('table.priceTooltip'), visible: true, width: 80, order: 6 },
     { key: 'product_lead_time', label: t('table.leadTime'), labelTooltip: t('table.leadTimeTooltip'), visible: true, width: 90, order: 7 },
     { key: 'product_inventory', label: t('table.inventory'), labelTooltip: t('table.inventoryTooltip'), visible: true, width: 100, order: 8 },
-    { key: 'manufacturer_link', label: t('table.link'), visible: true, width: 100, order: 9 },
+    { key: 'manufacturer_link', label: t('table.link'), visible: true, width: 80, order: 9 },
+    { key: 'action', label: t('table.action'), visible: true, width: 100, order: 10 },
   ], [t]);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -1060,6 +1064,22 @@ export default function Products() {
                             value = product.product_description ? (
                               <span className="line-clamp-2">{product.product_description}</span>
                             ) : '-';
+                          } else if (column.key === 'action') {
+                            value = (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProductToAdd(product);
+                                  setAddToProjectOpen(true);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                {t('common.add')}
+                              </Button>
+                            );
                           } else {
                             value = product[column.key] || '-';
                           }
@@ -1559,6 +1579,13 @@ export default function Products() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Add Product to Project Dialog */}
+      <AddProductToProjectDialog
+        open={addToProjectOpen}
+        onOpenChange={setAddToProjectOpen}
+        product={productToAdd}
+      />
     </div>
   );
 }
