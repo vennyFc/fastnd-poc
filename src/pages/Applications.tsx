@@ -26,7 +26,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-type SortField = 'application' | 'related_product' | 'industry';
+type SortField = 'application' | 'related_product' | 'industry' | 'product_family';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Applications() {
@@ -45,8 +45,9 @@ export default function Applications() {
     'applications-columns',
     [
       { key: 'application', label: t('table.application'), visible: true, width: 300, order: 0 },
-      { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 300, order: 1 },
-      { key: 'industry', label: t('applications.industry'), visible: true, width: 200, order: 2 },
+      { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 250, order: 1 },
+      { key: 'product_family', label: t('table.productFamily'), visible: true, width: 200, order: 2 },
+      { key: 'industry', label: t('applications.industry'), visible: true, width: 200, order: 3 },
     ]
   );
 
@@ -92,6 +93,31 @@ export default function Applications() {
       return data as any[];
     },
     enabled: !!activeTenant,
+  });
+
+  // Fetch products to get product_family for related_products
+  const { data: products = [] } = useQuery({
+    queryKey: ['products-for-applications', activeTenant?.id],
+    queryFn: async () => {
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select('product, product_family')
+        .eq('tenant_id', activeTenant.id);
+      
+      if (error) throw error;
+      return data as any[];
+    },
+    enabled: !!activeTenant,
+  });
+
+  // Create a map of product -> product_family
+  const productFamilyMap = new Map<string, string>();
+  products.forEach((p: any) => {
+    if (p.product && p.product_family) {
+      productFamilyMap.set(p.product.toLowerCase(), p.product_family);
+    }
   });
 
   const filteredApplications = allApplications?.filter((app: any) => {
@@ -149,6 +175,7 @@ export default function Applications() {
   const getColumnLabel = (key: string) => {
     if (key === 'application') return t('table.application');
     if (key === 'related_product') return t('applications.relatedProduct');
+    if (key === 'product_family') return t('table.productFamily');
     if (key === 'industry') return t('applications.industry');
     return key;
   };
@@ -233,7 +260,13 @@ export default function Applications() {
                       paginatedApplications.map((app: any) => (
                         <TableRow key={app.id}>
                           {visibleColumns.map((column) => {
-                            const rawValue = app[column.key];
+                            let rawValue = app[column.key];
+                            
+                            // For product_family column, look up from products map
+                            if (column.key === 'product_family' && app.related_product) {
+                              rawValue = productFamilyMap.get(app.related_product.toLowerCase()) || null;
+                            }
+                            
                             const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
                             const isApplicationColumn = column.key === 'application';
                             
