@@ -661,36 +661,65 @@ export default function Products() {
                     </div>
                     <ScrollArea className="h-[200px]">
                       <div className="p-2">
-                        {Object.keys(filteredApplicationsByIndustry).sort().map((industry) => (
-                          <div key={industry} className="mb-3">
-                            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                              {industry}
+                        {Object.keys(filteredApplicationsByIndustry).sort().map((industry) => {
+                          const industryApps = filteredApplicationsByIndustry[industry];
+                          const allSelected = industryApps.every(app => selectedApplications.includes(app));
+                          const someSelected = industryApps.some(app => selectedApplications.includes(app));
+                          
+                          return (
+                            <div key={industry} className="mb-3">
+                              <div className="flex items-center justify-between px-2 py-1">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                  {industry}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => {
+                                    if (allSelected) {
+                                      // Deselect all apps from this industry
+                                      setSelectedApplications(prev => 
+                                        prev.filter(app => !industryApps.includes(app))
+                                      );
+                                    } else {
+                                      // Select all apps from this industry
+                                      setSelectedApplications(prev => {
+                                        const newApps = industryApps.filter(app => !prev.includes(app));
+                                        return [...prev, ...newApps];
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {allSelected ? t('filter.deselectAll') : t('filter.selectAll')}
+                                </Button>
+                              </div>
+                              <div className="space-y-1">
+                                {industryApps.map((app: string) => (
+                                  <div key={app} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                                    <Checkbox
+                                      id={`app-${app}`}
+                                      checked={selectedApplications.includes(app)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedApplications(prev => [...prev, app]);
+                                        } else {
+                                          setSelectedApplications(prev => prev.filter(a => a !== app));
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`app-${app}`}
+                                      className="text-sm cursor-pointer flex-1 truncate"
+                                    >
+                                      {app}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            <div className="space-y-1">
-                              {filteredApplicationsByIndustry[industry].map((app: string) => (
-                                <div key={app} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
-                                  <Checkbox
-                                    id={`app-${app}`}
-                                    checked={selectedApplications.includes(app)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        setSelectedApplications(prev => [...prev, app]);
-                                      } else {
-                                        setSelectedApplications(prev => prev.filter(a => a !== app));
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`app-${app}`}
-                                    className="text-sm cursor-pointer flex-1 truncate"
-                                  >
-                                    {app}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                         {Object.keys(filteredApplicationsByIndustry).length === 0 && (
                           <div className="px-2 py-4 text-sm text-muted-foreground text-center">
                             {t('filter.noApplicationsForIndustry')}
