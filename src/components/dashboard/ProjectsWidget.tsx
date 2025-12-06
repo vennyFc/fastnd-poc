@@ -316,7 +316,7 @@ export function ProjectsWidget() {
                       : '-'}
                   </div>
                 </div>
-                <div className="shrink-0 w-[80px]">
+                <div className="shrink-0 w-[100px]">
                   <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.created')}</div>
                   <div className="text-sm font-medium">
                     {project.opportunity_creation_date 
@@ -324,13 +324,13 @@ export function ProjectsWidget() {
                       : '-'}
                   </div>
                 </div>
-                <div className="shrink-0 w-[80px]">
+                <div className="shrink-0 w-[100px]">
                   <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.modified')}</div>
                   <div className="text-sm font-medium">
                     {lastModified ? format(lastModified, 'dd.MM.yyyy') : '-'}
                   </div>
                 </div>
-                <div className="shrink-0 w-[120px]">
+                <div className="shrink-0 w-[130px]">
                   <div className="text-xs text-muted-foreground mb-0.5">{t('projectsWidget.status')}</div>
                   <div className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                     <div className="h-2 w-2 rounded-full animate-pulse bg-emerald-500" />
