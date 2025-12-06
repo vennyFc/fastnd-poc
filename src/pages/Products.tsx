@@ -871,6 +871,10 @@ export default function Products() {
                                 />
                               </div>
                             ) : '-';
+                          } else if (column.key === 'product_description') {
+                            value = product.product_description ? (
+                              <span className="line-clamp-2">{product.product_description}</span>
+                            ) : '-';
                           } else {
                             value = product[column.key] || '-';
                           }
@@ -880,7 +884,7 @@ export default function Products() {
                               key={column.key}
                               className={
                                 column.key === 'product' ? 'font-medium' : 
-                                column.key === 'product_description' ? 'max-w-xs truncate' : 
+                                column.key === 'product_description' ? 'max-w-xs' : 
                                 ['product_price', 'product_lead_time', 'product_inventory'].includes(column.key) ? 'text-right' :
                                 ''
                               }
