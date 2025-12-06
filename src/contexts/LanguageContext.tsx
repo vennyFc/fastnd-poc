@@ -423,6 +423,10 @@ const translations: Record<Language, Record<string, string>> = {
     'actionItems.created': 'Action Item erstellt',
     'actionItems.deleted': 'Action Item gelöscht',
     'actionItems.saveError': 'Fehler beim Speichern',
+    'actionItems.sectionOpen': 'Offen',
+    'actionItems.sectionInProgress': 'In Bearbeitung',
+    'actionItems.sectionCompleted': 'Abgeschlossen',
+    'actionItems.moreCompleted': 'weitere abgeschlossen',
     
     // Search Widget
     'searchWidget.title': 'Opportunity Optimizer',
@@ -1247,6 +1251,10 @@ const translations: Record<Language, Record<string, string>> = {
     'actionItems.created': 'Action item created',
     'actionItems.deleted': 'Action item deleted',
     'actionItems.saveError': 'Error saving',
+    'actionItems.sectionOpen': 'Open',
+    'actionItems.sectionInProgress': 'In Progress',
+    'actionItems.sectionCompleted': 'Completed',
+    'actionItems.moreCompleted': 'more completed',
     
     // Search Widget
     'searchWidget.title': 'Opportunity Optimizer',

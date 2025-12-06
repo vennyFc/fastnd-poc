@@ -481,7 +481,7 @@ export function ActionItemsWidget() {
             {/* Open Items */}
             {openItems.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">Offen ({openItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">{t('actionItems.sectionOpen')} ({openItems.length})</h4>
                 <div className="space-y-2">
                   {openItems.map((item) => (
                     <div key={item.id} className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
@@ -491,7 +491,7 @@ export function ActionItemsWidget() {
                             {getStatusIcon(item.status)}
                             <span className="font-medium text-xs">{item.title}</span>
                             <Badge variant={getPriorityColor(item.priority)} className="text-2xs">
-                              {item.priority === 'high' ? 'Hoch' : item.priority === 'medium' ? 'Mittel' : 'Niedrig'}
+                              {item.priority === 'high' ? t('actionItems.priorityHigh') : item.priority === 'medium' ? t('actionItems.priorityMedium') : t('actionItems.priorityLow')}
                             </Badge>
                           </div>
                           {item.description && (
@@ -514,7 +514,7 @@ export function ActionItemsWidget() {
                           )}
                           {item.due_date && (
                             <p className="text-2xs text-muted-foreground">
-                              🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: de })}
+                              🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: dateLocale })}
                             </p>
                           )}
                         </div>
@@ -554,7 +554,7 @@ export function ActionItemsWidget() {
             {/* In Progress Items */}
             {inProgressItems.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">In Bearbeitung ({inProgressItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">{t('actionItems.sectionInProgress')} ({inProgressItems.length})</h4>
                 <div className="space-y-2">
                   {inProgressItems.map((item) => (
                     <div key={item.id} className="p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
@@ -564,7 +564,7 @@ export function ActionItemsWidget() {
                             {getStatusIcon(item.status)}
                             <span className="font-medium text-xs">{item.title}</span>
                             <Badge variant={getPriorityColor(item.priority)} className="text-2xs">
-                              {item.priority === 'high' ? 'Hoch' : item.priority === 'medium' ? 'Mittel' : 'Niedrig'}
+                              {item.priority === 'high' ? t('actionItems.priorityHigh') : item.priority === 'medium' ? t('actionItems.priorityMedium') : t('actionItems.priorityLow')}
                             </Badge>
                           </div>
                           {item.description && (
@@ -587,7 +587,7 @@ export function ActionItemsWidget() {
                           )}
                           {item.due_date && (
                             <p className="text-2xs text-muted-foreground">
-                              🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: de })}
+                              🗓️ {format(new Date(item.due_date), 'dd. MMM yyyy', { locale: dateLocale })}
                             </p>
                           )}
                         </div>
@@ -627,7 +627,7 @@ export function ActionItemsWidget() {
             {/* Completed Items */}
             {completedItems.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">Abgeschlossen ({completedItems.length})</h4>
+                <h4 className="text-xs font-semibold mb-2 text-muted-foreground">{t('actionItems.sectionCompleted')} ({completedItems.length})</h4>
                 <div className="space-y-2">
                   {completedItems.slice(0, 3).map((item) => (
                     <div key={item.id} className="p-3 bg-muted/50 rounded-lg opacity-60">
@@ -664,11 +664,11 @@ export function ActionItemsWidget() {
                       </div>
                     </div>
                   ))}
-                  {completedItems.length > 3 && (
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                      + {completedItems.length - 3} weitere abgeschlossen
-                    </p>
-                  )}
+                    {completedItems.length > 3 && (
+                      <p className="text-xs text-muted-foreground text-center pt-2">
+                        + {completedItems.length - 3} {t('actionItems.moreCompleted')}
+                      </p>
+                    )}
                 </div>
               </div>
             )}
