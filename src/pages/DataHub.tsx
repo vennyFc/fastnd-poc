@@ -57,7 +57,7 @@ export default function DataHub() {
       id: 'applications',
       titleKey: 'dataType.applications',
       descKey: 'dataType.applications_desc',
-      fields: ['application', 'related_product'],
+      fields: ['application', 'related_product', 'industry'],
       icon: FileSpreadsheet,
     },
     {
