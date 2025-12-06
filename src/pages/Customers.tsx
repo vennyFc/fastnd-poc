@@ -500,7 +500,7 @@ export default function Customers() {
                                   customer.customer_category.toLowerCase() === 'top' 
                                     ? 'bg-destructive/10 text-destructive border-destructive/30' 
                                     : customer.customer_category.toLowerCase() === 'key' 
-                                      ? 'bg-orange-500/10 text-orange-600 border-orange-500/30' 
+                                      ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
                                       : customer.customer_category.toLowerCase() === 'emerging' 
                                         ? 'bg-green-500/10 text-green-600 border-green-500/30' 
                                         : ''
