@@ -232,6 +232,7 @@ export type Database = {
           application: string
           created_at: string
           id: string
+          industry: string | null
           related_product: string
           tenant_id: string | null
           upload_id: string | null
@@ -241,6 +242,7 @@ export type Database = {
           application: string
           created_at?: string
           id?: string
+          industry?: string | null
           related_product: string
           tenant_id?: string | null
           upload_id?: string | null
@@ -250,6 +252,7 @@ export type Database = {
           application?: string
           created_at?: string
           id?: string
+          industry?: string | null
           related_product?: string
           tenant_id?: string | null
           upload_id?: string | null

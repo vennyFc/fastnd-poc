@@ -26,7 +26,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
-type SortField = 'application' | 'related_product';
+type SortField = 'application' | 'related_product' | 'industry';
 type SortDirection = 'asc' | 'desc' | null;
 
 export default function Applications() {
@@ -46,6 +46,7 @@ export default function Applications() {
     [
       { key: 'application', label: t('table.application'), visible: true, width: 300, order: 0 },
       { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 300, order: 1 },
+      { key: 'industry', label: t('applications.industry'), visible: true, width: 200, order: 2 },
     ]
   );
 
@@ -97,7 +98,8 @@ export default function Applications() {
     if (searchQuery.length < 2) return true;
     return (
       app.application?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.related_product?.toLowerCase().includes(searchQuery.toLowerCase())
+      app.related_product?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.industry?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
 
@@ -147,6 +149,7 @@ export default function Applications() {
   const getColumnLabel = (key: string) => {
     if (key === 'application') return t('table.application');
     if (key === 'related_product') return t('applications.relatedProduct');
+    if (key === 'industry') return t('applications.industry');
     return key;
   };
 
