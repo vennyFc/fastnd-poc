@@ -387,6 +387,10 @@ const translations: Record<Language, Record<string, string>> = {
     'collections.selectToView': 'Wählen Sie eine Sammlung aus, um Details zu sehen',
     'collections.addedAt': 'Hinzugefügt',
     
+    // Products Actions
+    'products.addedToProject': 'Produkt hinzugefügt',
+    'products.rejected': 'Produkt abgelehnt',
+    
     // Applications
     'applications.title': 'Applikationen',
     'applications.relatedProduct': 'Zugehöriges Produkt',
@@ -1223,6 +1227,10 @@ const translations: Record<Language, Record<string, string>> = {
     'collections.addProductsHint': 'Add products via the Products view.',
     'collections.selectToView': 'Select a collection to see details',
     'collections.addedAt': 'Added',
+    
+    // Products Actions
+    'products.addedToProject': 'Product added',
+    'products.rejected': 'Product rejected',
     
     // Applications
     'applications.title': 'Applications',
