@@ -64,7 +64,9 @@ export default function Projects() {
     isSuperAdmin,
     activeTenant
   } = useAuth();
-  const { t } = useLanguage();
+  const {
+    t
+  } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -114,7 +116,7 @@ export default function Projects() {
       'Vorgeschlagen': t('status.suggested'),
       'Akzeptiert': t('status.accepted'),
       'Registriert': t('status.registered'),
-      'Abgelehnt': t('status.rejected'),
+      'Abgelehnt': t('status.rejected')
     };
     return statusMap[status] || status;
   };
@@ -749,7 +751,6 @@ export default function Projects() {
       }
     }
   }, [searchParams, groupedProjects]);
-
   const filteredProjects = groupedProjects?.filter((project: any) => {
     // Quick filter
     if (quickFilter === 'favorites') {
@@ -1742,14 +1743,11 @@ export default function Projects() {
                         <div className="flex items-center gap-2 cursor-pointer group">
                           <CardTitle className="text-xl">{project.project_name}</CardTitle>
                           <ChevronUp className={cn("h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground", !metadataExpanded && "rotate-180")} />
-                          <Star 
-                            className={`h-5 w-5 cursor-pointer ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`}
-                            onClick={e => {
-                              e.stopPropagation();
-                              const targetId = project.sourceIds?.[0] || project.id;
-                              toggleFavorite(targetId);
-                            }}
-                          />
+                          <Star className={`h-5 w-5 cursor-pointer ${project.sourceIds?.some((sourceId: string) => isFavorite(sourceId)) || isFavorite(project.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} onClick={e => {
+                        e.stopPropagation();
+                        const targetId = project.sourceIds?.[0] || project.id;
+                        toggleFavorite(targetId);
+                      }} />
                         </div>
                       </CollapsibleTrigger>
                       
@@ -1803,35 +1801,22 @@ export default function Projects() {
                     const statusIndex = ['Neu', 'Offen', 'Prüfung', 'Validierung', 'Abgeschlossen'].indexOf(currentStatus);
                     const steps = [t('status.new').toUpperCase(), t('status.open').toUpperCase(), t('status.review').toUpperCase(), t('status.validation').toUpperCase(), t('status.completed').toUpperCase()];
                     const shortSteps = ['N', 'O', 'P', 'V', 'A'];
-                    
                     return <>
                             <div className="flex-1 flex items-stretch h-9 border border-border rounded-full overflow-hidden">
                               {steps.map((step, index) => {
-                                const isCompleted = statusIndex > index;
-                                const isCurrent = statusIndex === index;
-                                const isActive = statusIndex >= index;
-                                const isLast = index === steps.length - 1;
-                                
-                                return (
-                                  <div 
-                                    key={step}
-                                    className={cn(
-                                      "flex-1 flex items-center justify-center text-xs font-medium",
-                                      isActive 
-                                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' 
-                                        : 'bg-muted/50 text-muted-foreground',
-                                      !isLast && "border-r border-border"
-                                    )}
-                                  >
+                          const isCompleted = statusIndex > index;
+                          const isCurrent = statusIndex === index;
+                          const isActive = statusIndex >= index;
+                          const isLast = index === steps.length - 1;
+                          return <div key={step} className={cn("flex-1 flex items-center justify-center text-xs font-medium", isActive ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' : 'bg-muted/50 text-muted-foreground', !isLast && "border-r border-border")}>
                                     <span className="flex items-center gap-1">
                                       {(isCompleted || isCurrent) && <span className="text-emerald-600 dark:text-emerald-400">✓</span>}
                                       {/* Show full text on md+, short on smaller */}
                                       <span className="hidden md:inline">{step}</span>
                                       <span className="md:hidden">{shortSteps[index]}</span>
                                     </span>
-                                  </div>
-                                );
-                              })}
+                                  </div>;
+                        })}
                             </div>
                             
                             {/* Status Dropdown - Rounded Black */}
@@ -2449,25 +2434,19 @@ export default function Projects() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
-              <span 
-                className="hover:underline cursor-pointer" 
-                onClick={() => {
-                  setViewMode('list');
-                  setSelectedProject(null);
-                  setCrossSellsProject(null);
-                }}
-              >
+              <span className="hover:underline cursor-pointer" onClick={() => {
+              setViewMode('list');
+              setSelectedProject(null);
+              setCrossSellsProject(null);
+            }}>
                 Projekte
               </span>
               {' / '}
-              <span 
-                className="hover:underline cursor-pointer"
-                onClick={() => {
-                  setViewMode('detail');
-                  setSelectedProject(crossSellsProject);
-                  setCrossSellsProject(null);
-                }}
-              >
+              <span className="hover:underline cursor-pointer" onClick={() => {
+              setViewMode('detail');
+              setSelectedProject(crossSellsProject);
+              setCrossSellsProject(null);
+            }}>
                 {crossSellsProject.project_name}
               </span>
             </p>
@@ -2832,13 +2811,22 @@ export default function Projects() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">{t('filter.status')}</Label>
                       <div className="flex flex-wrap gap-2">
-                        {[
-                          { key: 'Neu', label: t('status.new') },
-                          { key: 'Offen', label: t('status.open') },
-                          { key: 'Prüfung', label: t('status.review') },
-                          { key: 'Validierung', label: t('status.validation') },
-                          { key: 'Abgeschlossen', label: t('status.completed') }
-                        ].map(status => <Badge key={status.key} variant={statusFilter === status.key ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
+                        {[{
+                        key: 'Neu',
+                        label: t('status.new')
+                      }, {
+                        key: 'Offen',
+                        label: t('status.open')
+                      }, {
+                        key: 'Prüfung',
+                        label: t('status.review')
+                      }, {
+                        key: 'Validierung',
+                        label: t('status.validation')
+                      }, {
+                        key: 'Abgeschlossen',
+                        label: t('status.completed')
+                      }].map(status => <Badge key={status.key} variant={statusFilter === status.key ? 'default' : 'outline'} className="cursor-pointer text-xs" onClick={() => {
                         setStatusFilter(statusFilter === status.key ? null : status.key);
                         setQuickFilter('all');
                       }}>
@@ -2929,14 +2917,14 @@ export default function Projects() {
                                     {idx < project.applications.length - 1 && ', '}
                                   </span>) : '-'}
                             </div> : column.key === 'products' ? <div className="flex flex-wrap gap-1">
-                              {project.products.length > 0 ? project.products.map((productName: string, idx: number) => <span key={idx} className="text-foreground hover:underline cursor-pointer text-sm" onClick={e => {
+                              {project.products.length > 0 ? project.products.map((productName: string, idx: number) => <span key={idx} onClick={e => {
                           e.stopPropagation();
                           const details = getProductDetails(productName);
                           setSelectedProductForQuickView(details || {
                             product: productName
                           });
                           setProductQuickViewOpen(true);
-                        }}>
+                        }} className="text-foreground hover:underline cursor-pointer text-xs">
                                     {productName}
                                     {idx < project.products.length - 1 && ', '}
                                   </span>) : '-'}
