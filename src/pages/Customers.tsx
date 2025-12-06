@@ -497,11 +497,11 @@ export default function Customers() {
                               <Badge 
                                 variant="outline"
                                 className={
-                                  customer.customer_category === 'Top' 
+                                  customer.customer_category.toLowerCase() === 'top' 
                                     ? 'bg-destructive/10 text-destructive border-destructive/30' 
-                                    : customer.customer_category === 'Key' 
+                                    : customer.customer_category.toLowerCase() === 'key' 
                                       ? 'bg-orange-500/10 text-orange-600 border-orange-500/30' 
-                                      : customer.customer_category === 'Emerging' 
+                                      : customer.customer_category.toLowerCase() === 'emerging' 
                                         ? 'bg-green-500/10 text-green-600 border-green-500/30' 
                                         : ''
                                 }
