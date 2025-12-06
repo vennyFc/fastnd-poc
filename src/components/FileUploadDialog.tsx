@@ -169,7 +169,8 @@ interface FileUploadDialogProps {
   onOpenChange: (open: boolean) => void;
   dataType: {
     id: string;
-    title: string;
+    title?: string;
+    titleKey?: string;
     fields: string[];
   };
   parsedData: any[];
@@ -283,7 +284,7 @@ export default function FileUploadDialog({
         .insert({
           user_id: session.user.id,
           filename: fileName,
-          data_type: dataType.title,
+          data_type: dataType.id,
           row_count: parsedData.length,
           status: 'success',
           tenant_id: effectiveTenantId,
