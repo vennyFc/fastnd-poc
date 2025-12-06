@@ -45,9 +45,11 @@ export default function Applications() {
     'applications-columns',
     [
       { key: 'application', label: t('table.application'), visible: true, width: 300, order: 0 },
-      { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 250, order: 1 },
-      { key: 'product_family', label: t('table.productFamily'), visible: true, width: 200, order: 2 },
-      { key: 'industry', label: t('applications.industry'), visible: true, width: 200, order: 3 },
+      { key: 'related_product', label: t('applications.relatedProduct'), visible: true, width: 200, order: 1 },
+      { key: 'manufacturer', label: t('table.manufacturer'), visible: true, width: 150, order: 2 },
+      { key: 'product_family', label: t('table.productFamily'), visible: true, width: 150, order: 3 },
+      { key: 'product_description', label: t('table.description'), visible: true, width: 250, order: 4 },
+      { key: 'industry', label: t('applications.industry'), visible: true, width: 150, order: 5 },
     ]
   );
 
@@ -95,7 +97,7 @@ export default function Applications() {
     enabled: !!activeTenant,
   });
 
-  // Fetch products to get product_family for related_products
+  // Fetch products to get product details for related_products
   const { data: products = [] } = useQuery({
     queryKey: ['products-for-applications', activeTenant?.id],
     queryFn: async () => {
@@ -103,7 +105,7 @@ export default function Applications() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('product, product_family')
+        .select('product, product_family, manufacturer, product_description')
         .eq('tenant_id', activeTenant.id);
       
       if (error) throw error;
@@ -112,11 +114,15 @@ export default function Applications() {
     enabled: !!activeTenant,
   });
 
-  // Create a map of product -> product_family
-  const productFamilyMap = new Map<string, string>();
+  // Create maps of product -> product details
+  const productDetailsMap = new Map<string, { product_family: string | null; manufacturer: string | null; product_description: string | null }>();
   products.forEach((p: any) => {
-    if (p.product && p.product_family) {
-      productFamilyMap.set(p.product.toLowerCase(), p.product_family);
+    if (p.product) {
+      productDetailsMap.set(p.product.toLowerCase(), {
+        product_family: p.product_family || null,
+        manufacturer: p.manufacturer || null,
+        product_description: p.product_description || null,
+      });
     }
   });
 
@@ -176,6 +182,8 @@ export default function Applications() {
     if (key === 'application') return t('table.application');
     if (key === 'related_product') return t('applications.relatedProduct');
     if (key === 'product_family') return t('table.productFamily');
+    if (key === 'manufacturer') return t('table.manufacturer');
+    if (key === 'product_description') return t('table.description');
     if (key === 'industry') return t('applications.industry');
     return key;
   };
@@ -262,9 +270,18 @@ export default function Applications() {
                           {visibleColumns.map((column) => {
                             let rawValue = app[column.key];
                             
-                            // For product_family column, look up from products map
-                            if (column.key === 'product_family' && app.related_product) {
-                              rawValue = productFamilyMap.get(app.related_product.toLowerCase()) || null;
+                            // For product-related columns, look up from products map
+                            if (app.related_product) {
+                              const productDetails = productDetailsMap.get(app.related_product.toLowerCase());
+                              if (productDetails) {
+                                if (column.key === 'product_family') {
+                                  rawValue = productDetails.product_family;
+                                } else if (column.key === 'manufacturer') {
+                                  rawValue = productDetails.manufacturer;
+                                } else if (column.key === 'product_description') {
+                                  rawValue = productDetails.product_description;
+                                }
+                              }
                             }
                             
                             const value = typeof rawValue === 'object' ? '-' : (rawValue || '-');
