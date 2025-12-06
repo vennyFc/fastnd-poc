@@ -132,7 +132,7 @@ export default function Products() {
     },
   });
 
-  // Fetch applications
+  // Fetch applications (now includes industry field)
   const { data: applications = [] } = useQuery({
     queryKey: ['applications', activeTenant?.id],
     queryFn: async () => {
@@ -149,34 +149,9 @@ export default function Products() {
     enabled: !!activeTenant,
   });
 
-  // Fetch app_insights for industry data
-  const { data: appInsights = [] } = useQuery({
-    queryKey: ['app_insights_for_products', activeTenant?.id],
-    queryFn: async () => {
-      if (!activeTenant) return [];
-      
-      const { data, error } = await supabase
-        .from('app_insights')
-        .select('application, industry')
-        .eq('tenant_id', activeTenant.id);
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!activeTenant,
-  });
-
-  // Create a map of application -> industry
-  const applicationIndustryMap = new Map<string, string>();
-  appInsights.forEach((insight: any) => {
-    if (insight.application && insight.industry) {
-      applicationIndustryMap.set(insight.application, insight.industry);
-    }
-  });
-
-  // Get unique industries
+  // Get unique industries from applications table
   const uniqueIndustries = Array.from(
-    new Set(appInsights.map((insight: any) => insight.industry).filter(Boolean))
+    new Set(applications.map((app: any) => app.industry).filter(Boolean))
   ).sort();
 
   // Get unique applications for filter (filtered by selected industry)
@@ -185,8 +160,7 @@ export default function Products() {
       applications
         .filter((app: any) => {
           if (selectedIndustry === 'all') return true;
-          const appIndustry = applicationIndustryMap.get(app.application);
-          return appIndustry === selectedIndustry;
+          return app.industry === selectedIndustry;
         })
         .map((app: any) => app.application)
         .filter(Boolean)
