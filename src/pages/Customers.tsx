@@ -494,7 +494,20 @@ export default function Customers() {
                             {column.key === 'country' && customer.country}
                             {column.key === 'city' && customer.city}
                             {column.key === 'customer_category' && customer.customer_category && (
-                              <Badge variant="outline">{customer.customer_category}</Badge>
+                              <Badge 
+                                variant="outline"
+                                className={
+                                  customer.customer_category === 'Top' 
+                                    ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                                    : customer.customer_category === 'Key' 
+                                      ? 'bg-orange-500/10 text-orange-600 border-orange-500/30' 
+                                      : customer.customer_category === 'Emerging' 
+                                        ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                                        : ''
+                                }
+                              >
+                                {customer.customer_category}
+                              </Badge>
                             )}
                             {column.key === 'project_count' && (
                               <Button
