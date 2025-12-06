@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -38,6 +41,9 @@ export default function Applications() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [applicationQuickViewOpen, setApplicationQuickViewOpen] = useState(false);
   const [selectedApplicationForQuickView, setSelectedApplicationForQuickView] = useState<string | null>(null);
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [selectedApplicationsFilter, setSelectedApplicationsFilter] = useState<string[]>([]);
+  const [applicationFilterOpen, setApplicationFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
 
@@ -126,18 +132,76 @@ export default function Applications() {
     }
   });
 
+  // Get unique industries from applications
+  const uniqueIndustries = useMemo(() => 
+    Array.from(new Set(allApplications.map((app: any) => app.industry).filter(Boolean))).sort()
+  , [allApplications]);
+
+  // Group applications by industry
+  const applicationsByIndustry = useMemo(() => {
+    const grouped: Record<string, string[]> = {};
+    allApplications.forEach((app: any) => {
+      const industry = app.industry || t('common.other');
+      if (!grouped[industry]) {
+        grouped[industry] = [];
+      }
+      if (app.application && !grouped[industry].includes(app.application)) {
+        grouped[industry].push(app.application);
+      }
+    });
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort();
+    });
+    return grouped;
+  }, [allApplications, t]);
+
+  // Get applications filtered by selected industries
+  const filteredApplicationsByIndustry = useMemo(() => {
+    if (selectedIndustries.length === 0) {
+      return applicationsByIndustry;
+    }
+    const filtered: Record<string, string[]> = {};
+    selectedIndustries.forEach(industry => {
+      if (applicationsByIndustry[industry]) {
+        filtered[industry] = applicationsByIndustry[industry];
+      }
+    });
+    return filtered;
+  }, [applicationsByIndustry, selectedIndustries]);
+
+  // Clear applications when industries change
+  useEffect(() => {
+    if (selectedIndustries.length > 0) {
+      const validApps = Object.values(filteredApplicationsByIndustry).flat();
+      setSelectedApplicationsFilter(prev => prev.filter(app => validApps.includes(app)));
+    }
+  }, [selectedIndustries, filteredApplicationsByIndustry]);
+
   const filteredApplications = allApplications?.filter((app: any) => {
-    if (searchQuery.length < 2) return true;
-    return (
+    // Search filter
+    const matchesSearch = searchQuery.length < 2 ? true :
       app.application?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       app.related_product?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.industry?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+      app.industry?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
+    // Industry filter
+    if (selectedIndustries.length > 0 && !selectedIndustries.includes(app.industry)) {
+      return false;
+    }
+
+    // Application filter
+    if (selectedApplicationsFilter.length > 0 && !selectedApplicationsFilter.includes(app.application)) {
+      return false;
+    }
+
+    return true;
   });
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
+  }, [searchQuery, selectedIndustries, selectedApplicationsFilter]);
 
   const sortedApplications = [...(filteredApplications || [])].sort((a: any, b: any) => {
     if (!sortField || !sortDirection) return 0;
@@ -204,11 +268,164 @@ export default function Applications() {
                 className="pl-10"
               />
             </div>
-            <ColumnVisibilityToggle
-              columns={columns}
-              onToggle={toggleColumn}
-              onReset={resetColumns}
-            />
+            <div className="flex items-center gap-2">
+              <Popover open={applicationFilterOpen} onOpenChange={setApplicationFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[320px] justify-between">
+                    {selectedIndustries.length === 0 && selectedApplicationsFilter.length === 0
+                      ? t('filter.allApplications')
+                      : selectedIndustries.length > 0 && selectedApplicationsFilter.length === 0
+                        ? `${selectedIndustries.length} ${t('filter.industriesSelected')}`
+                        : selectedApplicationsFilter.length > 0
+                          ? `${selectedApplicationsFilter.length} ${t('filter.applicationsSelected')}`
+                          : t('filter.allApplications')
+                    }
+                    <Filter className="ml-2 h-4 w-4 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[360px] p-0 bg-background" align="start">
+                  <div className="p-3 border-b">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{t('filter.industryApplication')}</span>
+                      {(selectedIndustries.length > 0 || selectedApplicationsFilter.length > 0) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setSelectedIndustries([]);
+                            setSelectedApplicationsFilter([]);
+                          }}
+                        >
+                          {t('common.reset')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Industries Section */}
+                  <div className="border-b">
+                    <div className="px-3 py-2 bg-muted/30">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t('filter.industries')}
+                      </span>
+                    </div>
+                    <ScrollArea className="h-[120px]">
+                      <div className="p-2 space-y-1">
+                        {uniqueIndustries.map((industry: string) => (
+                          <div key={industry} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                            <Checkbox
+                              id={`industry-${industry}`}
+                              checked={selectedIndustries.includes(industry)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedIndustries(prev => [...prev, industry]);
+                                } else {
+                                  setSelectedIndustries(prev => prev.filter(i => i !== industry));
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`industry-${industry}`}
+                              className="text-sm cursor-pointer flex-1 truncate"
+                            >
+                              {industry}
+                            </label>
+                            <span className="text-xs text-muted-foreground">
+                              ({applicationsByIndustry[industry]?.length || 0})
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+
+                  {/* Applications Section */}
+                  <div>
+                    <div className="px-3 py-2 bg-muted/30">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {t('filter.applications')}
+                      </span>
+                      {selectedIndustries.length > 0 && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          ({t('filter.filteredByIndustry')})
+                        </span>
+                      )}
+                    </div>
+                    <ScrollArea className="h-[200px]">
+                      <div className="p-2">
+                        {Object.keys(filteredApplicationsByIndustry).sort().map((industry) => {
+                          const industryApps = filteredApplicationsByIndustry[industry];
+                          const allSelected = industryApps.every(app => selectedApplicationsFilter.includes(app));
+                          
+                          return (
+                            <div key={industry} className="mb-3">
+                              <div className="flex items-center justify-between px-2 py-1">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                  {industry}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => {
+                                    if (allSelected) {
+                                      setSelectedApplicationsFilter(prev => 
+                                        prev.filter(app => !industryApps.includes(app))
+                                      );
+                                    } else {
+                                      setSelectedApplicationsFilter(prev => {
+                                        const newApps = industryApps.filter(app => !prev.includes(app));
+                                        return [...prev, ...newApps];
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {allSelected ? t('filter.deselectAll') : t('filter.selectAll')}
+                                </Button>
+                              </div>
+                              <div className="space-y-1">
+                                {industryApps.map((appName: string) => (
+                                  <div key={appName} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                                    <Checkbox
+                                      id={`app-filter-${appName}`}
+                                      checked={selectedApplicationsFilter.includes(appName)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedApplicationsFilter(prev => [...prev, appName]);
+                                        } else {
+                                          setSelectedApplicationsFilter(prev => prev.filter(a => a !== appName));
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`app-filter-${appName}`}
+                                      className="text-sm cursor-pointer flex-1 truncate"
+                                    >
+                                      {appName}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {Object.keys(filteredApplicationsByIndustry).length === 0 && (
+                          <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                            {t('filter.noApplicationsForIndustry')}
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <ColumnVisibilityToggle
+                columns={columns}
+                onToggle={toggleColumn}
+                onReset={resetColumns}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
