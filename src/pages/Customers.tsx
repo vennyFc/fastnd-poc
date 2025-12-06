@@ -498,7 +498,7 @@ export default function Customers() {
                                 variant="outline"
                                 className={
                                   customer.customer_category.toLowerCase() === 'top' 
-                                    ? 'bg-blue-900/10 text-blue-900 border-blue-900/30' 
+                                    ? 'bg-blue-500/10 text-blue-600 border-blue-500/30'
                                     : customer.customer_category.toLowerCase() === 'key' 
                                       ? 'bg-gray-500/10 text-gray-600 border-gray-500/30'
                                       : customer.customer_category.toLowerCase() === 'emerging' 
