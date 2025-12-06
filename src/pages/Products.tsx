@@ -42,8 +42,8 @@ export default function Products() {
   const [newCollectionName, setNewCollectionName] = useState('');
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [expandedCrossSells, setExpandedCrossSells] = useState<Set<string>>(new Set());
-  const [selectedApplication, setSelectedApplication] = useState<string>('all');
-  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
+  const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
+  const [applicationFilterOpen, setApplicationFilterOpen] = useState(false);
   const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [selectedLifecycle, setSelectedLifecycle] = useState<string>('all');
@@ -154,17 +154,28 @@ export default function Products() {
     new Set(applications.map((app: any) => app.industry).filter(Boolean))
   ).sort();
 
-  // Get unique applications for filter (filtered by selected industry)
-  const uniqueApplications = Array.from(
-    new Set(
-      applications
-        .filter((app: any) => {
-          if (selectedIndustry === 'all') return true;
-          return app.industry === selectedIndustry;
-        })
-        .map((app: any) => app.application)
-        .filter(Boolean)
-    )
+  // Group applications by industry for the combined dropdown
+  const applicationsByIndustry = useMemo(() => {
+    const grouped: Record<string, string[]> = {};
+    applications.forEach((app: any) => {
+      const industry = app.industry || t('common.other');
+      if (!grouped[industry]) {
+        grouped[industry] = [];
+      }
+      if (app.application && !grouped[industry].includes(app.application)) {
+        grouped[industry].push(app.application);
+      }
+    });
+    // Sort applications within each industry
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort();
+    });
+    return grouped;
+  }, [applications, t]);
+
+  // Get all unique applications (for filtering)
+  const allUniqueApplications = Array.from(
+    new Set(applications.map((app: any) => app.application).filter(Boolean))
   ).sort();
 
   // Get unique product families and manufacturers
@@ -218,12 +229,12 @@ export default function Products() {
     const relevantCrossSells = crossSells.filter((cs: any) => {
       if (cs.base_product !== productName) return false;
       
-      if (selectedApplication === 'all') {
+      if (selectedApplications.length === 0) {
         // When no specific app selected, count only GENERIC cross-sells
         return cs.application === 'GENERIC';
       } else {
-        // When specific app selected, count only matching cross-sells
-        return cs.application === selectedApplication;
+        // When specific apps selected, count matching cross-sells
+        return selectedApplications.includes(cs.application);
       }
     });
     return relevantCrossSells.length;
@@ -234,10 +245,10 @@ export default function Products() {
     const relevantCrossSells = crossSells.filter((cs: any) => {
       if (cs.base_product !== baseProductName) return false;
       
-      if (selectedApplication === 'all') {
+      if (selectedApplications.length === 0) {
         return cs.application === 'GENERIC';
       } else {
-        return cs.application === selectedApplication;
+        return selectedApplications.includes(cs.application);
       }
     });
 
@@ -404,13 +415,13 @@ export default function Products() {
     
     if (!matchesSearch) return false;
 
-    // Application filter
-    if (selectedApplication && selectedApplication !== 'all') {
+    // Application filter (multi-select)
+    if (selectedApplications.length > 0) {
       const productApplications = applications.filter(
         (app: any) => app.related_product === product.product
       );
       const hasMatchingApplication = productApplications.some(
-        (app: any) => app.application === selectedApplication
+        (app: any) => selectedApplications.includes(app.application)
       );
       if (!hasMatchingApplication) return false;
     }
@@ -501,7 +512,7 @@ export default function Products() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedApplication, selectedProductFamilies, selectedManufacturers, selectedLifecycle, showNewOnly, showTopOnly]);
+  }, [searchQuery, selectedApplications, selectedProductFamilies, selectedManufacturers, selectedLifecycle, showNewOnly, showTopOnly]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -542,42 +553,68 @@ export default function Products() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Select
-                value={selectedIndustry}
-                onValueChange={(value) => {
-                  setSelectedIndustry(value);
-                  // Reset application selection when industry changes
-                  setSelectedApplication('all');
-                }}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={t('filter.allIndustries')} />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                  <SelectItem value="all">{t('filter.allIndustries')}</SelectItem>
-                  {uniqueIndustries.map((industry: string) => (
-                    <SelectItem key={industry} value={industry}>
-                      {industry}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={selectedApplication}
-                onValueChange={setSelectedApplication}
-              >
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder={t('filter.allApplications')} />
-                </SelectTrigger>
-                <SelectContent className="bg-background">
-                  <SelectItem value="all">{t('filter.allApplications')}</SelectItem>
-                  {uniqueApplications.map((app: string) => (
-                    <SelectItem key={app} value={app}>
-                      {app}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={applicationFilterOpen} onOpenChange={setApplicationFilterOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[280px] justify-between">
+                    {selectedApplications.length === 0 
+                      ? t('filter.allApplications')
+                      : `${selectedApplications.length} ${t('filter.applicationsSelected')}`
+                    }
+                    <Filter className="ml-2 h-4 w-4 shrink-0" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[320px] p-0 bg-background" align="start">
+                  <div className="p-3 border-b">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{t('filter.industryApplication')}</span>
+                      {selectedApplications.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => setSelectedApplications([])}
+                        >
+                          {t('common.reset')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[300px]">
+                    <div className="p-2">
+                      {Object.keys(applicationsByIndustry).sort().map((industry) => (
+                        <div key={industry} className="mb-3">
+                          <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                            {industry}
+                          </div>
+                          <div className="space-y-1">
+                            {applicationsByIndustry[industry].map((app: string) => (
+                              <div key={app} className="flex items-center space-x-2 px-2 py-1 hover:bg-muted/50 rounded-sm">
+                                <Checkbox
+                                  id={`app-${app}`}
+                                  checked={selectedApplications.includes(app)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedApplications(prev => [...prev, app]);
+                                    } else {
+                                      setSelectedApplications(prev => prev.filter(a => a !== app));
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`app-${app}`}
+                                  className="text-sm cursor-pointer flex-1 truncate"
+                                >
+                                  {app}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
               <Popover open={filterOpen} onOpenChange={setFilterOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -744,13 +781,12 @@ export default function Products() {
                     </div>
                   </div>
 
-                  {(selectedApplication !== 'all' || selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
+                  {(selectedProductFamilies.length > 0 || selectedManufacturers.length > 0 || selectedLifecycle !== 'all' || showNewOnly || showTopOnly) && (
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
                       onClick={() => {
-                        setSelectedApplication('all');
                         setSelectedProductFamilies([]);
                         setSelectedManufacturers([]);
                         setSelectedLifecycle('all');
