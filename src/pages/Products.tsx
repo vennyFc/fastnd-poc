@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, ExternalLink, Layers, Replace, X, ChevronLeft, ChevronRight, Network, ThumbsDown } from 'lucide-react';
+import { Search, Filter, Plus, ExternalLink, Layers, Replace, X, ChevronLeft, ChevronRight, Network } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTableColumns } from '@/hooks/useTableColumns';
@@ -83,8 +83,7 @@ export default function Products() {
     { key: 'product_price', label: t('table.price'), labelTooltip: t('table.priceTooltip'), visible: true, width: 80, order: 6 },
     { key: 'product_lead_time', label: t('table.leadTime'), labelTooltip: t('table.leadTimeTooltip'), visible: true, width: 90, order: 7 },
     { key: 'product_inventory', label: t('table.inventory'), labelTooltip: t('table.inventoryTooltip'), visible: true, width: 100, order: 8 },
-    { key: 'manufacturer_link', label: t('table.link'), visible: true, width: 80, order: 9 },
-    { key: 'actions', label: t('table.action'), visible: true, width: 140, order: 10 },
+    { key: 'manufacturer_link', label: t('table.link'), visible: true, width: 100, order: 9 },
   ], [t]);
 
   const { columns, toggleColumn, updateColumnWidth, reorderColumns, resetColumns } = useTableColumns(
@@ -1061,9 +1060,6 @@ export default function Products() {
                             value = product.product_description ? (
                               <span className="line-clamp-2">{product.product_description}</span>
                             ) : '-';
-                          } else if (column.key === 'actions') {
-                            // Main products don't have action buttons
-                            value = null;
                           } else {
                             value = product[column.key] || '-';
                           }
@@ -1157,34 +1153,6 @@ export default function Products() {
                               value = badges.length > 0 ? (
                                 <div className="flex flex-col gap-0.5">{badges}</div>
                               ) : '-';
-                            } else if (column.key === 'actions') {
-                              value = (
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-xs px-2"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toast.success(t('products.addedToProject'));
-                                    }}
-                                  >
-                                    <Plus className="h-3 w-3 mr-1" />
-                                    {t('common.add')}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toast.info(t('products.rejected'));
-                                    }}
-                                  >
-                                    <ThumbsDown className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              );
                             } else {
                               value = altProduct[column.key] || '-';
                             }
@@ -1278,34 +1246,6 @@ export default function Products() {
                                       {csProduct.rec_source}
                                     </Badge>
                                   )}
-                                </div>
-                              );
-                            } else if (column.key === 'actions') {
-                              value = (
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-xs px-2"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toast.success(t('products.addedToProject'));
-                                    }}
-                                  >
-                                    <Plus className="h-3 w-3 mr-1" />
-                                    {t('common.add')}
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toast.info(t('products.rejected'));
-                                    }}
-                                  >
-                                    <ThumbsDown className="h-4 w-4" />
-                                  </Button>
                                 </div>
                               );
                             } else {
