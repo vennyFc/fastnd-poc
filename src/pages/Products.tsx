@@ -43,6 +43,7 @@ export default function Products() {
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const [expandedCrossSells, setExpandedCrossSells] = useState<Set<string>>(new Set());
   const [selectedApplication, setSelectedApplication] = useState<string>('all');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [selectedProductFamilies, setSelectedProductFamilies] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
   const [selectedLifecycle, setSelectedLifecycle] = useState<string>('all');
@@ -148,9 +149,48 @@ export default function Products() {
     enabled: !!activeTenant,
   });
 
-  // Get unique applications for filter
+  // Fetch app_insights for industry data
+  const { data: appInsights = [] } = useQuery({
+    queryKey: ['app_insights_for_products', activeTenant?.id],
+    queryFn: async () => {
+      if (!activeTenant) return [];
+      
+      const { data, error } = await supabase
+        .from('app_insights')
+        .select('application, industry')
+        .eq('tenant_id', activeTenant.id);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!activeTenant,
+  });
+
+  // Create a map of application -> industry
+  const applicationIndustryMap = new Map<string, string>();
+  appInsights.forEach((insight: any) => {
+    if (insight.application && insight.industry) {
+      applicationIndustryMap.set(insight.application, insight.industry);
+    }
+  });
+
+  // Get unique industries
+  const uniqueIndustries = Array.from(
+    new Set(appInsights.map((insight: any) => insight.industry).filter(Boolean))
+  ).sort();
+
+  // Get unique applications for filter (filtered by selected industry)
   const uniqueApplications = Array.from(
-    new Set(applications.map((app: any) => app.application).filter(Boolean))
+    new Set(
+      applications
+        .filter((app: any) => {
+          if (selectedIndustry === 'all') return true;
+          const appIndustry = applicationIndustryMap.get(app.application);
+          return appIndustry === selectedIndustry;
+        })
+        .map((app: any) => app.application)
+        .filter(Boolean)
+    )
   ).sort();
 
   // Get unique product families and manufacturers
@@ -528,6 +568,26 @@ export default function Products() {
               />
             </div>
             <div className="flex items-center gap-2">
+              <Select
+                value={selectedIndustry}
+                onValueChange={(value) => {
+                  setSelectedIndustry(value);
+                  // Reset application selection when industry changes
+                  setSelectedApplication('all');
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={t('filter.allIndustries')} />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="all">{t('filter.allIndustries')}</SelectItem>
+                  {uniqueIndustries.map((industry: string) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Select
                 value={selectedApplication}
                 onValueChange={setSelectedApplication}
