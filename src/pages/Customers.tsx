@@ -498,11 +498,11 @@ export default function Customers() {
                                 variant="outline"
                                 className={
                                   customer.customer_category.toLowerCase() === 'top' 
-                                    ? 'bg-destructive/10 text-destructive border-destructive/30' 
+                                    ? 'bg-blue-900/10 text-blue-900 border-blue-900/30' 
                                     : customer.customer_category.toLowerCase() === 'key' 
-                                      ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                                      ? 'bg-gray-500/10 text-gray-600 border-gray-500/30'
                                       : customer.customer_category.toLowerCase() === 'emerging' 
-                                        ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                                        ? 'bg-emerald-400/10 text-emerald-500 border-emerald-400/30' 
                                         : ''
                                 }
                               >
